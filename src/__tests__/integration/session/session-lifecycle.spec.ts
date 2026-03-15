@@ -159,8 +159,8 @@ describe('Session / Lifecycle', () => {
     });
 
     const messages = [
-      { id: 'm1', role: 'user', content: 'Hello', createdAt: new Date() },
-      { id: 'm2', role: 'assistant', content: 'Hi there!', createdAt: new Date() },
+      { id: 'm1', role: 'user' as const, content: 'Hello', createdAt: new Date() },
+      { id: 'm2', role: 'assistant' as const, content: 'Hi there!', createdAt: new Date() },
     ];
     ctx.mastraMemory.getMessages.mockResolvedValue({
       messages,

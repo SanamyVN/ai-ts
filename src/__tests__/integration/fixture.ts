@@ -35,6 +35,7 @@ export const pg = {
   },
 
   async start(): Promise<void> {
+    if (drizzleInstance) return;
     const url = process.env[POSTGRES_ENV_VAR] ?? 'postgresql://localhost:5432/test';
 
     // Bootstrap connection — used only to create schema and tables
