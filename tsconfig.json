@@ -1,0 +1,21 @@
+{
+  "extends": "@sanamyvn/typescript-config/base.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": ".",
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "incremental": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "outDir": "dist",
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src", "types"],
+  "exclude": ["node_modules", "dist"]
+}
