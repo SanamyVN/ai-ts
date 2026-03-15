@@ -7,12 +7,12 @@ import type { IMastraAgent, IMastraMemory } from './mastra.interface.js';
  *
  * @example
  * const agent = createMockMastraAgent();
- * vi.mocked(agent.generate).mockResolvedValue({ text: 'hi', threadId: 't1' });
+ * agent.generate.mockResolvedValue({ text: 'hi', threadId: 't1' });
  */
-export function createMockMastraAgent(): IMastraAgent {
+export function createMockMastraAgent() {
   return {
-    generate: vi.fn(),
-    stream: vi.fn(),
+    generate: vi.fn<IMastraAgent['generate']>(),
+    stream: vi.fn<IMastraAgent['stream']>(),
   };
 }
 
@@ -22,12 +22,12 @@ export function createMockMastraAgent(): IMastraAgent {
  *
  * @example
  * const memory = createMockMastraMemory();
- * vi.mocked(memory.createThread).mockResolvedValue({ id: 't1', resourceId: 'r1' });
+ * memory.createThread.mockResolvedValue({ id: 't1', resourceId: 'r1' });
  */
-export function createMockMastraMemory(): IMastraMemory {
+export function createMockMastraMemory() {
   return {
-    createThread: vi.fn(),
-    getMessages: vi.fn(),
-    listThreads: vi.fn(),
+    createThread: vi.fn<IMastraMemory['createThread']>(),
+    getMessages: vi.fn<IMastraMemory['getMessages']>(),
+    listThreads: vi.fn<IMastraMemory['listThreads']>(),
   };
 }
