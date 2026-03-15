@@ -44,6 +44,7 @@ describe('ConversationEngine', () => {
 
   beforeEach(() => {
     mediator = createMockMediator();
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     send = mediator.send as PermissiveSendMock;
     agent = createMockMastraAgent();
     engine = new ConversationEngine(mediator, agent, DEFAULT_CONFIG);
@@ -73,9 +74,7 @@ describe('ConversationEngine', () => {
     });
 
     it('uses custom model when provided', async () => {
-      send
-        .mockResolvedValueOnce(RESOLVED_PROMPT)
-        .mockResolvedValueOnce(SESSION);
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
 
       const result = await engine.create({
         promptSlug: 'greet',
@@ -101,18 +100,17 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
-      const sessionCommand = send.mock.calls[1]![0] as InstanceType<
-        typeof CreateSessionCommand
-      >;
+      const call = send.mock.calls[1];
+      if (!call) throw new Error('Expected second mediator call');
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const sessionCommand = call[0] as InstanceType<typeof CreateSessionCommand>;
       expect(sessionCommand).toHaveProperty('tenantId', 'tenant-1');
     });
   });
 
   describe('send', () => {
     it('delegates to Mastra agent with correct threadId', async () => {
-      send
-        .mockResolvedValueOnce(RESOLVED_PROMPT)
-        .mockResolvedValueOnce(SESSION);
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
 
       agent.generate.mockResolvedValue({
         text: 'Hi there!',
@@ -167,15 +165,11 @@ describe('ConversationEngine', () => {
     it('throws ConversationNotFoundError when session lookup fails', async () => {
       send.mockRejectedValue(new Error('Session not found'));
 
-      await expect(engine.send('missing-id', 'Hello')).rejects.toThrow(
-        ConversationNotFoundError,
-      );
+      await expect(engine.send('missing-id', 'Hello')).rejects.toThrow(ConversationNotFoundError);
     });
 
     it('wraps MastraAdapterError in ConversationSendError', async () => {
-      send
-        .mockResolvedValueOnce(RESOLVED_PROMPT)
-        .mockResolvedValueOnce(SESSION);
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
 
       await engine.create({
         promptSlug: 'greet',
@@ -186,15 +180,11 @@ describe('ConversationEngine', () => {
 
       agent.generate.mockRejectedValue(new MastraAdapterError('generate'));
 
-      await expect(engine.send('session-1', 'Hello')).rejects.toThrow(
-        ConversationSendError,
-      );
+      await expect(engine.send('session-1', 'Hello')).rejects.toThrow(ConversationSendError);
     });
 
     it('re-throws non-Mastra errors without wrapping', async () => {
-      send
-        .mockResolvedValueOnce(RESOLVED_PROMPT)
-        .mockResolvedValueOnce(SESSION);
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
 
       await engine.create({
         promptSlug: 'greet',
@@ -212,9 +202,7 @@ describe('ConversationEngine', () => {
 
   describe('stream', () => {
     it('delegates to Mastra agent stream with correct threadId', async () => {
-      send
-        .mockResolvedValueOnce(RESOLVED_PROMPT)
-        .mockResolvedValueOnce(SESSION);
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
 
       const chunks = [
         { type: 'text-delta' as const, content: 'Hello' },

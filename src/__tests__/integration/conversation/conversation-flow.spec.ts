@@ -21,7 +21,7 @@ import { aiConfigSchema } from '@/config.js';
  * interactions in mock territory.
  */
 function createTestMediator(ctx: AiTestContext): IMediator {
-  return {
+  const mock = {
     send: vi.fn(async (request: unknown) => {
       if (request instanceof ResolvePromptQuery) {
         const result = await ctx.promptService.resolve(request.slug, request.params);
@@ -43,12 +43,18 @@ function createTestMediator(ctx: AiTestContext): IMediator {
         const result = await ctx.sessionService.get(request.sessionId);
         return result;
       }
-      throw new Error(
-        `Unhandled request type: ${(request as { constructor: { name: string } }).constructor.name}`,
-      );
+      const ctor: unknown =
+        request !== null && typeof request === 'object'
+          ? Reflect.get(request, 'constructor')
+          : undefined;
+      const name: unknown =
+        ctor !== null && typeof ctor === 'object' ? Reflect.get(ctor, 'name') : undefined;
+      throw new Error(`Unhandled request type: ${String(name)}`);
     }),
     notify: vi.fn(),
-  } as unknown as IMediator;
+  };
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return mock as unknown as IMediator;
 }
 
 describe('Conversation / Flow', () => {

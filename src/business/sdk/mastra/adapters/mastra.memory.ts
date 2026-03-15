@@ -27,20 +27,32 @@ function toThread(t: {
  * Extracts a plain string from a `MastraMessageContentV2` content object.
  * The format-2 content stores message parts; this joins all text parts.
  */
+function isContentWithParts(
+  value: unknown,
+): value is { parts: { type?: string; text?: string }[] } {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'parts' in value &&
+    Array.isArray(Reflect.get(value, 'parts'))
+  );
+}
+
 function extractTextContent(content: unknown): string {
   if (typeof content === 'string') return content;
-  if (
-    content !== null &&
-    typeof content === 'object' &&
-    'parts' in content &&
-    Array.isArray((content as { parts: unknown[] }).parts)
-  ) {
-    return (content as { parts: { type?: string; text?: string }[] }).parts
+  if (isContentWithParts(content)) {
+    return content.parts
       .filter((p) => p.type === 'text' && typeof p.text === 'string')
-      .map((p) => p.text as string)
+      .map((p) => p.text ?? '')
       .join('');
   }
   return JSON.stringify(content);
+}
+
+/** Narrows a Mastra SDK role string to the `IMastraMemory` message role union. */
+function toMessageRole(role: string): 'user' | 'assistant' | 'system' {
+  if (role === 'user' || role === 'assistant' || role === 'system') return role;
+  return 'user';
 }
 
 /**
@@ -75,7 +87,7 @@ export class MastraMemoryAdapter implements IMastraMemory {
       return {
         messages: result.messages.map((m) => ({
           id: m.id,
-          role: m.role as 'user' | 'assistant' | 'system',
+          role: toMessageRole(m.role),
           content: extractTextContent(m.content),
           createdAt: m.createdAt,
         })),

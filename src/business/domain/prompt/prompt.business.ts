@@ -101,13 +101,18 @@ export class PromptService implements IPromptService {
     }
   }
 
+  private isFieldDef(value: unknown): value is { type: string; min?: number; max?: number } {
+    return typeof value === 'object' && value !== null && 'type' in value;
+  }
+
   private validateParams(
     slug: string,
     schema: Record<string, unknown>,
     params: Record<string, unknown>,
   ): void {
     for (const [key, def] of Object.entries(schema)) {
-      const fieldDef = def as { type: string; min?: number; max?: number };
+      if (!this.isFieldDef(def)) continue;
+      const fieldDef = def;
       const value = params[key];
       if (value === undefined) {
         throw new InvalidPromptParametersError(slug, `Missing required parameter: ${key}`);

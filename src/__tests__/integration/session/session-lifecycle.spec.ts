@@ -173,6 +173,7 @@ describe('Session / Lifecycle', () => {
     expect(transcript.sessionId).toBe(session.id);
     expect(transcript.format).toBe('json');
     expect(transcript.messages).toHaveLength(2);
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const parsed = JSON.parse(transcript.content) as unknown[];
     expect(parsed).toHaveLength(2);
   });

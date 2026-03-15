@@ -26,11 +26,15 @@ export class MastraAgentAdapter implements IMastraAgent {
           ? { memory: { thread: options.threadId, resource: options.resourceId } }
           : {}),
         ...(options?.outputSchema !== undefined
-          ? { structuredOutput: options.outputSchema as never }
+          ? {
+              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+              structuredOutput: options.outputSchema as never,
+            }
           : {}),
       });
       return {
         text: result.text,
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         object: result.object as unknown,
         // FullOutput does not expose threadId; return the requested threadId if known
         threadId: options?.threadId ?? '',
@@ -47,7 +51,10 @@ export class MastraAgentAdapter implements IMastraAgent {
           ? { memory: { thread: options.threadId, resource: options.resourceId } }
           : {}),
         ...(options?.outputSchema !== undefined
-          ? { structuredOutput: options.outputSchema as never }
+          ? {
+              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+              structuredOutput: options.outputSchema as never,
+            }
           : {}),
       });
       // textStream is a WHATWG ReadableStream<string>, which supports for-await-of in Node 18+
