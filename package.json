@@ -42,7 +42,6 @@
       "types": "./dist/shared/provider-bundle.d.ts",
       "default": "./dist/shared/provider-bundle.js"
     },
-
     "./repository/providers": {
       "types": "./dist/repository/providers.d.ts",
       "default": "./dist/repository/providers.js"
@@ -71,7 +70,6 @@
       "types": "./dist/repository/domain/prompt/prompt.testing.d.ts",
       "default": "./dist/repository/domain/prompt/prompt.testing.js"
     },
-
     "./repository/prompt-version/schema": {
       "types": "./dist/repository/domain/prompt-version/prompt-version.schema.d.ts",
       "default": "./dist/repository/domain/prompt-version/prompt-version.schema.js"
@@ -96,7 +94,6 @@
       "types": "./dist/repository/domain/prompt-version/prompt-version.testing.d.ts",
       "default": "./dist/repository/domain/prompt-version/prompt-version.testing.js"
     },
-
     "./repository/session/schema": {
       "types": "./dist/repository/domain/session/session.schema.d.ts",
       "default": "./dist/repository/domain/session/session.schema.js"
@@ -121,7 +118,6 @@
       "types": "./dist/repository/domain/session/session.testing.d.ts",
       "default": "./dist/repository/domain/session/session.testing.js"
     },
-
     "./business/providers": {
       "types": "./dist/business/providers.d.ts",
       "default": "./dist/business/providers.js"
@@ -142,7 +138,6 @@
       "types": "./dist/business/sdk/mastra/mastra.testing.d.ts",
       "default": "./dist/business/sdk/mastra/mastra.testing.js"
     },
-
     "./business/prompt": {
       "types": "./dist/business/domain/prompt/prompt.interface.d.ts",
       "default": "./dist/business/domain/prompt/prompt.interface.js"
@@ -179,7 +174,6 @@
       "types": "./dist/business/domain/prompt/client/mediator.d.ts",
       "default": "./dist/business/domain/prompt/client/mediator.js"
     },
-
     "./business/session": {
       "types": "./dist/business/domain/session/session.interface.d.ts",
       "default": "./dist/business/domain/session/session.interface.js"
@@ -216,7 +210,6 @@
       "types": "./dist/business/domain/session/client/mediator.d.ts",
       "default": "./dist/business/domain/session/client/mediator.js"
     },
-
     "./business/conversation": {
       "types": "./dist/business/domain/conversation/conversation.interface.d.ts",
       "default": "./dist/business/domain/conversation/conversation.interface.js"
@@ -253,7 +246,6 @@
       "types": "./dist/business/domain/conversation/client/mediator.d.ts",
       "default": "./dist/business/domain/conversation/client/mediator.js"
     },
-
     "./app/providers": {
       "types": "./dist/app/providers.d.ts",
       "default": "./dist/app/providers.js"
@@ -299,35 +291,36 @@
     "mustache": "^4.0.0"
   },
   "peerDependencies": {
-    "@sanamyvn/foundation": "^1.12.0",
     "@mastra/core": "^1.0.0",
+    "@sanamyvn/foundation": "^1.12.0",
     "drizzle-orm": ">=0.45.1",
     "zod": "^4.0.0"
   },
   "devDependencies": {
-    "@mastra/core": "^1.0.0",
-    "@sanamyvn/foundation": "^1.12.0",
-    "@types/mustache": "^4.2.0",
-    "drizzle-orm": "^0.45.1",
-    "zod": "^4.0.0",
     "@commitlint/cli": "^20.4.4",
     "@commitlint/config-conventional": "^20.4.4",
+    "@mastra/core": "^1.0.0",
     "@sanamyvn/eslint-config": "^2.1.0",
+    "@sanamyvn/foundation": "^1.12.0",
     "@sanamyvn/typescript-config": "^2.0.0",
     "@sanamyvn/vitest-config": "^2.0.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@swc/core": "^1.15.18",
+    "@types/mustache": "^4.2.0",
     "@types/node": "^24.12.0",
     "@vitest/coverage-v8": "^4.1.0",
     "conventional-changelog-conventionalcommits": "^9.3.0",
+    "drizzle-orm": "^0.45.1",
     "eslint": "^10.0.3",
     "husky": "^9.1.7",
+    "postgres": "^3.4.8",
     "semantic-release": "^25.0.3",
     "tsc-alias": "^1.8.16",
     "typescript": "5.9.3",
     "unplugin-swc": "^1.5.9",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "zod": "^4.0.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
