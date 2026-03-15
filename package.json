@@ -29,7 +29,272 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
-  "exports": {},
+  "exports": {
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "default": "./dist/config.js"
+    },
+    "./shared/tokens": {
+      "types": "./dist/shared/tokens.d.ts",
+      "default": "./dist/shared/tokens.js"
+    },
+    "./shared/provider-bundle": {
+      "types": "./dist/shared/provider-bundle.d.ts",
+      "default": "./dist/shared/provider-bundle.js"
+    },
+
+    "./repository/providers": {
+      "types": "./dist/repository/providers.d.ts",
+      "default": "./dist/repository/providers.js"
+    },
+    "./repository/prompt/schema": {
+      "types": "./dist/repository/domain/prompt/prompt.schema.d.ts",
+      "default": "./dist/repository/domain/prompt/prompt.schema.js"
+    },
+    "./repository/prompt": {
+      "types": "./dist/repository/domain/prompt/prompt.interface.d.ts",
+      "default": "./dist/repository/domain/prompt/prompt.interface.js"
+    },
+    "./repository/prompt/model": {
+      "types": "./dist/repository/domain/prompt/prompt.model.d.ts",
+      "default": "./dist/repository/domain/prompt/prompt.model.js"
+    },
+    "./repository/prompt/error": {
+      "types": "./dist/repository/domain/prompt/prompt.error.d.ts",
+      "default": "./dist/repository/domain/prompt/prompt.error.js"
+    },
+    "./repository/prompt/providers": {
+      "types": "./dist/repository/domain/prompt/prompt.providers.d.ts",
+      "default": "./dist/repository/domain/prompt/prompt.providers.js"
+    },
+    "./repository/prompt/testing": {
+      "types": "./dist/repository/domain/prompt/prompt.testing.d.ts",
+      "default": "./dist/repository/domain/prompt/prompt.testing.js"
+    },
+
+    "./repository/prompt-version/schema": {
+      "types": "./dist/repository/domain/prompt-version/prompt-version.schema.d.ts",
+      "default": "./dist/repository/domain/prompt-version/prompt-version.schema.js"
+    },
+    "./repository/prompt-version": {
+      "types": "./dist/repository/domain/prompt-version/prompt-version.interface.d.ts",
+      "default": "./dist/repository/domain/prompt-version/prompt-version.interface.js"
+    },
+    "./repository/prompt-version/model": {
+      "types": "./dist/repository/domain/prompt-version/prompt-version.model.d.ts",
+      "default": "./dist/repository/domain/prompt-version/prompt-version.model.js"
+    },
+    "./repository/prompt-version/error": {
+      "types": "./dist/repository/domain/prompt-version/prompt-version.error.d.ts",
+      "default": "./dist/repository/domain/prompt-version/prompt-version.error.js"
+    },
+    "./repository/prompt-version/providers": {
+      "types": "./dist/repository/domain/prompt-version/prompt-version.providers.d.ts",
+      "default": "./dist/repository/domain/prompt-version/prompt-version.providers.js"
+    },
+    "./repository/prompt-version/testing": {
+      "types": "./dist/repository/domain/prompt-version/prompt-version.testing.d.ts",
+      "default": "./dist/repository/domain/prompt-version/prompt-version.testing.js"
+    },
+
+    "./repository/session/schema": {
+      "types": "./dist/repository/domain/session/session.schema.d.ts",
+      "default": "./dist/repository/domain/session/session.schema.js"
+    },
+    "./repository/session": {
+      "types": "./dist/repository/domain/session/session.interface.d.ts",
+      "default": "./dist/repository/domain/session/session.interface.js"
+    },
+    "./repository/session/model": {
+      "types": "./dist/repository/domain/session/session.model.d.ts",
+      "default": "./dist/repository/domain/session/session.model.js"
+    },
+    "./repository/session/error": {
+      "types": "./dist/repository/domain/session/session.error.d.ts",
+      "default": "./dist/repository/domain/session/session.error.js"
+    },
+    "./repository/session/providers": {
+      "types": "./dist/repository/domain/session/session.providers.d.ts",
+      "default": "./dist/repository/domain/session/session.providers.js"
+    },
+    "./repository/session/testing": {
+      "types": "./dist/repository/domain/session/session.testing.d.ts",
+      "default": "./dist/repository/domain/session/session.testing.js"
+    },
+
+    "./business/providers": {
+      "types": "./dist/business/providers.d.ts",
+      "default": "./dist/business/providers.js"
+    },
+    "./business/mastra": {
+      "types": "./dist/business/sdk/mastra/mastra.interface.d.ts",
+      "default": "./dist/business/sdk/mastra/mastra.interface.js"
+    },
+    "./business/mastra/error": {
+      "types": "./dist/business/sdk/mastra/mastra.error.d.ts",
+      "default": "./dist/business/sdk/mastra/mastra.error.js"
+    },
+    "./business/mastra/providers": {
+      "types": "./dist/business/sdk/mastra/mastra.providers.d.ts",
+      "default": "./dist/business/sdk/mastra/mastra.providers.js"
+    },
+    "./business/mastra/testing": {
+      "types": "./dist/business/sdk/mastra/mastra.testing.d.ts",
+      "default": "./dist/business/sdk/mastra/mastra.testing.js"
+    },
+
+    "./business/prompt": {
+      "types": "./dist/business/domain/prompt/prompt.interface.d.ts",
+      "default": "./dist/business/domain/prompt/prompt.interface.js"
+    },
+    "./business/prompt/model": {
+      "types": "./dist/business/domain/prompt/prompt.model.d.ts",
+      "default": "./dist/business/domain/prompt/prompt.model.js"
+    },
+    "./business/prompt/error": {
+      "types": "./dist/business/domain/prompt/prompt.error.d.ts",
+      "default": "./dist/business/domain/prompt/prompt.error.js"
+    },
+    "./business/prompt/providers": {
+      "types": "./dist/business/domain/prompt/prompt.providers.d.ts",
+      "default": "./dist/business/domain/prompt/prompt.providers.js"
+    },
+    "./business/prompt/testing": {
+      "types": "./dist/business/domain/prompt/prompt.testing.d.ts",
+      "default": "./dist/business/domain/prompt/prompt.testing.js"
+    },
+    "./business/prompt/client/schemas": {
+      "types": "./dist/business/domain/prompt/client/schemas.d.ts",
+      "default": "./dist/business/domain/prompt/client/schemas.js"
+    },
+    "./business/prompt/client/queries": {
+      "types": "./dist/business/domain/prompt/client/queries.d.ts",
+      "default": "./dist/business/domain/prompt/client/queries.js"
+    },
+    "./business/prompt/client/errors": {
+      "types": "./dist/business/domain/prompt/client/errors.d.ts",
+      "default": "./dist/business/domain/prompt/client/errors.js"
+    },
+    "./business/prompt/client/mediator": {
+      "types": "./dist/business/domain/prompt/client/mediator.d.ts",
+      "default": "./dist/business/domain/prompt/client/mediator.js"
+    },
+
+    "./business/session": {
+      "types": "./dist/business/domain/session/session.interface.d.ts",
+      "default": "./dist/business/domain/session/session.interface.js"
+    },
+    "./business/session/model": {
+      "types": "./dist/business/domain/session/session.model.d.ts",
+      "default": "./dist/business/domain/session/session.model.js"
+    },
+    "./business/session/error": {
+      "types": "./dist/business/domain/session/session.error.d.ts",
+      "default": "./dist/business/domain/session/session.error.js"
+    },
+    "./business/session/providers": {
+      "types": "./dist/business/domain/session/session.providers.d.ts",
+      "default": "./dist/business/domain/session/session.providers.js"
+    },
+    "./business/session/testing": {
+      "types": "./dist/business/domain/session/session.testing.d.ts",
+      "default": "./dist/business/domain/session/session.testing.js"
+    },
+    "./business/session/client/schemas": {
+      "types": "./dist/business/domain/session/client/schemas.d.ts",
+      "default": "./dist/business/domain/session/client/schemas.js"
+    },
+    "./business/session/client/queries": {
+      "types": "./dist/business/domain/session/client/queries.d.ts",
+      "default": "./dist/business/domain/session/client/queries.js"
+    },
+    "./business/session/client/errors": {
+      "types": "./dist/business/domain/session/client/errors.d.ts",
+      "default": "./dist/business/domain/session/client/errors.js"
+    },
+    "./business/session/client/mediator": {
+      "types": "./dist/business/domain/session/client/mediator.d.ts",
+      "default": "./dist/business/domain/session/client/mediator.js"
+    },
+
+    "./business/conversation": {
+      "types": "./dist/business/domain/conversation/conversation.interface.d.ts",
+      "default": "./dist/business/domain/conversation/conversation.interface.js"
+    },
+    "./business/conversation/model": {
+      "types": "./dist/business/domain/conversation/conversation.model.d.ts",
+      "default": "./dist/business/domain/conversation/conversation.model.js"
+    },
+    "./business/conversation/error": {
+      "types": "./dist/business/domain/conversation/conversation.error.d.ts",
+      "default": "./dist/business/domain/conversation/conversation.error.js"
+    },
+    "./business/conversation/providers": {
+      "types": "./dist/business/domain/conversation/conversation.providers.d.ts",
+      "default": "./dist/business/domain/conversation/conversation.providers.js"
+    },
+    "./business/conversation/testing": {
+      "types": "./dist/business/domain/conversation/conversation.testing.d.ts",
+      "default": "./dist/business/domain/conversation/conversation.testing.js"
+    },
+    "./business/conversation/client/schemas": {
+      "types": "./dist/business/domain/conversation/client/schemas.d.ts",
+      "default": "./dist/business/domain/conversation/client/schemas.js"
+    },
+    "./business/conversation/client/queries": {
+      "types": "./dist/business/domain/conversation/client/queries.d.ts",
+      "default": "./dist/business/domain/conversation/client/queries.js"
+    },
+    "./business/conversation/client/errors": {
+      "types": "./dist/business/domain/conversation/client/errors.d.ts",
+      "default": "./dist/business/domain/conversation/client/errors.js"
+    },
+    "./business/conversation/client/mediator": {
+      "types": "./dist/business/domain/conversation/client/mediator.d.ts",
+      "default": "./dist/business/domain/conversation/client/mediator.js"
+    },
+
+    "./app/providers": {
+      "types": "./dist/app/providers.d.ts",
+      "default": "./dist/app/providers.js"
+    },
+    "./app/prompt/module": {
+      "types": "./dist/app/domain/prompt/prompt.module.d.ts",
+      "default": "./dist/app/domain/prompt/prompt.module.js"
+    },
+    "./app/prompt/providers": {
+      "types": "./dist/app/domain/prompt/prompt.providers.d.ts",
+      "default": "./dist/app/domain/prompt/prompt.providers.js"
+    },
+    "./app/session/module": {
+      "types": "./dist/app/domain/session/session.module.d.ts",
+      "default": "./dist/app/domain/session/session.module.js"
+    },
+    "./app/session/providers": {
+      "types": "./dist/app/domain/session/session.providers.d.ts",
+      "default": "./dist/app/domain/session/session.providers.js"
+    },
+    "./app/conversation/module": {
+      "types": "./dist/app/domain/conversation/conversation.module.d.ts",
+      "default": "./dist/app/domain/conversation/conversation.module.js"
+    },
+    "./app/conversation/providers": {
+      "types": "./dist/app/domain/conversation/conversation.providers.d.ts",
+      "default": "./dist/app/domain/conversation/conversation.providers.js"
+    },
+    "./app/prompt-client/module": {
+      "types": "./dist/app/sdk/prompt-client/prompt-client.module.d.ts",
+      "default": "./dist/app/sdk/prompt-client/prompt-client.module.js"
+    },
+    "./app/session-client/module": {
+      "types": "./dist/app/sdk/session-client/session-client.module.d.ts",
+      "default": "./dist/app/sdk/session-client/session-client.module.js"
+    },
+    "./app/conversation-client/module": {
+      "types": "./dist/app/sdk/conversation-client/conversation-client.module.d.ts",
+      "default": "./dist/app/sdk/conversation-client/conversation-client.module.js"
+    }
+  },
   "dependencies": {
     "mustache": "^4.0.0"
   },
