@@ -26,7 +26,8 @@ Mastra provides the AI runtime. This package provides the application-level prim
 | Auth guard interfaces (strategy pattern)                          | `@sanamy/ai` defines, downstream implements |
 | Thread/message storage                                            | Mastra (direct)                             |
 | Voice (TTS/STT/real-time)                                         | Mastra (direct)                             |
-| RAG / context injection                                           | Mastra (direct)                             |
+| RAG write path (ingest, delete, replace)                          | `@sanamy/ai` (adapter wraps `@mastra/pg`)   |
+| RAG read path (retrieval, similarity search)                      | Mastra (direct)                             |
 | Structured output                                                 | Mastra (direct)                             |
 | Evals / scoring                                                   | Mastra (direct)                             |
 | Model routing / provider switching                                | Mastra (direct)                             |
@@ -765,7 +766,8 @@ Mastra and Foundation are peer dependencies. Downstream provides the runtime. `m
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Separate package, not a foundation module         | AI is application-level infrastructure, not shared library infrastructure. It has its own database tables and REST endpoints.                                                                                                   |
 | Build on Mastra, not from scratch                 | Mastra provides 92 providers, voice, RAG, evals, workflows. No reason to rebuild this.                                                                                                                                          |
-| Don't wrap voice/RAG/evals                        | Too varied and config-heavy. Wrapping adds friction without value. Downstream uses Mastra directly.                                                                                                                             |
+| Don't wrap voice/evals                            | Too varied and config-heavy. Wrapping adds friction without value. Downstream uses Mastra directly.                                                                                                                             |
+| Wrap RAG write path only                          | Experience building `aiya` showed the ingest/delete/replace pipeline is common enough to standardize. The read path (retrieval) remains Mastra-direct since agents handle it through built-in tools. See `docs/superpowers/specs/2026-03-16-rag-module-design.md`. |
 | Prompt registry in the database                   | Teachers need to edit prompts through a UI. Hardcoded strings don't support versioning or rollback.                                                                                                                             |
 | Session table as Mastra envelope                  | Mastra threads lack business context (who, why, lifecycle state). A thin table adds it without duplicating message storage.                                                                                                     |
 | Mediator for all cross-domain calls               | Enables splitting any domain into its own service without code changes.                                                                                                                                                         |
