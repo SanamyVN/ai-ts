@@ -1,12 +1,12 @@
 import { and, eq } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { aiSessions } from './session.schema.js';
 import type { ISessionRepository, SessionRepoFilter } from './session.interface.js';
 import type { SessionRecord, NewSessionRecord } from './session.model.js';
 import { SessionNotFoundRepoError, SessionRepositoryError } from './session.error.js';
 
 export class SessionDrizzleRepository implements ISessionRepository {
-  constructor(private readonly db: PostgresJsDatabase) {}
+  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
 
   async create(data: NewSessionRecord): Promise<SessionRecord> {
     const [record] = await this.db.insert(aiSessions).values(data).returning();

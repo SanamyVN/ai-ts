@@ -1,5 +1,5 @@
 import { eq, ilike } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { aiPrompts } from './prompt.schema.js';
 import type { IPromptRepository } from './prompt.interface.js';
 import type { PromptRecord, NewPromptRecord } from './prompt.model.js';
@@ -10,7 +10,7 @@ import {
 } from './prompt.error.js';
 
 export class PromptDrizzleRepository implements IPromptRepository {
-  constructor(private readonly db: PostgresJsDatabase) {}
+  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
 
   async create(data: NewPromptRecord): Promise<PromptRecord> {
     try {

@@ -1,5 +1,5 @@
 import { sql, eq, and } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { aiPromptVersions } from './prompt-version.schema.js';
 import type { IPromptVersionRepository } from './prompt-version.interface.js';
 import type { PromptVersionRecord, NewPromptVersionRecord } from './prompt-version.model.js';
@@ -9,7 +9,7 @@ import {
 } from './prompt-version.error.js';
 
 export class PromptVersionDrizzleRepository implements IPromptVersionRepository {
-  constructor(private readonly db: PostgresJsDatabase) {}
+  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
 
   async create(data: NewPromptVersionRecord): Promise<PromptVersionRecord> {
     const [record] = await this.db.insert(aiPromptVersions).values(data).returning();
