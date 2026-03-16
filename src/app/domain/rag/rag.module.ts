@@ -20,6 +20,7 @@ export class RagAppModule extends Module {
   }
 
   static forStandalone(options: RagAppModuleOptions & { ragServiceUrl: string }): ModuleDefinition {
+    // ragServiceUrl is passed to ragClientStandaloneProviders() by the caller — not wired here.
     return {
       module: RagAppModule,
       providers: [value(RAG_MIDDLEWARE_CONFIG, options.middleware ?? {})],

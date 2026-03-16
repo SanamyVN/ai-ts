@@ -20,10 +20,21 @@ export class RagDeleteClientError extends RagClientError {
   }
 }
 
+/** Thrown when a RAG replace operation fails through the mediator. */
+export class RagReplaceClientError extends RagClientError {
+  constructor(cause?: unknown) {
+    super('RAG replace failed', { cause });
+  }
+}
+
 export function isRagIngestClientError(error: unknown): error is RagIngestClientError {
   return error instanceof RagIngestClientError;
 }
 
 export function isRagDeleteClientError(error: unknown): error is RagDeleteClientError {
   return error instanceof RagDeleteClientError;
+}
+
+export function isRagReplaceClientError(error: unknown): error is RagReplaceClientError {
+  return error instanceof RagReplaceClientError;
 }
