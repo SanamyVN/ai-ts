@@ -21,6 +21,9 @@ importers:
       '@mastra/core':
         specifier: ^1.0.0
         version: 1.13.2(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-community/standard-openapi@0.2.9(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(zod@4.3.6))(@types/json-schema@7.0.15)(openapi-types@12.1.3)(zod@4.3.6)
+      '@mastra/pg':
+        specifier: ^1.8.0
+        version: 1.8.0(@mastra/core@1.13.2(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-community/standard-openapi@0.2.9(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(zod@4.3.6))(@types/json-schema@7.0.15)(openapi-types@12.1.3)(zod@4.3.6))
       '@sanamyvn/eslint-config':
         specifier: ^2.1.0
         version: 2.1.0(eslint@10.0.3(jiti@2.6.1))(prettier@3.8.1)(turbo@2.8.17)(typescript@5.9.3)
@@ -938,6 +941,12 @@ packages:
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
+  '@mastra/pg@1.8.0':
+    resolution: {integrity: sha512-0Vs2Jrke4kBXi6UWGWKNmTsDiOHCmp7m2Xnyw0FBlSLYATi+FU9jJh9kKDG+B/d+HIVsHL38RgvzfvRh8xSpTg==, tarball: https://registry.npmjs.org/@mastra/pg/-/pg-1.8.0.tgz}
+    engines: {node: '>=22.13.0'}
+    peerDependencies:
+      '@mastra/core': '>=1.4.0-0 <2.0.0-0'
+
   '@mastra/schema-compat@1.2.4':
     resolution: {integrity: sha512-MVZ0NGBdUuF0u1EE0lMPPLH+le4Roy2cOW0w6rd4BakW0MUfswSkvrKlxAotBEpMAxVjkd1aT5zEf8lzFnEqEQ==, tarball: https://registry.npmjs.org/@mastra/schema-compat/-/schema-compat-1.2.4.tgz}
     engines: {node: '>=22.13.0'}
@@ -1426,6 +1435,37 @@ packages:
       testcontainers: '>=11.12.0'
       vitest: '>=4.1.0'
       ws: ^8.19.0
+    peerDependenciesMeta:
+      '@hono/node-ws':
+        optional: true
+      '@opentelemetry/api':
+        optional: true
+      '@testcontainers/postgresql':
+        optional: true
+      '@types/nodemailer':
+        optional: true
+      '@types/pg':
+        optional: true
+      drizzle-kit:
+        optional: true
+      drizzle-orm:
+        optional: true
+      ejs:
+        optional: true
+      nodemailer:
+        optional: true
+      pg:
+        optional: true
+      react:
+        optional: true
+      resend:
+        optional: true
+      testcontainers:
+        optional: true
+      vitest:
+        optional: true
+      ws:
+        optional: true
 
   '@sanamyvn/typescript-config@2.0.0':
     resolution: {integrity: sha512-iDYM9TBddZyS8OirHscZvDggg4dDNVPdnl7PKFekqO/2qqb6q2yB4qNj/QuBOHeJ37PdJ5sc5RO0qrRNGICbUw==, tarball: https://npm.pkg.github.com/download/@sanamyvn/typescript-config/2.0.0/f54ac0a78b26c483dc792fc9c6431009ae455c75}
@@ -2231,6 +2271,9 @@ packages:
 
   async-lock@1.4.1:
     resolution: {integrity: sha512-Az2ZTpuytrtqENulXwO3GGv1Bztugx6TT37NIo7imr/Qo0gsYiGtSdBa2B6fsXhTpVZDNfu1Qn3pk531e3q+nQ==, tarball: https://registry.npmjs.org/async-lock/-/async-lock-1.4.1.tgz}
+
+  async-mutex@0.5.0:
+    resolution: {integrity: sha512-1A94B18jkJ3DYq284ohPxoXbfTA5HsQ7/Mf4DEhcyLx3Bz27Rh59iScbB6EPiP+B+joue6YCxcMXSbFC1tZKwA==, tarball: https://registry.npmjs.org/async-mutex/-/async-mutex-0.5.0.tgz}
 
   async@3.2.6:
     resolution: {integrity: sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==, tarball: https://registry.npmjs.org/async/-/async-3.2.6.tgz}
@@ -6604,6 +6647,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
 
   '@humanfs/core@0.19.1': {}
 
@@ -6705,6 +6749,15 @@ snapshots:
       - openapi-types
       - supports-color
       - utf-8-validate
+
+  '@mastra/pg@1.8.0(@mastra/core@1.13.2(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-community/standard-openapi@0.2.9(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(zod@4.3.6))(@types/json-schema@7.0.15)(openapi-types@12.1.3)(zod@4.3.6))':
+    dependencies:
+      '@mastra/core': 1.13.2(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-community/standard-openapi@0.2.9(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(zod@4.3.6))(@types/json-schema@7.0.15)(openapi-types@12.1.3)(zod@4.3.6)
+      async-mutex: 0.5.0
+      pg: 8.20.0
+      xxhash-wasm: 1.1.0
+    transitivePeerDependencies:
+      - pg-native
 
   '@mastra/schema-compat@1.2.4(zod@4.3.6)':
     dependencies:
@@ -7226,8 +7279,6 @@ snapshots:
       '@aws-sdk/s3-request-presigner': 3.1009.0
       '@grpc/grpc-js': 1.14.3
       '@hono/node-server': 1.19.11(hono@4.12.8)
-      '@hono/node-ws': 1.3.0(@hono/node-server@1.19.11(hono@4.12.8))(hono@4.12.8)
-      '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 2.6.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/exporter-metrics-otlp-grpc': 0.213.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/exporter-metrics-otlp-http': 0.213.0(@opentelemetry/api@1.9.0)
@@ -7238,31 +7289,33 @@ snapshots:
       '@opentelemetry/sdk-node': 0.213.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-node': 2.6.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.40.0
-      '@testcontainers/postgresql': 11.12.0
-      '@types/nodemailer': 7.0.11
-      '@types/pg': 8.18.0
       bullmq: 5.71.0
-      drizzle-kit: 0.31.9
-      drizzle-orm: 0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.18.0)(pg@8.20.0)(postgres@3.4.8)
-      ejs: 5.0.1
       hono: 4.12.8
       ioredis: 5.10.0
       memjs: 1.3.2
-      nodemailer: 8.0.2
       openapi3-ts: 4.5.0
-      pg: 8.20.0
       pino: 10.3.1
-      react: 19.2.4
       reflect-metadata: 0.2.2
+      yaml: 2.8.2
+      zod: 4.3.6
+    optionalDependencies:
+      '@hono/node-ws': 1.3.0(@hono/node-server@1.19.11(hono@4.12.8))(hono@4.12.8)
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/instrumentation-http': 0.213.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/instrumentation-undici': 0.23.0(@opentelemetry/api@1.9.0)
+      '@testcontainers/postgresql': 11.12.0
+      '@types/nodemailer': 7.0.11
+      '@types/pg': 8.18.0
+      drizzle-kit: 0.31.9
+      drizzle-orm: 0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.18.0)(pg@8.20.0)(postgres@3.4.8)
+      ejs: 5.0.1
+      nodemailer: 8.0.2
+      pg: 8.20.0
+      react: 19.2.4
       resend: 6.9.3
       testcontainers: 11.12.0
       vitest: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(jsdom@29.0.0)(vite@8.0.0(@types/node@24.12.0)(esbuild@0.25.12)(jiti@2.6.1)(yaml@2.8.2))
       ws: 8.19.0
-      yaml: 2.8.2
-      zod: 4.3.6
-    optionalDependencies:
-      '@opentelemetry/instrumentation-http': 0.213.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-undici': 0.23.0(@opentelemetry/api@1.9.0)
     transitivePeerDependencies:
       - aws-crt
       - supports-color
@@ -7736,7 +7789,8 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@stablelib/base64@1.0.1': {}
+  '@stablelib/base64@1.0.1':
+    optional: true
 
   '@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6)':
     dependencies:
@@ -7901,6 +7955,7 @@ snapshots:
   '@types/nodemailer@7.0.11':
     dependencies:
       '@types/node': 24.12.0
+    optional: true
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -7909,6 +7964,7 @@ snapshots:
       '@types/node': 24.12.0
       pg-protocol: 1.13.0
       pg-types: 2.2.0
+    optional: true
 
   '@types/qs@6.15.0': {}
 
@@ -8280,6 +8336,10 @@ snapshots:
   async-function@1.0.0: {}
 
   async-lock@1.4.1: {}
+
+  async-mutex@0.5.0:
+    dependencies:
+      tslib: 2.8.1
 
   async@3.2.6: {}
 
@@ -8801,7 +8861,8 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  ejs@5.0.1: {}
+  ejs@5.0.1:
+    optional: true
 
   emoji-regex@10.6.0: {}
 
@@ -9287,7 +9348,8 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
-  fast-sha256@1.3.0: {}
+  fast-sha256@1.3.0:
+    optional: true
 
   fast-uri@3.1.0: {}
 
@@ -10287,7 +10349,8 @@ snapshots:
       detect-libc: 2.1.2
     optional: true
 
-  nodemailer@8.0.2: {}
+  nodemailer@8.0.2:
+    optional: true
 
   normalize-package-data@6.0.2:
     dependencies:
@@ -10591,7 +10654,8 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
-  postal-mime@2.7.3: {}
+  postal-mime@2.7.3:
+    optional: true
 
   postcss@8.5.8:
     dependencies:
@@ -10718,7 +10782,8 @@ snapshots:
 
   react-is@16.13.1: {}
 
-  react@19.2.4: {}
+  react@19.2.4:
+    optional: true
 
   read-package-up@11.0.0:
     dependencies:
@@ -10835,6 +10900,7 @@ snapshots:
     dependencies:
       postal-mime: 2.7.3
       svix: 1.84.1
+    optional: true
 
   resolve-from@4.0.0: {}
 
@@ -11157,6 +11223,7 @@ snapshots:
     dependencies:
       '@stablelib/base64': 1.0.1
       fast-sha256: 1.3.0
+    optional: true
 
   statuses@2.0.2: {}
 
@@ -11308,6 +11375,7 @@ snapshots:
     dependencies:
       standardwebhooks: 1.0.0
       uuid: 10.0.0
+    optional: true
 
   symbol-tree@3.2.4:
     optional: true

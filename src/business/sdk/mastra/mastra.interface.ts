@@ -1,6 +1,7 @@
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { Agent } from '@mastra/core/agent';
 import type { MastraMemory } from '@mastra/core/memory';
+import type { PgVector } from '@mastra/pg';
 
 /** Result returned by an agent after generating a response. */
 export interface AgentResponse {
@@ -116,3 +117,43 @@ export const MASTRA_CORE_AGENT = createToken<Agent>('MASTRA_CORE_AGENT');
 
 /** DI token for the raw Mastra core MastraMemory instance — provided by the downstream app. */
 export const MASTRA_CORE_MEMORY = createToken<MastraMemory>('MASTRA_CORE_MEMORY');
+
+/** Abstraction over a Mastra vector store for RAG write-path operations. */
+export interface IMastraRag {
+  /**
+   * Create a vector index if it does not already exist (idempotent).
+   * @param indexName - The name of the vector index (typically a scope ID).
+   * @param dimension - The embedding dimension (e.g. 1536 for text-embedding-3-small).
+   * @throws {MastraAdapterError} When the underlying PgVector call fails.
+   */
+  createIndex(indexName: string, dimension: number): Promise<void>;
+
+  /**
+   * Upsert vectors with metadata into the specified index.
+   * @param indexName - The target index name.
+   * @param vectors - The embedding vectors to store.
+   * @param metadata - Metadata for each vector (must match vectors array length).
+   * @returns The number of vectors submitted.
+   * @throws {MastraAdapterError} When the underlying PgVector call fails.
+   */
+  upsert(
+    indexName: string,
+    vectors: number[][],
+    metadata: Record<string, unknown>[],
+  ): Promise<number>;
+
+  /**
+   * Delete vectors matching the metadata filter from the specified index.
+   * @param indexName - The target index name.
+   * @param filter - Metadata filter to match vectors for deletion.
+   * @returns The number of vectors deleted.
+   * @throws {MastraAdapterError} When the underlying PgVector call fails.
+   */
+  delete(indexName: string, filter: Record<string, unknown>): Promise<number>;
+}
+
+/** DI token for the application-level Mastra RAG adapter — bound by the Mastra SDK module. */
+export const MASTRA_RAG = createToken<IMastraRag>('MASTRA_RAG');
+
+/** DI token for the raw PgVector instance — provided by the downstream app. */
+export const MASTRA_CORE_RAG = createToken<PgVector>('MASTRA_CORE_RAG');

@@ -300,6 +300,7 @@
     "@commitlint/cli": "^20.4.4",
     "@commitlint/config-conventional": "^20.4.4",
     "@mastra/core": "^1.0.0",
+    "@mastra/pg": "^1.8.0",
     "@sanamyvn/eslint-config": "^2.1.0",
     "@sanamyvn/foundation": "^1.12.2",
     "@sanamyvn/typescript-config": "^2.0.0",
