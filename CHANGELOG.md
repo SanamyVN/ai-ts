@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/SanamyVN/ai-ts/compare/v1.0.0...v1.0.1) (2026-03-16)
+
+### Bug Fixes
+
+* type prompt service mock factory for TypeScript compatibility ([bb1b17e](https://github.com/SanamyVN/ai-ts/commit/bb1b17ee669b3d8dccfd663e1b0b867f371e5da3))
+
 ## 1.0.0 (2026-03-16)
 
 ### Features
