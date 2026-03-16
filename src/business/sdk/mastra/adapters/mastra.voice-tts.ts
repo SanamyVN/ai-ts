@@ -16,6 +16,7 @@ export class MastraVoiceTtsAdapter implements IMastraVoiceTts {
   async textToSpeech(
     input: string | NodeJS.ReadableStream,
     options?: SpeakOptions,
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   ): Promise<NodeJS.ReadableStream | void> {
     try {
       return await this.voice.speak(input, options);
@@ -24,7 +25,7 @@ export class MastraVoiceTtsAdapter implements IMastraVoiceTts {
     }
   }
 
-  async getSpeakers(): Promise<Array<{ voiceId: string; [key: string]: unknown }>> {
+  async getSpeakers(): Promise<{ voiceId: string; [key: string]: unknown }[]> {
     try {
       return await this.voice.getSpeakers();
     } catch (error) {

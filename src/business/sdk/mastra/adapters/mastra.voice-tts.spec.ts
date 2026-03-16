@@ -17,11 +17,13 @@ describe('MastraVoiceTtsAdapter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockVoice = createMockVoice();
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     adapter = new MastraVoiceTtsAdapter(mockVoice as never);
   });
 
   describe('textToSpeech', () => {
     it('delegates to voice.speak and returns the audio stream', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const audioStream = new Readable({ read() {} });
       mockVoice.speak.mockResolvedValue(audioStream);
 

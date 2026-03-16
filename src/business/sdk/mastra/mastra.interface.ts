@@ -167,9 +167,7 @@ export interface SpeakOptions {
   readonly [key: string]: unknown;
 }
 
-export interface VoiceSessionOptions {
-  readonly [key: string]: unknown;
-}
+export type VoiceSessionOptions = Record<string, unknown>;
 
 export type VoiceEventCallback = (data: unknown) => void;
 
@@ -187,6 +185,7 @@ export interface IMastraVoiceTts {
   textToSpeech(
     input: string | NodeJS.ReadableStream,
     options?: SpeakOptions,
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   ): Promise<NodeJS.ReadableStream | void>;
 
   /**
@@ -194,7 +193,7 @@ export interface IMastraVoiceTts {
    * @returns Array of available voice IDs and metadata.
    * @throws {MastraAdapterError} When the underlying Mastra call fails.
    */
-  getSpeakers(): Promise<Array<{ voiceId: string; [key: string]: unknown }>>;
+  getSpeakers(): Promise<{ voiceId: string; [key: string]: unknown }[]>;
 }
 
 // ── STT Interface ──
@@ -211,6 +210,7 @@ export interface IMastraVoiceStt {
   speechToText(
     audioStream: NodeJS.ReadableStream,
     options?: Record<string, unknown>,
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   ): Promise<string | NodeJS.ReadableStream | void>;
 
   /**
