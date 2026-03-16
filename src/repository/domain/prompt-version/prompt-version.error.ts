@@ -6,6 +6,7 @@ export class PromptVersionRepositoryError extends Error {
   }
 }
 
+/** Thrown when an operation targets a prompt version ID that does not exist. */
 export class PromptVersionNotFoundRepoError extends PromptVersionRepositoryError {
   constructor(
     public readonly identifier: string,
@@ -15,6 +16,7 @@ export class PromptVersionNotFoundRepoError extends PromptVersionRepositoryError
   }
 }
 
+/** Type guard for {@link PromptVersionNotFoundRepoError}. */
 export function isPromptVersionNotFoundRepoError(
   error: unknown,
 ): error is PromptVersionNotFoundRepoError {
