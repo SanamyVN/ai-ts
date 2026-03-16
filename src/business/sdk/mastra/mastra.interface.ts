@@ -146,7 +146,8 @@ export interface IMastraRag {
    * Delete vectors matching the metadata filter from the specified index.
    * @param indexName - The target index name.
    * @param filter - Metadata filter to match vectors for deletion.
-   * @returns The number of vectors deleted.
+   * @returns The number of vectors deleted. Note: the current PgVector implementation
+   *   returns `void`, so this always resolves to `0`. Callers should not rely on the count.
    * @throws {MastraAdapterError} When the underlying PgVector call fails.
    */
   delete(indexName: string, filter: Record<string, unknown>): Promise<number>;
