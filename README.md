@@ -10,80 +10,38 @@ Shared AI primitives — prompt registry, conversation engine, session lifecycle
 - **3-layer architecture** — repository → business → app, with cross-domain communication via the mediator pattern
 - **Deployment flexibility** — each domain has local and remote mediator adapters; swap `forMonolith()` to `forStandalone()` with zero code changes in the business layer
 
+## Documentation
+
+See the [full documentation](docs/README.md) for guides, API reference, and examples.
+
+| Category | Guides |
+|----------|--------|
+| **Start Here** | [Getting Started](docs/getting-started.md), [Integration Guide](docs/integration.md) |
+| **Prompt** | [Setup](docs/prompt/setup.md), [Usage](docs/prompt/usage.md), [Endpoints](docs/prompt/endpoints.md) |
+| **Session** | [Setup](docs/session/setup.md), [Usage](docs/session/usage.md), [Endpoints](docs/session/endpoints.md) |
+| **Conversation** | [Setup](docs/conversation/setup.md), [Usage](docs/conversation/usage.md), [Endpoints](docs/conversation/endpoints.md) |
+| **Reference** | [Configuration](docs/configuration.md), [Customization](docs/customization.md), [Testing](docs/testing.md) |
+
 ## Install
 
 ```bash
 pnpm add @sanamyvn/ai-ts
-```
-
-Peer dependencies:
-
-```bash
-pnpm add @sanamyvn/foundation   # ^1.12.0
-pnpm add @mastra/core           # ^1.0.0
-pnpm add drizzle-orm            # >=0.45.1
-pnpm add zod                    # ^4.0.0
+pnpm add @sanamyvn/foundation @mastra/core drizzle-orm zod
 ```
 
 ## Quick Start
 
 ```typescript
-import { Module } from '@sanamyvn/foundation/di/node/module';
-import { aiRepoProviders } from '@sanamyvn/ai-ts/repository/providers';
-import { aiBusinessProviders } from '@sanamyvn/ai-ts/business/providers';
-import { aiAppProviders } from '@sanamyvn/ai-ts/app/providers';
-import { PromptAppModule } from '@sanamyvn/ai-ts/app/prompt/module';
-import { SessionAppModule } from '@sanamyvn/ai-ts/app/session/module';
-import { ConversationAppModule } from '@sanamyvn/ai-ts/app/conversation/module';
-
-// Wire the AI package into your app
-class AppModule extends Module {
-  imports = [
-    PromptAppModule.forRoot({
-      middleware: {
-        create: [AuthMiddleware, RoleMiddleware.require('admin')],
-        list: [AuthMiddleware],
-        getBySlug: [AuthMiddleware],
-      },
-    }),
-    SessionAppModule.forRoot({
-      middleware: {
-        list: [AuthMiddleware],
-        get: [AuthMiddleware],
-        end: [AuthMiddleware, SessionOwnerMiddleware],
-      },
-    }),
-    ConversationAppModule.forMonolith({
-      middleware: {
-        create: [AuthMiddleware],
-        sendMessage: [AuthMiddleware],
-        streamMessage: [AuthMiddleware],
-      },
-    }),
-  ];
-}
-```
-
-Use the conversation engine:
-
-```typescript
-// Quiz generation with structured output
-const convo = await conversationEngine.create({
-  promptSlug: 'quiz-generator',
-  promptParams: { topic: 'photosynthesis', difficulty: 'intermediate' },
-  userId: teacherId,
-  purpose: 'quiz-gen',
-});
-const response = await conversationEngine.send(convo.id, 'Generate the quiz');
-
-// IELTS speaking practice
-const convo = await conversationEngine.create({
+const conversation = await conversationEngine.create({
   promptSlug: 'ielts-speaking-examiner',
-  promptParams: { part: 2, topic: 'describe a place you visited' },
-  userId: studentId,
+  promptParams: { part: 2, topic: 'describe a place' },
+  userId: 'student-1',
   purpose: 'ielts-speaking',
 });
+const response = await conversationEngine.send(conversation.id, 'Hello!');
 ```
+
+See [Getting Started](docs/getting-started.md) for the full walkthrough.
 
 ## Architecture
 
@@ -104,11 +62,9 @@ The package wraps [Mastra](https://mastra.ai) for the common pattern (persona + 
 
 ## REST Endpoints
 
-**Prompts** (`/ai/prompts`) — create, list, get, update, version management, activate version
-
-**Sessions** (`/ai/sessions`) — list, get, messages, transcript export, end
-
-**Conversations** (`/ai/conversations`) — create, send message, stream message
+- [Prompt endpoints](docs/prompt/endpoints.md) (`/ai/prompts`) — create, list, get, update, version management
+- [Session endpoints](docs/session/endpoints.md) (`/ai/sessions`) — list, get, messages, transcript export, end
+- [Conversation endpoints](docs/conversation/endpoints.md) (`/ai/conversations`) — create, send message, stream message
 
 ## Tech Stack
 
