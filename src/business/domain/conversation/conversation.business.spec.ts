@@ -19,6 +19,8 @@ const DEFAULT_CONFIG: AiConfig = {
   defaultModel: 'anthropic/claude-sonnet-4-20250514',
   prompt: { maxVersions: 50 },
   session: { transcriptPageSize: 100 },
+  embeddingModel: 'openai/text-embedding-3-small',
+  embeddingDimension: 1536,
 };
 
 const RESOLVED_PROMPT = { slug: 'greet', version: 1, text: 'Hello {{name}}' };

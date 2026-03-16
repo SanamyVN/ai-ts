@@ -14,6 +14,8 @@ export const aiConfigSchema = z.object({
   defaultModel: z.string().default('anthropic/claude-sonnet-4-20250514'),
   prompt: promptConfigSchema.default({ maxVersions: 50 }),
   session: sessionConfigSchema.default({ transcriptPageSize: 100 }),
+  embeddingModel: z.string().default('openai/text-embedding-3-small'),
+  embeddingDimension: z.number().int().positive().default(1536),
 });
 
 export type AiConfig = z.infer<typeof aiConfigSchema>;

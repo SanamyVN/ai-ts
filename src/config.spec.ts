@@ -7,6 +7,8 @@ describe('aiConfigSchema', () => {
     expect(config.defaultModel).toBe('anthropic/claude-sonnet-4-20250514');
     expect(config.prompt.maxVersions).toBe(50);
     expect(config.session.transcriptPageSize).toBe(100);
+    expect(config.embeddingModel).toBe('openai/text-embedding-3-small');
+    expect(config.embeddingDimension).toBe(1536);
   });
 
   it('accepts custom model', () => {
