@@ -1,3 +1,24 @@
+## [1.2.0](https://github.com/SanamyVN/ai-ts/compare/v1.1.0...v1.2.0) (2026-03-16)
+
+### Features
+
+* **voice:** add app layer DTOs, errors, tokens, and mapper ([cc17629](https://github.com/SanamyVN/ai-ts/commit/cc176299fc6bdfc6a6b84d34cec8a216c38e6687))
+* **voice:** add app layer service, router, providers, and module ([87bf02f](https://github.com/SanamyVN/ai-ts/commit/87bf02fd577e8c67e4e5418ecbc75fca44435e34))
+* **voice:** add IMastraVoiceTts, IMastraVoiceStt, IMastraVoiceRealtime interfaces and DI tokens ([8ed7d52](https://github.com/SanamyVN/ai-ts/commit/8ed7d52c385f7b2c176bf08eeda6f0be64c8e3a8))
+* **voice:** add MastraVoiceRealtimeAdapter with tests ([5604d7b](https://github.com/SanamyVN/ai-ts/commit/5604d7b4cd25235463b8860aa9b11d73a43720ca))
+* **voice:** add MastraVoiceSttAdapter with tests ([2b90b62](https://github.com/SanamyVN/ai-ts/commit/2b90b62a553c952bd9eacaed43085d2076d48f0b))
+* **voice:** add MastraVoiceTtsAdapter with tests ([ae79a4e](https://github.com/SanamyVN/ai-ts/commit/ae79a4e64c5b3ac96edbf1416436be64edeeeda1))
+* **voice:** add voice business providers, testing utilities, and client contracts ([6a6f046](https://github.com/SanamyVN/ai-ts/commit/6a6f0463e093df08fbc4e8e514bf7b1c33097524))
+* **voice:** add voice domain models and error classes ([78a955b](https://github.com/SanamyVN/ai-ts/commit/78a955b35cc1f313a6d4d11b01252a2db4839b64))
+* **voice:** add voice mediator clients (local and remote) ([970b640](https://github.com/SanamyVN/ai-ts/commit/970b64014b0c86a1d3a2dd2013a6b5a03048c90f))
+* **voice:** add VoiceBusiness with tests ([9dd4238](https://github.com/SanamyVN/ai-ts/commit/9dd423811f894009b5fb2258458a799ec79f72cc))
+* **voice:** register voice adapters in providers and add mock factories ([254a100](https://github.com/SanamyVN/ai-ts/commit/254a10028f2569a5c0484f15cd71285f9bf193ac))
+
+### Bug Fixes
+
+* **voice:** resolve lint errors in voice interfaces and TTS adapter ([e0c85a5](https://github.com/SanamyVN/ai-ts/commit/e0c85a5e081a8728e49e94fab7f089221f925c21))
+* **voice:** restore voice package exports from main ([970e4a2](https://github.com/SanamyVN/ai-ts/commit/970e4a2c8b2d7ae5ea062894a22b06b2acafaf5d))
+
 ## [1.1.0](https://github.com/SanamyVN/ai-ts/compare/v1.0.1...v1.1.0) (2026-03-16)
 
 ### Features
