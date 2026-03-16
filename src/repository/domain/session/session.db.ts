@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
-import type { AiSchema } from '@/shared/schema.js';
+import type { AiRequiredSchema } from '@/shared/schema.js';
 import { AI_DB } from '@/shared/tokens.js';
 import { aiSessions } from './session.schema.js';
 import type { ISessionRepository, SessionRepoFilter } from './session.interface.js';
@@ -10,7 +10,7 @@ import { SessionNotFoundRepoError, SessionRepositoryError } from './session.erro
 
 @Injectable()
 export class SessionDrizzleRepository implements ISessionRepository {
-  constructor(@Inject(AI_DB) private readonly db: PostgresClient<AiSchema>) {}
+  constructor(@Inject(AI_DB) private readonly db: PostgresClient<AiRequiredSchema>) {}
 
   async create(data: NewSessionRecord): Promise<SessionRecord> {
     const [record] = await this.db.db.insert(aiSessions).values(data).returning();

@@ -1,7 +1,7 @@
 import { sql, eq, and } from 'drizzle-orm';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
-import type { AiSchema } from '@/shared/schema.js';
+import type { AiRequiredSchema } from '@/shared/schema.js';
 import { AI_DB } from '@/shared/tokens.js';
 import { aiPromptVersions } from './prompt-version.schema.js';
 import type { IPromptVersionRepository } from './prompt-version.interface.js';
@@ -13,7 +13,7 @@ import {
 
 @Injectable()
 export class PromptVersionDrizzleRepository implements IPromptVersionRepository {
-  constructor(@Inject(AI_DB) private readonly db: PostgresClient<AiSchema>) {}
+  constructor(@Inject(AI_DB) private readonly db: PostgresClient<AiRequiredSchema>) {}
 
   async create(data: NewPromptVersionRecord): Promise<PromptVersionRecord> {
     const [record] = await this.db.db.insert(aiPromptVersions).values(data).returning();

@@ -1,6 +1,6 @@
 import { pg } from './fixture.js';
 import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
-import type { AiSchema } from '@/shared/schema.js';
+import type { AiRequiredSchema } from '@/shared/schema.js';
 import { PromptDrizzleRepository } from '@/repository/domain/prompt/prompt.db.js';
 import { PromptVersionDrizzleRepository } from '@/repository/domain/prompt-version/prompt-version.db.js';
 import { SessionDrizzleRepository } from '@/repository/domain/session/session.db.js';
@@ -28,10 +28,10 @@ export interface AiTestContext {
 
 /**
  * Wraps the raw Drizzle instance from the test fixture in a minimal
- * `PostgresClient<AiSchema>` shim. Repos access Drizzle via `.db`,
+ * `PostgresClient<AiRequiredSchema>` shim. Repos access Drizzle via `.db`,
  * so this satisfies their constructor signature without a full DI container.
  */
-function wrapAsPostgresClient(): PostgresClient<AiSchema> {
+function wrapAsPostgresClient(): PostgresClient<AiRequiredSchema> {
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- test shim for DI-free construction
   return {
     db: pg.db,
@@ -40,7 +40,7 @@ function wrapAsPostgresClient(): PostgresClient<AiSchema> {
     // eslint-disable-next-line @typescript-eslint/no-empty-function -- no-op lifecycle for tests
     disconnect: async () => {},
     isHealthy: async () => true,
-  } as PostgresClient<AiSchema>;
+  } as PostgresClient<AiRequiredSchema>;
 }
 
 /**
