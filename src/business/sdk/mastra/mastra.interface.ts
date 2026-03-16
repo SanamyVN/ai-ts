@@ -2,6 +2,7 @@ import { createToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { Agent } from '@mastra/core/agent';
 import type { MastraMemory } from '@mastra/core/memory';
 import type { PgVector } from '@mastra/pg';
+import type { MastraVoice } from '@mastra/core/voice';
 
 /** Result returned by an agent after generating a response. */
 export interface AgentResponse {
@@ -158,3 +159,103 @@ export const MASTRA_RAG = createToken<IMastraRag>('MASTRA_RAG');
 
 /** DI token for the raw PgVector instance — provided by the downstream app. */
 export const MASTRA_CORE_RAG = createToken<PgVector>('MASTRA_CORE_RAG');
+
+// ── Voice Types ──
+
+export interface SpeakOptions {
+  readonly speaker?: string;
+  readonly [key: string]: unknown;
+}
+
+export interface VoiceSessionOptions {
+  readonly [key: string]: unknown;
+}
+
+export type VoiceEventCallback = (data: unknown) => void;
+
+// ── TTS Interface ──
+
+/** Abstraction over Mastra Voice for text-to-speech operations. */
+export interface IMastraVoiceTts {
+  /**
+   * Convert text to speech.
+   * @param input - Text or text stream to convert.
+   * @param options - Optional speaker and provider-specific options.
+   * @returns Audio stream, or void if the provider emits audio via events.
+   * @throws {MastraAdapterError} When the underlying Mastra call fails.
+   */
+  textToSpeech(
+    input: string | NodeJS.ReadableStream,
+    options?: SpeakOptions,
+  ): Promise<NodeJS.ReadableStream | void>;
+
+  /**
+   * List available voices from the provider.
+   * @returns Array of available voice IDs and metadata.
+   * @throws {MastraAdapterError} When the underlying Mastra call fails.
+   */
+  getSpeakers(): Promise<Array<{ voiceId: string; [key: string]: unknown }>>;
+}
+
+// ── STT Interface ──
+
+/** Abstraction over Mastra Voice for speech-to-text operations. */
+export interface IMastraVoiceStt {
+  /**
+   * Convert speech to text.
+   * @param audioStream - Audio stream to transcribe.
+   * @param options - Provider-specific transcription options.
+   * @returns Transcribed text, a text stream, or void if the provider emits text via events.
+   * @throws {MastraAdapterError} When the underlying Mastra call fails.
+   */
+  speechToText(
+    audioStream: NodeJS.ReadableStream,
+    options?: Record<string, unknown>,
+  ): Promise<string | NodeJS.ReadableStream | void>;
+
+  /**
+   * Check whether the voice provider supports listening (STT).
+   * @throws {MastraAdapterError} When the underlying Mastra call fails.
+   */
+  getListener(): Promise<{ enabled: boolean }>;
+}
+
+// ── Realtime Interface ──
+
+/** Abstraction over Mastra Voice for realtime speech-to-speech session management. */
+export interface IMastraVoiceRealtime {
+  /** Open a realtime voice session (connects to the provider via WebSocket). */
+  openSession(options?: VoiceSessionOptions): Promise<void>;
+  /** Close the realtime voice session. */
+  closeSession(): void;
+  /** Stream audio data to the provider for realtime processing. */
+  sendAudio(audioData: NodeJS.ReadableStream | Int16Array): Promise<void>;
+  /** Send text to the provider (in STS, the provider speaks it via events). */
+  sendText(text: string): Promise<void>;
+  /** Manually trigger the provider to generate a response (for push-to-talk without VAD). */
+  triggerResponse(options?: Record<string, unknown>): Promise<void>;
+  /** Register a listener for voice events (speaker, writing, error, etc.). */
+  onEvent(event: string, callback: VoiceEventCallback): void;
+  /** Remove a voice event listener. */
+  offEvent(event: string, callback: VoiceEventCallback): void;
+  /** Add tools the provider can invoke during a realtime session. */
+  addTools(tools: Record<string, unknown>): void;
+  /** Set system instructions for the realtime session. */
+  addInstructions(instructions: string): void;
+  /** Update provider configuration at runtime. */
+  updateConfig(options: Record<string, unknown>): void;
+}
+
+// ── Voice DI Tokens ──
+
+/** DI token for the application-level Mastra TTS adapter. */
+export const MASTRA_VOICE_TTS = createToken<IMastraVoiceTts>('MASTRA_VOICE_TTS');
+
+/** DI token for the application-level Mastra STT adapter. */
+export const MASTRA_VOICE_STT = createToken<IMastraVoiceStt>('MASTRA_VOICE_STT');
+
+/** DI token for the application-level Mastra Realtime adapter. */
+export const MASTRA_VOICE_REALTIME = createToken<IMastraVoiceRealtime>('MASTRA_VOICE_REALTIME');
+
+/** DI token for the raw Mastra Voice instance — provided by the downstream app. */
+export const MASTRA_CORE_VOICE = createToken<MastraVoice>('MASTRA_CORE_VOICE');
