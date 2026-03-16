@@ -17,19 +17,19 @@ Each product would otherwise build its own prompt management, session tracking, 
 
 Mastra provides the AI runtime. This package provides the application-level primitives Mastra lacks.
 
-| Concern | Owner |
-|---|---|
-| Prompt registry (versioned, parameterized templates) | `@sanamy/ai` |
-| Conversation engine (persona + context + session orchestration) | `@sanamy/ai` |
-| Session lifecycle + metadata (who, why, status) | `@sanamy/ai` |
-| Admin REST APIs (prompt CRUD, session viewing, transcript export) | `@sanamy/ai` |
-| Auth guard interfaces (strategy pattern) | `@sanamy/ai` defines, downstream implements |
-| Thread/message storage | Mastra (direct) |
-| Voice (TTS/STT/real-time) | Mastra (direct) |
-| RAG / context injection | Mastra (direct) |
-| Structured output | Mastra (direct) |
-| Evals / scoring | Mastra (direct) |
-| Model routing / provider switching | Mastra (direct) |
+| Concern                                                           | Owner                                       |
+| ----------------------------------------------------------------- | ------------------------------------------- |
+| Prompt registry (versioned, parameterized templates)              | `@sanamy/ai`                                |
+| Conversation engine (persona + context + session orchestration)   | `@sanamy/ai`                                |
+| Session lifecycle + metadata (who, why, status)                   | `@sanamy/ai`                                |
+| Admin REST APIs (prompt CRUD, session viewing, transcript export) | `@sanamy/ai`                                |
+| Auth guard interfaces (strategy pattern)                          | `@sanamy/ai` defines, downstream implements |
+| Thread/message storage                                            | Mastra (direct)                             |
+| Voice (TTS/STT/real-time)                                         | Mastra (direct)                             |
+| RAG / context injection                                           | Mastra (direct)                             |
+| Structured output                                                 | Mastra (direct)                             |
+| Evals / scoring                                                   | Mastra (direct)                             |
+| Model routing / provider switching                                | Mastra (direct)                             |
 
 Mastra is a third-party dependency wrapped in `business/sdk/mastra/`, the same way `iam-ts` wraps `jose` and `argon2`.
 
@@ -381,8 +381,8 @@ interface ConversationConfig {
   userId: string;
   tenantId?: string;
   purpose: string;
-  model?: string;                    // defaults from config schema
-  outputSchema?: ZodSchema;          // for structured output (quiz JSON, rubric scores)
+  model?: string; // defaults from config schema
+  outputSchema?: ZodSchema; // for structured output (quiz JSON, rubric scores)
 }
 ```
 
@@ -457,33 +457,33 @@ Any domain can be extracted to its own service with a module swap (`forMonolith(
 
 **Prompt management** (`/ai/prompts`):
 
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/ai/prompts` | Create a prompt template |
-| `GET` | `/ai/prompts` | List prompts (filter by tag, search) |
-| `GET` | `/ai/prompts/:slug` | Get prompt with active version |
-| `PUT` | `/ai/prompts/:slug` | Update prompt metadata |
-| `POST` | `/ai/prompts/:slug/versions` | Create a new version |
-| `PUT` | `/ai/prompts/:slug/versions/:id/activate` | Set active version |
-| `GET` | `/ai/prompts/:slug/versions` | List version history |
+| Method | Path                                      | Purpose                              |
+| ------ | ----------------------------------------- | ------------------------------------ |
+| `POST` | `/ai/prompts`                             | Create a prompt template             |
+| `GET`  | `/ai/prompts`                             | List prompts (filter by tag, search) |
+| `GET`  | `/ai/prompts/:slug`                       | Get prompt with active version       |
+| `PUT`  | `/ai/prompts/:slug`                       | Update prompt metadata               |
+| `POST` | `/ai/prompts/:slug/versions`              | Create a new version                 |
+| `PUT`  | `/ai/prompts/:slug/versions/:id/activate` | Set active version                   |
+| `GET`  | `/ai/prompts/:slug/versions`              | List version history                 |
 
 **Session management** (`/ai/sessions`):
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/ai/sessions` | List sessions (filter by user, tenant, purpose, status, date range) |
-| `GET` | `/ai/sessions/:id` | Get session metadata |
-| `GET` | `/ai/sessions/:id/messages` | Get messages (paginated, via Mastra) |
-| `GET` | `/ai/sessions/:id/transcript` | Export transcript (JSON or plain text) |
-| `PUT` | `/ai/sessions/:id/end` | End a session |
+| Method | Path                          | Purpose                                                             |
+| ------ | ----------------------------- | ------------------------------------------------------------------- |
+| `GET`  | `/ai/sessions`                | List sessions (filter by user, tenant, purpose, status, date range) |
+| `GET`  | `/ai/sessions/:id`            | Get session metadata                                                |
+| `GET`  | `/ai/sessions/:id/messages`   | Get messages (paginated, via Mastra)                                |
+| `GET`  | `/ai/sessions/:id/transcript` | Export transcript (JSON or plain text)                              |
+| `PUT`  | `/ai/sessions/:id/end`        | End a session                                                       |
 
 **Conversation** (`/ai/conversations`):
 
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/ai/conversations` | Create conversation (prompt slug + params + mode) |
-| `POST` | `/ai/conversations/:id/messages` | Send a message, get response |
-| `POST` | `/ai/conversations/:id/messages/stream` | Send a message, get SSE-streamed response |
+| Method | Path                                    | Purpose                                           |
+| ------ | --------------------------------------- | ------------------------------------------------- |
+| `POST` | `/ai/conversations`                     | Create conversation (prompt slug + params + mode) |
+| `POST` | `/ai/conversations/:id/messages`        | Send a message, get response                      |
+| `POST` | `/ai/conversations/:id/messages/stream` | Send a message, get SSE-streamed response         |
 
 Prompt and session endpoints serve the admin dashboard. Conversation endpoints are the runtime API downstream apps call.
 
@@ -552,15 +552,18 @@ class PromptRouter implements IRouter {
   ) {}
 
   register(app: IRouterBuilder): void {
-    app.post('/')
+    app
+      .post('/')
       .middleware(...(this.config.middleware.create ?? []))
       .handle(/* ... */);
 
-    app.get('/')
+    app
+      .get('/')
       .middleware(...(this.config.middleware.list ?? []))
       .handle(/* ... */);
 
-    app.put('/:slug')
+    app
+      .put('/:slug')
       .middleware(...(this.config.middleware.update ?? []))
       .handle(/* ... */);
   }
@@ -758,16 +761,16 @@ Mastra and Foundation are peer dependencies. Downstream provides the runtime. `m
 
 ## Decisions
 
-| Decision | Rationale |
-|---|---|
-| Separate package, not a foundation module | AI is application-level infrastructure, not shared library infrastructure. It has its own database tables and REST endpoints. |
-| Build on Mastra, not from scratch | Mastra provides 92 providers, voice, RAG, evals, workflows. No reason to rebuild this. |
-| Don't wrap voice/RAG/evals | Too varied and config-heavy. Wrapping adds friction without value. Downstream uses Mastra directly. |
-| Prompt registry in the database | Teachers need to edit prompts through a UI. Hardcoded strings don't support versioning or rollback. |
-| Session table as Mastra envelope | Mastra threads lack business context (who, why, lifecycle state). A thin table adds it without duplicating message storage. |
-| Mediator for all cross-domain calls | Enables splitting any domain into its own service without code changes. |
+| Decision                                          | Rationale                                                                                                                                                                                                                       |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Separate package, not a foundation module         | AI is application-level infrastructure, not shared library infrastructure. It has its own database tables and REST endpoints.                                                                                                   |
+| Build on Mastra, not from scratch                 | Mastra provides 92 providers, voice, RAG, evals, workflows. No reason to rebuild this.                                                                                                                                          |
+| Don't wrap voice/RAG/evals                        | Too varied and config-heavy. Wrapping adds friction without value. Downstream uses Mastra directly.                                                                                                                             |
+| Prompt registry in the database                   | Teachers need to edit prompts through a UI. Hardcoded strings don't support versioning or rollback.                                                                                                                             |
+| Session table as Mastra envelope                  | Mastra threads lack business context (who, why, lifecycle state). A thin table adds it without duplicating message storage.                                                                                                     |
+| Mediator for all cross-domain calls               | Enables splitting any domain into its own service without code changes.                                                                                                                                                         |
 | Per-route middleware config, not guard interfaces | Each downstream app has different auth systems (iam-ts, Supabase, Clerk). Middleware is how foundation already handles auth. No need for a separate abstraction — `forRoot({ middleware })` config gives per-operation control. |
-| No evaluation storage | Scoring models differ per product (IELTS bands vs teacher rubrics). Each app owns its evaluation domain. |
+| No evaluation storage                             | Scoring models differ per product (IELTS bands vs teacher rubrics). Each app owns its evaluation domain.                                                                                                                        |
 
 ## Out of Scope
 

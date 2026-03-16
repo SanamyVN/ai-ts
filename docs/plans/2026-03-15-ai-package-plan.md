@@ -53,6 +53,7 @@ import type { IMediator } from '@sanamyvn/foundation/mediator';
 ### Task 1: Scaffold package from template
 
 **Files:**
+
 - Copy: `../package-template/` → `../ai/`
 - Modify: `package.json`
 - Create: `CLAUDE.md`
@@ -97,6 +98,7 @@ pnpm add -D @types/mustache
 - [ ] **Step 3: Create CLAUDE.md**
 
 Create `CLAUDE.md` at repo root. Copy the foundation `CLAUDE.md` conventions and adapt for the AI package context. Key additions:
+
 - Reference the spec doc for architecture decisions
 - Note that `@mastra/core` is only imported inside `business/sdk/mastra/`
 - Note that Zod v4 syntax must be used (top-level `z.email()`, `{ error: }` not `{ message: }`, etc.)
@@ -121,6 +123,7 @@ git commit -m "chore: scaffold AI package from template"
 ### Task 2: Shared tokens
 
 **Files:**
+
 - Create: `src/shared/tokens.ts`
 
 **Error convention:** There is no package-wide base error. Each domain layer defines its own base error class that auto-sets `.name` via `new.target.name` and preserves the cause chain. See Task 4 for the pattern.
@@ -151,6 +154,7 @@ git commit -m "feat: add shared DI tokens"
 ### Task 3: Config schema
 
 **Files:**
+
 - Create: `src/config.ts`
 - Create: `src/config.spec.ts`
 
@@ -226,6 +230,7 @@ git commit -m "feat: add AI config schema with defaults"
 ### Task 4: Prompt repository
 
 **Files:**
+
 - Create: `src/repository/domain/prompt/prompt.schema.ts`
 - Create: `src/repository/domain/prompt/prompt.model.ts`
 - Create: `src/repository/domain/prompt/prompt.interface.ts`
@@ -476,7 +481,9 @@ import { aiPrompts } from '../prompt/prompt.schema.js';
 
 export const aiPromptVersions = pgTable('ai_prompt_versions', {
   id: uuid('id').defaultRandom().primaryKey(),
-  promptId: uuid('prompt_id').notNull().references(() => aiPrompts.id, { onDelete: 'cascade' }),
+  promptId: uuid('prompt_id')
+    .notNull()
+    .references(() => aiPrompts.id, { onDelete: 'cascade' }),
   version: integer('version').notNull(),
   template: text('template').notNull(),
   isActive: boolean('is_active').notNull().default(false),
@@ -489,6 +496,7 @@ export const aiPromptVersions = pgTable('ai_prompt_versions', {
 Follow the exact pattern from Task 4. Key differences:
 
 **Interface:**
+
 ```typescript
 export interface IPromptVersionRepository {
   create(data: NewPromptVersionRecord): Promise<PromptVersionRecord>;
@@ -545,6 +553,7 @@ export const aiSessions = pgTable('ai_sessions', {
 Follow Task 4 pattern. Key differences:
 
 **Interface:**
+
 ```typescript
 export interface ISessionRepository {
   create(data: NewSessionRecord): Promise<SessionRecord>;
@@ -576,6 +585,7 @@ git commit -m "feat: add session repository"
 ### Task 7: Repository providers bundle
 
 **Files:**
+
 - Create: `src/repository/providers.ts`
 
 - [ ] **Step 1: Create ProviderBundle type**
@@ -625,6 +635,7 @@ git commit -m "feat: add repository layer provider bundle"
 ### Task 8: Mastra interfaces
 
 **Files:**
+
 - Create: `src/business/sdk/mastra/mastra.interface.ts`
 - Create: `src/business/sdk/mastra/mastra.error.ts`
 - Create: `src/business/sdk/mastra/mastra.error.spec.ts`
@@ -756,6 +767,7 @@ git commit -m "feat: add Mastra adapter interfaces and error"
 ### Task 9: Mastra adapter implementations
 
 **Files:**
+
 - Create: `src/business/sdk/mastra/adapters/mastra.agent.ts`
 - Create: `src/business/sdk/mastra/adapters/mastra.memory.ts`
 - Create: `src/business/sdk/mastra/mastra.testing.ts`
@@ -768,7 +780,12 @@ This wraps `@mastra/core` Agent. All Mastra exceptions caught at this boundary.
 ```typescript
 // src/business/sdk/mastra/adapters/mastra.agent.ts
 import type { Agent } from '@mastra/core';
-import type { IMastraAgent, AgentResponse, StreamChunk, GenerateOptions } from '../mastra.interface.js';
+import type {
+  IMastraAgent,
+  AgentResponse,
+  StreamChunk,
+  GenerateOptions,
+} from '../mastra.interface.js';
 import { MastraAdapterError } from '../mastra.error.js';
 
 export class MastraAgentAdapter implements IMastraAgent {
@@ -813,7 +830,13 @@ export class MastraAgentAdapter implements IMastraAgent {
 ```typescript
 // src/business/sdk/mastra/adapters/mastra.memory.ts
 import type { MastraMemory } from '@mastra/core';
-import type { IMastraMemory, Thread, MessageList, Pagination, ThreadFilter } from '../mastra.interface.js';
+import type {
+  IMastraMemory,
+  Thread,
+  MessageList,
+  Pagination,
+  ThreadFilter,
+} from '../mastra.interface.js';
 import { MastraAdapterError } from '../mastra.error.js';
 
 export class MastraMemoryAdapter implements IMastraMemory {
@@ -908,10 +931,7 @@ import { MastraMemoryAdapter } from './adapters/mastra.memory.js';
 
 export function mastraProviders() {
   return {
-    providers: [
-      bind(MASTRA_AGENT, MastraAgentAdapter),
-      bind(MASTRA_MEMORY, MastraMemoryAdapter),
-    ],
+    providers: [bind(MASTRA_AGENT, MastraAgentAdapter), bind(MASTRA_MEMORY, MastraMemoryAdapter)],
     exports: [MASTRA_AGENT, MASTRA_MEMORY],
   };
 }
@@ -931,6 +951,7 @@ git commit -m "feat: add Mastra agent and memory adapters"
 ### Task 10: Prompt business errors and models
 
 **Files:**
+
 - Create: `src/business/domain/prompt/prompt.error.ts`
 - Create: `src/business/domain/prompt/prompt.model.ts`
 
@@ -948,31 +969,47 @@ export class PromptError extends Error {
 }
 
 export class PromptNotFoundError extends PromptError {
-  constructor(public readonly identifier: string, cause?: unknown) {
+  constructor(
+    public readonly identifier: string,
+    cause?: unknown,
+  ) {
     super(`Prompt not found: ${identifier}`, { cause });
   }
 }
 
 export class PromptAlreadyExistsError extends PromptError {
-  constructor(public readonly slug: string, cause?: unknown) {
+  constructor(
+    public readonly slug: string,
+    cause?: unknown,
+  ) {
     super(`Prompt already exists: ${slug}`, { cause });
   }
 }
 
 export class PromptVersionNotFoundError extends PromptError {
-  constructor(public readonly identifier: string, cause?: unknown) {
+  constructor(
+    public readonly identifier: string,
+    cause?: unknown,
+  ) {
     super(`Prompt version not found: ${identifier}`, { cause });
   }
 }
 
 export class InvalidPromptParametersError extends PromptError {
-  constructor(public readonly slug: string, public readonly details: string, cause?: unknown) {
+  constructor(
+    public readonly slug: string,
+    public readonly details: string,
+    cause?: unknown,
+  ) {
     super(`Invalid parameters for prompt "${slug}": ${details}`, { cause });
   }
 }
 
 export class PromptRenderError extends PromptError {
-  constructor(public readonly slug: string, cause?: unknown) {
+  constructor(
+    public readonly slug: string,
+    cause?: unknown,
+  ) {
     super(`Failed to render prompt template "${slug}"`, { cause });
   }
 }
@@ -1050,6 +1087,7 @@ git commit -m "feat: add prompt business errors and models"
 ### Task 11: Prompt service interface and implementation
 
 **Files:**
+
 - Create: `src/business/domain/prompt/prompt.interface.ts`
 - Create: `src/business/domain/prompt/prompt.business.ts`
 - Create: `src/business/domain/prompt/prompt.business.spec.ts`
@@ -1063,8 +1101,13 @@ git commit -m "feat: add prompt business errors and models"
 // src/business/domain/prompt/prompt.interface.ts
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
 import type {
-  PromptTemplate, PromptVersion, ResolvedPrompt,
-  CreatePromptInput, UpdatePromptInput, CreateVersionInput, PromptFilter,
+  PromptTemplate,
+  PromptVersion,
+  ResolvedPrompt,
+  CreatePromptInput,
+  UpdatePromptInput,
+  CreateVersionInput,
+  PromptFilter,
 } from './prompt.model.js';
 
 export interface IPromptService {
@@ -1091,14 +1134,19 @@ import type { PromptRecord } from '@/repository/domain/prompt/prompt.model.js';
 import type { PromptVersionRecord } from '@/repository/domain/prompt-version/prompt-version.model.js';
 import type { PromptTemplate, PromptVersion } from './prompt.model.js';
 
-export function toPromptTemplateFromRecord(record: PromptRecord, activeVersion?: PromptVersionRecord): PromptTemplate {
+export function toPromptTemplateFromRecord(
+  record: PromptRecord,
+  activeVersion?: PromptVersionRecord,
+): PromptTemplate {
   return {
     id: record.id,
     name: record.name,
     slug: record.slug,
     parameterSchema: record.parameterSchema,
     metadata: record.metadata,
-    ...(activeVersion !== undefined ? { activeVersion: toPromptVersionFromRecord(activeVersion) } : {}),
+    ...(activeVersion !== undefined
+      ? { activeVersion: toPromptVersionFromRecord(activeVersion) }
+      : {}),
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   };
@@ -1141,8 +1189,23 @@ describe('PromptService', () => {
 
   describe('getBySlug', () => {
     it('returns prompt with active version', async () => {
-      const record = { id: '1', name: 'Test', slug: 'test', parameterSchema: null, metadata: null, createdAt: new Date(), updatedAt: new Date() };
-      const version = { id: 'v1', promptId: '1', version: 1, template: 'Hello {{name}}', isActive: true, createdAt: new Date() };
+      const record = {
+        id: '1',
+        name: 'Test',
+        slug: 'test',
+        parameterSchema: null,
+        metadata: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const version = {
+        id: 'v1',
+        promptId: '1',
+        version: 1,
+        template: 'Hello {{name}}',
+        isActive: true,
+        createdAt: new Date(),
+      };
       promptRepo.findBySlug.mockResolvedValue(record);
       versionRepo.findActiveByPromptId.mockResolvedValue(version);
 
@@ -1160,14 +1223,31 @@ describe('PromptService', () => {
   describe('create', () => {
     it('wraps DuplicatePromptError into PromptAlreadyExistsError', async () => {
       promptRepo.create.mockRejectedValue(new DuplicatePromptError('test'));
-      await expect(service.create({ name: 'Test', slug: 'test' })).rejects.toThrow(PromptAlreadyExistsError);
+      await expect(service.create({ name: 'Test', slug: 'test' })).rejects.toThrow(
+        PromptAlreadyExistsError,
+      );
     });
   });
 
   describe('resolve', () => {
     it('renders template with parameters', async () => {
-      const record = { id: '1', name: 'Test', slug: 'test', parameterSchema: { name: { type: 'string' } }, metadata: null, createdAt: new Date(), updatedAt: new Date() };
-      const version = { id: 'v1', promptId: '1', version: 1, template: 'Hello {{name}}, welcome!', isActive: true, createdAt: new Date() };
+      const record = {
+        id: '1',
+        name: 'Test',
+        slug: 'test',
+        parameterSchema: { name: { type: 'string' } },
+        metadata: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const version = {
+        id: 'v1',
+        promptId: '1',
+        version: 1,
+        template: 'Hello {{name}}, welcome!',
+        isActive: true,
+        createdAt: new Date(),
+      };
       promptRepo.findBySlug.mockResolvedValue(record);
       versionRepo.findActiveByPromptId.mockResolvedValue(version);
 
@@ -1177,7 +1257,15 @@ describe('PromptService', () => {
     });
 
     it('throws when no active version exists', async () => {
-      const record = { id: '1', name: 'Test', slug: 'test', parameterSchema: null, metadata: null, createdAt: new Date(), updatedAt: new Date() };
+      const record = {
+        id: '1',
+        name: 'Test',
+        slug: 'test',
+        parameterSchema: null,
+        metadata: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
       promptRepo.findBySlug.mockResolvedValue(record);
       versionRepo.findActiveByPromptId.mockResolvedValue(undefined);
 
@@ -1200,10 +1288,20 @@ import { isDuplicatePromptError } from '@/repository/domain/prompt/prompt.error.
 import type { IPromptVersionRepository } from '@/repository/domain/prompt-version/prompt-version.interface.js';
 import type { IPromptService } from './prompt.interface.js';
 import type {
-  PromptTemplate, PromptVersion, ResolvedPrompt,
-  CreatePromptInput, UpdatePromptInput, CreateVersionInput, PromptFilter,
+  PromptTemplate,
+  PromptVersion,
+  ResolvedPrompt,
+  CreatePromptInput,
+  UpdatePromptInput,
+  CreateVersionInput,
+  PromptFilter,
 } from './prompt.model.js';
-import { PromptNotFoundError, PromptAlreadyExistsError, PromptRenderError, InvalidPromptParametersError } from './prompt.error.js';
+import {
+  PromptNotFoundError,
+  PromptAlreadyExistsError,
+  PromptRenderError,
+  InvalidPromptParametersError,
+} from './prompt.error.js';
 import { toPromptTemplateFromRecord, toPromptVersionFromRecord } from './prompt.mapper.js';
 
 export class PromptService implements IPromptService {
@@ -1308,10 +1406,16 @@ export class PromptService implements IPromptService {
       }
       if (fieldDef.type === 'number' && typeof value === 'number') {
         if (fieldDef.min !== undefined && value < fieldDef.min) {
-          throw new InvalidPromptParametersError(slug, `Parameter "${key}" must be >= ${fieldDef.min}`);
+          throw new InvalidPromptParametersError(
+            slug,
+            `Parameter "${key}" must be >= ${fieldDef.min}`,
+          );
         }
         if (fieldDef.max !== undefined && value > fieldDef.max) {
-          throw new InvalidPromptParametersError(slug, `Parameter "${key}" must be <= ${fieldDef.max}`);
+          throw new InvalidPromptParametersError(
+            slug,
+            `Parameter "${key}" must be <= ${fieldDef.max}`,
+          );
         }
       }
     }
@@ -1368,6 +1472,7 @@ git commit -m "feat: add prompt business service with versioning and template re
 ### Task 12: Prompt mediator contracts
 
 **Files:**
+
 - Create: `src/business/domain/prompt/client/schemas.ts`
 - Create: `src/business/domain/prompt/client/queries.ts`
 - Create: `src/business/domain/prompt/client/errors.ts`
@@ -1385,12 +1490,14 @@ export const promptClientModelSchema = z.object({
   slug: z.string(),
   parameterSchema: z.record(z.string(), z.unknown()).nullable(),
   metadata: z.record(z.string(), z.unknown()).nullable(),
-  activeVersion: z.object({
-    id: z.string(),
-    version: z.number(),
-    template: z.string(),
-    isActive: z.boolean(),
-  }).optional(),
+  activeVersion: z
+    .object({
+      id: z.string(),
+      version: z.number(),
+      template: z.string(),
+      isActive: z.boolean(),
+    })
+    .optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -1482,7 +1589,10 @@ export class PromptClientError extends Error {
 }
 
 export class PromptNotFoundClientError extends PromptClientError {
-  constructor(public readonly identifier: string, cause?: unknown) {
+  constructor(
+    public readonly identifier: string,
+    cause?: unknown,
+  ) {
     super(`Prompt not found: ${identifier}`, { cause });
   }
 }
@@ -1497,8 +1607,12 @@ export function isPromptNotFoundClientError(error: unknown): error is PromptNotF
 import { createMediatorToken } from '@sanamyvn/foundation/mediator/mediator-token';
 import type { PromptClientModel, ResolvedPromptClient } from './schemas.js';
 import {
-  FindPromptBySlugQuery, ListPromptsQuery, ResolvePromptQuery,
-  CreatePromptCommand, CreateVersionCommand, SetActiveVersionCommand,
+  FindPromptBySlugQuery,
+  ListPromptsQuery,
+  ResolvePromptQuery,
+  CreatePromptCommand,
+  CreateVersionCommand,
+  SetActiveVersionCommand,
 } from './queries.js';
 
 export interface IPromptMediator {
@@ -1538,6 +1652,7 @@ Follow the same pattern as Task 10-12 (errors, models, interface, implementation
 **Key differences from prompt:**
 
 **Interface:**
+
 ```typescript
 export interface ISessionService {
   start(input: StartSessionInput): Promise<Session>;
@@ -1581,6 +1696,7 @@ git commit -m "feat: add session business service with Mastra thread integration
 ### Task 14: Conversation engine
 
 **Files:**
+
 - Create: `src/business/domain/conversation/conversation.interface.ts`
 - Create: `src/business/domain/conversation/conversation.business.ts`
 - Create: `src/business/domain/conversation/conversation.business.spec.ts`
@@ -1593,6 +1709,7 @@ git commit -m "feat: add session business service with Mastra thread integration
 **Key design points:**
 
 **ConversationConfig (no Mastra types):**
+
 ```typescript
 export interface ConversationConfig {
   readonly promptSlug: string;
@@ -1606,9 +1723,10 @@ export interface ConversationConfig {
 ```
 
 **Conversation (runtime-only handle):**
+
 ```typescript
 export interface Conversation {
-  readonly id: string;          // same as sessionId
+  readonly id: string; // same as sessionId
   readonly sessionId: string;
   readonly promptSlug: string;
   readonly resolvedPrompt: string;
@@ -1619,6 +1737,7 @@ export interface Conversation {
 **ConversationEngine dependencies:** `IMediator` (for prompt + session), `IMastraAgent`, `AiConfig`
 
 **create():**
+
 1. `mediator.send(new ResolvePromptQuery({ slug, params }))`
 2. `mediator.send(new CreateSessionCommand({ userId, purpose, promptSlug }))`
 3. Configure Mastra agent with resolved prompt
@@ -1626,11 +1745,13 @@ export interface Conversation {
 5. Return `Conversation`
 
 **send() / stream():**
+
 1. Look up conversation handle from map
 2. If missing, reconstruct from session (load session → re-resolve prompt → re-create agent)
 3. Delegate to `IMastraAgent.generate()` or `IMastraAgent.stream()`
 
 **Tests should cover:**
+
 - `create()` calls mediator for prompt resolution and session creation
 - `send()` delegates to Mastra agent
 - `send()` reconstructs when handle is missing (multi-instance scenario)
@@ -1656,6 +1777,7 @@ git commit -m "feat: add conversation engine with prompt resolution and session 
 ### Task 15: Business layer providers bundle
 
 **Files:**
+
 - Create: `src/business/providers.ts`
 
 ```typescript
@@ -1679,12 +1801,7 @@ export function aiBusinessProviders(): ProviderBundle {
       ...session.providers,
       ...conversation.providers,
     ],
-    exports: [
-      ...mastra.exports,
-      ...prompt.exports,
-      ...session.exports,
-      ...conversation.exports,
-    ],
+    exports: [...mastra.exports, ...prompt.exports, ...session.exports, ...conversation.exports],
   };
 }
 ```
@@ -1703,6 +1820,7 @@ git commit -m "feat: add business layer provider bundle"
 ### Task 16: Prompt app domain (reference pattern)
 
 **Files:**
+
 - Create: `src/app/domain/prompt/prompt.router.ts`
 - Create: `src/app/domain/prompt/prompt.service.ts`
 - Create: `src/app/domain/prompt/prompt.dto.ts`
@@ -1729,7 +1847,9 @@ export interface PromptMiddlewareConfig {
   readonly listVersions?: IMiddleware[];
 }
 
-export const PROMPT_MIDDLEWARE_CONFIG = createToken<PromptMiddlewareConfig>('PROMPT_MIDDLEWARE_CONFIG');
+export const PROMPT_MIDDLEWARE_CONFIG = createToken<PromptMiddlewareConfig>(
+  'PROMPT_MIDDLEWARE_CONFIG',
+);
 ```
 
 **Router applies middleware per-route from config:**
@@ -1745,31 +1865,38 @@ class PromptRouter implements IRouter {
   ) {}
 
   register(app: IRouterBuilder): void {
-    app.post('/')
+    app
+      .post('/')
       .middleware(...(this.middlewareConfig.create ?? []))
       .handle(async ({ body }) => this.service.create(body));
 
-    app.get('/')
+    app
+      .get('/')
       .middleware(...(this.middlewareConfig.list ?? []))
       .handle(async ({ query }) => this.service.list(query));
 
-    app.get('/:slug')
+    app
+      .get('/:slug')
       .middleware(...(this.middlewareConfig.getBySlug ?? []))
       .handle(async ({ params }) => this.service.getBySlug(params.slug));
 
-    app.put('/:slug')
+    app
+      .put('/:slug')
       .middleware(...(this.middlewareConfig.update ?? []))
       .handle(async ({ params, body }) => this.service.update(params.slug, body));
 
-    app.post('/:slug/versions')
+    app
+      .post('/:slug/versions')
       .middleware(...(this.middlewareConfig.createVersion ?? []))
       .handle(async ({ params, body }) => this.service.createVersion(params.slug, body));
 
-    app.put('/:slug/versions/:id/activate')
+    app
+      .put('/:slug/versions/:id/activate')
       .middleware(...(this.middlewareConfig.activateVersion ?? []))
       .handle(async ({ params }) => this.service.activateVersion(params.slug, params.id));
 
-    app.get('/:slug/versions')
+    app
+      .get('/:slug/versions')
       .middleware(...(this.middlewareConfig.listVersions ?? []))
       .handle(async ({ params }) => this.service.listVersions(params.slug));
   }
@@ -1856,11 +1983,13 @@ git commit -m "feat: add prompt app layer with per-route middleware config"
 Follow the exact pattern from Task 16 for both domains:
 
 **Session app domain** (`src/app/domain/session/`):
+
 - Routes: `GET /ai/sessions`, `GET /ai/sessions/:id`, `GET /ai/sessions/:id/messages`, `GET /ai/sessions/:id/transcript`, `PUT /ai/sessions/:id/end`
 - `SessionAppModule.forRoot({ middleware: SessionMiddlewareConfig })`
 - Error mapping: `SessionNotFoundError` → `NotFoundError (404)`, `SessionAlreadyEndedError` → `ConflictError (409)`
 
 **Conversation app domain** (`src/app/domain/conversation/`):
+
 - Routes: `POST /ai/conversations`, `POST /ai/conversations/:id/messages`, `POST /ai/conversations/:id/messages/stream`
 - `ConversationAppModule.forMonolith({ middleware })` / `.forStandalone({ middleware, promptServiceUrl, sessionServiceUrl })`
 - Error mapping: `ConversationNotFoundError` → `NotFoundError (404)`, `ConversationSendError` → `InternalError (500)`
@@ -1876,6 +2005,7 @@ Follow the exact pattern from Task 16 for both domains:
 **Files for each domain** (prompt-client, session-client, conversation-client) under `src/app/sdk/`:
 
 Each client module contains:
+
 - `{domain}-local.mediator.ts` — wraps business service in-process
 - `{domain}-remote.mediator.ts` — HTTP calls to remote service
 - `{domain}-client.module.ts` — `forMonolith()` / `forStandalone()`
@@ -1893,6 +2023,7 @@ Follow the [mediator patterns](../architecture/mediator-patterns.md) exactly.
 ### Task 19: App layer providers and package.json exports
 
 **Files:**
+
 - Create: `src/app/providers.ts`
 - Modify: `package.json` — add all exports
 
@@ -1953,11 +2084,13 @@ git commit -m "feat: add app layer providers and package.json exports"
 ### Task 20: Integration test fixture
 
 **Files:**
+
 - Create: `src/__tests__/integration/fixture.ts`
 - Create: `src/__tests__/integration/helpers.ts`
 - Create: `tests/global-setup.ts`
 
 Set up a PostgreSQL test fixture following the iam-ts pattern:
+
 - Create isolated test schema
 - Generate DDL from Drizzle schemas (`aiPrompts`, `aiPromptVersions`, `aiSessions`)
 - Provide `truncateAll()` for test isolation
@@ -1973,10 +2106,12 @@ Set up a PostgreSQL test fixture following the iam-ts pattern:
 ### Task 21: Integration tests — Prompt lifecycle
 
 **Files:**
+
 - Create: `src/__tests__/integration/prompt/prompt-crud.spec.ts`
 - Create: `src/__tests__/integration/prompt/prompt-versioning.spec.ts`
 
 **Test scenarios:**
+
 - Create prompt → find by slug → update metadata
 - Create version → activate → resolve with params
 - Duplicate slug → `PromptAlreadyExistsError`
@@ -1992,9 +2127,11 @@ Set up a PostgreSQL test fixture following the iam-ts pattern:
 ### Task 22: Integration tests — Session lifecycle
 
 **Files:**
+
 - Create: `src/__tests__/integration/session/session-lifecycle.spec.ts`
 
 **Test scenarios:**
+
 - Start session → creates Mastra thread + DB row
 - Get messages → delegates to Mastra memory
 - Pause → resume → end lifecycle
@@ -2009,9 +2146,11 @@ Set up a PostgreSQL test fixture following the iam-ts pattern:
 ### Task 23: Integration tests — Conversation engine
 
 **Files:**
+
 - Create: `src/__tests__/integration/conversation/conversation-flow.spec.ts`
 
 **Test scenarios:**
+
 - Create conversation → resolves prompt via mediator, creates session via mediator
 - Send message → delegates to Mastra agent
 - Reconstruct conversation when handle missing (simulate multi-instance)

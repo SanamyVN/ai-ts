@@ -4,7 +4,9 @@ import { CreateConversationCommand, SendMessageCommand } from './queries.js';
 
 export interface IConversationMediator {
   create(command: InstanceType<typeof CreateConversationCommand>): Promise<ConversationClient>;
-  sendMessage(command: InstanceType<typeof SendMessageCommand>): Promise<ConversationResponseClient>;
+  sendMessage(
+    command: InstanceType<typeof SendMessageCommand>,
+  ): Promise<ConversationResponseClient>;
 }
 
 export const CONVERSATION_MEDIATOR = createMediatorToken<IConversationMediator>(

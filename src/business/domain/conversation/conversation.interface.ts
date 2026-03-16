@@ -1,6 +1,10 @@
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { StreamChunk } from '@/business/sdk/mastra/mastra.interface.js';
-import type { Conversation, ConversationConfig, ConversationResponse } from './conversation.model.js';
+import type {
+  Conversation,
+  ConversationConfig,
+  ConversationResponse,
+} from './conversation.model.js';
 
 export interface IConversationEngine {
   create(config: ConversationConfig): Promise<Conversation>;
