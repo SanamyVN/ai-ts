@@ -29,7 +29,8 @@ import { MASTRA_CORE_AGENT, MASTRA_CORE_MEMORY } from '@sanamyvn/ai-ts/business/
 import type { Agent } from '@mastra/core/agent';
 import type { MastraMemory } from '@mastra/core/memory';
 
-// Option A: alias AI_DB to your existing Postgres token
+// Option A: alias AI_DB to your app's Postgres token
+// import { MY_POSTGRES } from './your-app/tokens';
 alias(AI_DB, MY_POSTGRES);
 
 // Option B: use PostgresModule and alias after
@@ -65,6 +66,8 @@ class AiModule extends Module {
     ...sessionClientMonolithProviders().providers,
     ...conversationClientMonolithProviders().providers,
   ];
+
+  exports = [];
 }
 ```
 
