@@ -1,4 +1,6 @@
 import type { MastraMemory } from '@mastra/core/memory';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
+import { MASTRA_CORE_MEMORY } from '../mastra.interface.js';
 import type {
   IMastraMemory,
   Thread,
@@ -64,8 +66,9 @@ function toMessageRole(role: string): 'user' | 'assistant' | 'system' {
  * const adapter = new MastraMemoryAdapter(memory);
  * const thread = await adapter.createThread('user-123');
  */
+@Injectable()
 export class MastraMemoryAdapter implements IMastraMemory {
-  constructor(private readonly memory: MastraMemory) {}
+  constructor(@Inject(MASTRA_CORE_MEMORY) private readonly memory: MastraMemory) {}
 
   async createThread(resourceId: string): Promise<Thread> {
     try {

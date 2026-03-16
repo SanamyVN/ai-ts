@@ -1,4 +1,6 @@
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import type { Agent } from '@mastra/core/agent';
+import type { MastraMemory } from '@mastra/core/memory';
 
 export interface AgentResponse {
   readonly text: string;
@@ -59,3 +61,6 @@ export interface IMastraMemory {
 
 export const MASTRA_AGENT = createToken<IMastraAgent>('MASTRA_AGENT');
 export const MASTRA_MEMORY = createToken<IMastraMemory>('MASTRA_MEMORY');
+
+export const MASTRA_CORE_AGENT = createToken<Agent>('MASTRA_CORE_AGENT');
+export const MASTRA_CORE_MEMORY = createToken<MastraMemory>('MASTRA_CORE_MEMORY');

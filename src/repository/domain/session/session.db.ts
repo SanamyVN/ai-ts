@@ -1,15 +1,19 @@
 import { and, eq } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
+import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
+import type { AiSchema } from '@/shared/schema.js';
+import { AI_DB } from '@/shared/tokens.js';
 import { aiSessions } from './session.schema.js';
 import type { ISessionRepository, SessionRepoFilter } from './session.interface.js';
 import type { SessionRecord, NewSessionRecord } from './session.model.js';
 import { SessionNotFoundRepoError, SessionRepositoryError } from './session.error.js';
 
+@Injectable()
 export class SessionDrizzleRepository implements ISessionRepository {
-  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
+  constructor(@Inject(AI_DB) private readonly db: PostgresClient<AiSchema>) {}
 
   async create(data: NewSessionRecord): Promise<SessionRecord> {
-    const [record] = await this.db.insert(aiSessions).values(data).returning();
+    const [record] = await this.db.db.insert(aiSessions).values(data).returning();
     if (!record) {
       throw new SessionRepositoryError('Insert returned no rows');
     }
@@ -17,7 +21,7 @@ export class SessionDrizzleRepository implements ISessionRepository {
   }
 
   async findById(id: string): Promise<SessionRecord | undefined> {
-    const [record] = await this.db.select().from(aiSessions).where(eq(aiSessions.id, id));
+    const [record] = await this.db.db.select().from(aiSessions).where(eq(aiSessions.id, id));
     return record;
   }
 
@@ -28,7 +32,7 @@ export class SessionDrizzleRepository implements ISessionRepository {
     if (filter.purpose) conditions.push(eq(aiSessions.purpose, filter.purpose));
     if (filter.status) conditions.push(eq(aiSessions.status, filter.status));
 
-    const query = this.db.select().from(aiSessions);
+    const query = this.db.db.select().from(aiSessions);
     if (conditions.length > 0) {
       return query.where(and(...conditions));
     }
@@ -36,7 +40,7 @@ export class SessionDrizzleRepository implements ISessionRepository {
   }
 
   async updateStatus(id: string, status: string, endedAt?: Date): Promise<SessionRecord> {
-    const [record] = await this.db
+    const [record] = await this.db.db
       .update(aiSessions)
       .set({ status, ...(endedAt !== undefined ? { endedAt } : {}) })
       .where(eq(aiSessions.id, id))

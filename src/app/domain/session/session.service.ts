@@ -1,5 +1,7 @@
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
+import { AI_MEDIATOR } from '@/shared/tokens.js';
 import {
   FindSessionByIdQuery,
   ListSessionsQuery,
@@ -12,8 +14,9 @@ import {
 } from './session.mapper.js';
 import type { SessionResponseDto, SessionSummaryResponseDto } from './session.dto.js';
 
+@Injectable()
 export class SessionAppService {
-  constructor(private readonly mediator: IMediator) {}
+  constructor(@Inject(AI_MEDIATOR) private readonly mediator: IMediator) {}
 
   async list(query?: {
     userId?: string;

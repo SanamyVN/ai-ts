@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IRouter } from '@sanamyvn/foundation/http/router';
 import type { IRouterBuilder } from '@sanamyvn/foundation/http/router-builder';
 import {
@@ -7,16 +8,21 @@ import {
   sendMessageDto,
   messageResponseDto,
 } from './conversation.dto.js';
-import type { ConversationAppService } from './conversation.service.js';
-import type { ConversationMiddlewareConfig } from './conversation.tokens.js';
+import { CONVERSATION_APP_SERVICE, type ConversationAppService } from './conversation.service.js';
+import {
+  CONVERSATION_MIDDLEWARE_CONFIG,
+  type ConversationMiddlewareConfig,
+} from './conversation.tokens.js';
 
 const idParams = z.object({ id: z.string() });
 
+@Injectable()
 export class ConversationRouter implements IRouter {
   readonly basePath = '/ai/conversations';
 
   constructor(
-    private readonly service: ConversationAppService,
+    @Inject(CONVERSATION_APP_SERVICE) private readonly service: ConversationAppService,
+    @Inject(CONVERSATION_MIDDLEWARE_CONFIG)
     private readonly middlewareConfig: ConversationMiddlewareConfig,
   ) {}
 

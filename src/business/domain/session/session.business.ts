@@ -1,8 +1,13 @@
-import type { ISessionRepository } from '@/repository/domain/session/session.interface.js';
-import type {
-  IMastraMemory,
-  MessageList,
-  Pagination,
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
+import {
+  SESSION_REPOSITORY,
+  type ISessionRepository,
+} from '@/repository/domain/session/session.interface.js';
+import {
+  MASTRA_MEMORY,
+  type IMastraMemory,
+  type MessageList,
+  type Pagination,
 } from '@/business/sdk/mastra/mastra.interface.js';
 import type { ISessionService } from './session.interface.js';
 import type {
@@ -15,10 +20,11 @@ import type {
 import { SessionNotFoundError, SessionAlreadyEndedError } from './session.error.js';
 import { toSessionFromRecord, toSessionSummaryFromRecord } from './session.mapper.js';
 
+@Injectable()
 export class SessionService implements ISessionService {
   constructor(
-    private readonly sessionRepo: ISessionRepository,
-    private readonly mastraMemory: IMastraMemory,
+    @Inject(SESSION_REPOSITORY) private readonly sessionRepo: ISessionRepository,
+    @Inject(MASTRA_MEMORY) private readonly mastraMemory: IMastraMemory,
   ) {}
 
   async start(input: StartSessionInput): Promise<Session> {

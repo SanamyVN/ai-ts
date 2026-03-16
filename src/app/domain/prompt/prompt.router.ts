@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IRouter } from '@sanamyvn/foundation/http/router';
 import type { IRouterBuilder } from '@sanamyvn/foundation/http/router-builder';
 import {
@@ -8,18 +9,19 @@ import {
   promptResponseDto,
   updatePromptDto,
 } from './prompt.dto.js';
-import type { PromptAppService } from './prompt.service.js';
-import type { PromptMiddlewareConfig } from './prompt.tokens.js';
+import { PROMPT_APP_SERVICE, type PromptAppService } from './prompt.service.js';
+import { PROMPT_MIDDLEWARE_CONFIG, type PromptMiddlewareConfig } from './prompt.tokens.js';
 
 const slugParams = z.object({ slug: z.string() });
 const slugAndIdParams = z.object({ slug: z.string(), id: z.string() });
 
+@Injectable()
 export class PromptRouter implements IRouter {
   readonly basePath = '/ai/prompts';
 
   constructor(
-    private readonly service: PromptAppService,
-    private readonly middlewareConfig: PromptMiddlewareConfig,
+    @Inject(PROMPT_APP_SERVICE) private readonly service: PromptAppService,
+    @Inject(PROMPT_MIDDLEWARE_CONFIG) private readonly middlewareConfig: PromptMiddlewareConfig,
   ) {}
 
   register(app: IRouterBuilder): void {

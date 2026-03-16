@@ -1,5 +1,7 @@
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
+import { AI_MEDIATOR } from '@/shared/tokens.js';
 import {
   CreateConversationCommand,
   SendMessageCommand,
@@ -8,8 +10,9 @@ import { mapConversationError } from './conversation.error.js';
 import { toConversationResponseDtoFromClient } from './conversation.mapper.js';
 import type { ConversationResponseDto, MessageResponseDto } from './conversation.dto.js';
 
+@Injectable()
 export class ConversationAppService {
-  constructor(private readonly mediator: IMediator) {}
+  constructor(@Inject(AI_MEDIATOR) private readonly mediator: IMediator) {}
 
   async create(input: {
     promptSlug: string;

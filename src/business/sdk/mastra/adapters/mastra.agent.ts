@@ -1,4 +1,6 @@
 import type { Agent } from '@mastra/core/agent';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
+import { MASTRA_CORE_AGENT } from '../mastra.interface.js';
 import type {
   IMastraAgent,
   AgentResponse,
@@ -16,8 +18,9 @@ import { MastraAdapterError } from '../mastra.error.js';
  * const adapter = new MastraAgentAdapter(mastraAgent);
  * const response = await adapter.generate('Hello', { threadId: 't1', resourceId: 'r1' });
  */
+@Injectable()
 export class MastraAgentAdapter implements IMastraAgent {
-  constructor(private readonly agent: Agent) {}
+  constructor(@Inject(MASTRA_CORE_AGENT) private readonly agent: Agent) {}
 
   async generate(prompt: string, options?: GenerateOptions): Promise<AgentResponse> {
     try {

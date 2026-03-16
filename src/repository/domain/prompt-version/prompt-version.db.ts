@@ -1,5 +1,8 @@
 import { sql, eq, and } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
+import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
+import type { AiSchema } from '@/shared/schema.js';
+import { AI_DB } from '@/shared/tokens.js';
 import { aiPromptVersions } from './prompt-version.schema.js';
 import type { IPromptVersionRepository } from './prompt-version.interface.js';
 import type { PromptVersionRecord, NewPromptVersionRecord } from './prompt-version.model.js';
@@ -8,11 +11,12 @@ import {
   PromptVersionRepositoryError,
 } from './prompt-version.error.js';
 
+@Injectable()
 export class PromptVersionDrizzleRepository implements IPromptVersionRepository {
-  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
+  constructor(@Inject(AI_DB) private readonly db: PostgresClient<AiSchema>) {}
 
   async create(data: NewPromptVersionRecord): Promise<PromptVersionRecord> {
-    const [record] = await this.db.insert(aiPromptVersions).values(data).returning();
+    const [record] = await this.db.db.insert(aiPromptVersions).values(data).returning();
     if (!record) {
       throw new PromptVersionRepositoryError('Insert returned no rows');
     }
@@ -20,7 +24,7 @@ export class PromptVersionDrizzleRepository implements IPromptVersionRepository 
   }
 
   async findById(id: string): Promise<PromptVersionRecord | undefined> {
-    const [record] = await this.db
+    const [record] = await this.db.db
       .select()
       .from(aiPromptVersions)
       .where(eq(aiPromptVersions.id, id));
@@ -28,7 +32,7 @@ export class PromptVersionDrizzleRepository implements IPromptVersionRepository 
   }
 
   async findActiveByPromptId(promptId: string): Promise<PromptVersionRecord | undefined> {
-    const [record] = await this.db
+    const [record] = await this.db.db
       .select()
       .from(aiPromptVersions)
       .where(and(eq(aiPromptVersions.promptId, promptId), eq(aiPromptVersions.isActive, true)));
@@ -36,11 +40,14 @@ export class PromptVersionDrizzleRepository implements IPromptVersionRepository 
   }
 
   async listByPromptId(promptId: string): Promise<PromptVersionRecord[]> {
-    return this.db.select().from(aiPromptVersions).where(eq(aiPromptVersions.promptId, promptId));
+    return this.db.db
+      .select()
+      .from(aiPromptVersions)
+      .where(eq(aiPromptVersions.promptId, promptId));
   }
 
   async setActive(promptId: string, versionId: string): Promise<void> {
-    await this.db.transaction(async (tx) => {
+    await this.db.db.transaction(async (tx) => {
       await tx
         .update(aiPromptVersions)
         .set({ isActive: false })
@@ -57,7 +64,7 @@ export class PromptVersionDrizzleRepository implements IPromptVersionRepository 
   }
 
   async getNextVersion(promptId: string): Promise<number> {
-    const [result] = await this.db
+    const [result] = await this.db.db
       .select({ maxVersion: sql<number>`coalesce(max(${aiPromptVersions.version}), 0)` })
       .from(aiPromptVersions)
       .where(eq(aiPromptVersions.promptId, promptId));

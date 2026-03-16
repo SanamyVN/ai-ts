@@ -1,5 +1,8 @@
 import { eq, ilike } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
+import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
+import type { AiSchema } from '@/shared/schema.js';
+import { AI_DB } from '@/shared/tokens.js';
 import { aiPrompts } from './prompt.schema.js';
 import type { IPromptRepository } from './prompt.interface.js';
 import type { PromptRecord, NewPromptRecord } from './prompt.model.js';
@@ -9,12 +12,13 @@ import {
   PromptRepositoryError,
 } from './prompt.error.js';
 
+@Injectable()
 export class PromptDrizzleRepository implements IPromptRepository {
-  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
+  constructor(@Inject(AI_DB) private readonly db: PostgresClient<AiSchema>) {}
 
   async create(data: NewPromptRecord): Promise<PromptRecord> {
     try {
-      const [record] = await this.db.insert(aiPrompts).values(data).returning();
+      const [record] = await this.db.db.insert(aiPrompts).values(data).returning();
       if (!record) {
         throw new PromptRepositoryError('Insert returned no rows');
       }
@@ -28,17 +32,17 @@ export class PromptDrizzleRepository implements IPromptRepository {
   }
 
   async findById(id: string): Promise<PromptRecord | undefined> {
-    const [record] = await this.db.select().from(aiPrompts).where(eq(aiPrompts.id, id));
+    const [record] = await this.db.db.select().from(aiPrompts).where(eq(aiPrompts.id, id));
     return record;
   }
 
   async findBySlug(slug: string): Promise<PromptRecord | undefined> {
-    const [record] = await this.db.select().from(aiPrompts).where(eq(aiPrompts.slug, slug));
+    const [record] = await this.db.db.select().from(aiPrompts).where(eq(aiPrompts.slug, slug));
     return record;
   }
 
   async list(filter?: { search?: string }): Promise<PromptRecord[]> {
-    const query = this.db.select().from(aiPrompts);
+    const query = this.db.db.select().from(aiPrompts);
     if (filter?.search) {
       return query.where(ilike(aiPrompts.name, `%${filter.search}%`));
     }
@@ -46,7 +50,7 @@ export class PromptDrizzleRepository implements IPromptRepository {
   }
 
   async update(id: string, data: Partial<NewPromptRecord>): Promise<PromptRecord> {
-    const [record] = await this.db
+    const [record] = await this.db.db
       .update(aiPrompts)
       .set({ ...data, updatedAt: new Date() })
       .where(eq(aiPrompts.id, id))
@@ -58,7 +62,7 @@ export class PromptDrizzleRepository implements IPromptRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.db.delete(aiPrompts).where(eq(aiPrompts.id, id));
+    await this.db.db.delete(aiPrompts).where(eq(aiPrompts.id, id));
   }
 }
 

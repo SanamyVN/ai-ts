@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IRouter } from '@sanamyvn/foundation/http/router';
 import type { IRouterBuilder } from '@sanamyvn/foundation/http/router-builder';
 import {
@@ -10,17 +11,18 @@ import {
   transcriptResponseDto,
   messageResponseDto,
 } from './session.dto.js';
-import type { SessionAppService } from './session.service.js';
-import type { SessionMiddlewareConfig } from './session.tokens.js';
+import { SESSION_APP_SERVICE, type SessionAppService } from './session.service.js';
+import { SESSION_MIDDLEWARE_CONFIG, type SessionMiddlewareConfig } from './session.tokens.js';
 
 const idParams = z.object({ id: z.string() });
 
+@Injectable()
 export class SessionRouter implements IRouter {
   readonly basePath = '/ai/sessions';
 
   constructor(
-    private readonly service: SessionAppService,
-    private readonly middlewareConfig: SessionMiddlewareConfig,
+    @Inject(SESSION_APP_SERVICE) private readonly service: SessionAppService,
+    @Inject(SESSION_MIDDLEWARE_CONFIG) private readonly middlewareConfig: SessionMiddlewareConfig,
   ) {}
 
   register(app: IRouterBuilder): void {

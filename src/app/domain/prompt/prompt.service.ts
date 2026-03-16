@@ -1,5 +1,7 @@
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
+import { AI_MEDIATOR } from '@/shared/tokens.js';
 import {
   CreatePromptCommand,
   CreateVersionCommand,
@@ -11,8 +13,9 @@ import { mapPromptError } from './prompt.error.js';
 import { toPromptResponseDtoFromClient } from './prompt.mapper.js';
 import type { PromptResponseDto } from './prompt.dto.js';
 
+@Injectable()
 export class PromptAppService {
-  constructor(private readonly mediator: IMediator) {}
+  constructor(@Inject(AI_MEDIATOR) private readonly mediator: IMediator) {}
 
   async create(input: {
     name: string;

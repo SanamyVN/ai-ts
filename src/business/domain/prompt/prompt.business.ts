@@ -1,7 +1,14 @@
 // src/business/domain/prompt/prompt.business.ts
 import Mustache from 'mustache';
-import type { IPromptRepository } from '@/repository/domain/prompt/prompt.interface.js';
-import type { IPromptVersionRepository } from '@/repository/domain/prompt-version/prompt-version.interface.js';
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
+import {
+  PROMPT_REPOSITORY,
+  type IPromptRepository,
+} from '@/repository/domain/prompt/prompt.interface.js';
+import {
+  PROMPT_VERSION_REPOSITORY,
+  type IPromptVersionRepository,
+} from '@/repository/domain/prompt-version/prompt-version.interface.js';
 import { isDuplicatePromptError } from '@/repository/domain/prompt/prompt.error.js';
 import type { IPromptService } from './prompt.interface.js';
 import type {
@@ -21,10 +28,11 @@ import {
 } from './prompt.error.js';
 import { toPromptTemplateFromRecord, toPromptVersionFromRecord } from './prompt.mapper.js';
 
+@Injectable()
 export class PromptService implements IPromptService {
   constructor(
-    private readonly promptRepo: IPromptRepository,
-    private readonly versionRepo: IPromptVersionRepository,
+    @Inject(PROMPT_REPOSITORY) private readonly promptRepo: IPromptRepository,
+    @Inject(PROMPT_VERSION_REPOSITORY) private readonly versionRepo: IPromptVersionRepository,
   ) {}
 
   async create(input: CreatePromptInput): Promise<PromptTemplate> {

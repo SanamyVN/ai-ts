@@ -1,11 +1,24 @@
+import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
-import type { IMastraAgent, StreamChunk } from '@/business/sdk/mastra/mastra.interface.js';
-import type { AiConfig } from '@/config.js';
+import { AI_MEDIATOR } from '@/shared/tokens.js';
+import {
+  MASTRA_AGENT,
+  type IMastraAgent,
+  type StreamChunk,
+} from '@/business/sdk/mastra/mastra.interface.js';
+import { AI_CONFIG, type AiConfig } from '@/config.js';
 import { isMastraAdapterError } from '@/business/sdk/mastra/mastra.error.js';
 import { ResolvePromptQuery } from '@/business/domain/prompt/client/queries.js';
-import { CreateSessionCommand, FindSessionByIdQuery } from '@/business/domain/session/client/queries.js';
+import {
+  CreateSessionCommand,
+  FindSessionByIdQuery,
+} from '@/business/domain/session/client/queries.js';
 import type { IConversationEngine } from './conversation.interface.js';
-import type { Conversation, ConversationConfig, ConversationResponse } from './conversation.model.js';
+import type {
+  Conversation,
+  ConversationConfig,
+  ConversationResponse,
+} from './conversation.model.js';
 import { ConversationNotFoundError, ConversationSendError } from './conversation.error.js';
 
 interface ConversationState {
@@ -30,13 +43,14 @@ interface ConversationState {
  * const convo = await engine.create({ promptSlug: 'greet', promptParams: {}, userId: 'u1', purpose: 'demo' });
  * const reply = await engine.send(convo.id, 'Hello!');
  */
+@Injectable()
 export class ConversationEngine implements IConversationEngine {
   private readonly conversations = new Map<string, ConversationState>();
 
   constructor(
-    private readonly mediator: IMediator,
-    private readonly mastraAgent: IMastraAgent,
-    private readonly config: AiConfig,
+    @Inject(AI_MEDIATOR) private readonly mediator: IMediator,
+    @Inject(MASTRA_AGENT) private readonly mastraAgent: IMastraAgent,
+    @Inject(AI_CONFIG) private readonly config: AiConfig,
   ) {}
 
   async create(config: ConversationConfig): Promise<Conversation> {

@@ -1,4 +1,6 @@
 import { pg } from './fixture.js';
+import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
+import type { AiSchema } from '@/shared/schema.js';
 import { PromptDrizzleRepository } from '@/repository/domain/prompt/prompt.db.js';
 import { PromptVersionDrizzleRepository } from '@/repository/domain/prompt-version/prompt-version.db.js';
 import { SessionDrizzleRepository } from '@/repository/domain/session/session.db.js';
@@ -25,10 +27,27 @@ export interface AiTestContext {
 }
 
 /**
+ * Wraps the raw Drizzle instance from the test fixture in a minimal
+ * `PostgresClient<AiSchema>` shim. Repos access Drizzle via `.db`,
+ * so this satisfies their constructor signature without a full DI container.
+ */
+function wrapAsPostgresClient(): PostgresClient<AiSchema> {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- test shim for DI-free construction
+  return {
+    db: pg.db,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function -- no-op lifecycle for tests
+    connect: async () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function -- no-op lifecycle for tests
+    disconnect: async () => {},
+    isHealthy: async () => true,
+  } as PostgresClient<AiSchema>;
+}
+
+/**
  * Builds a wired test context backed by the Postgres fixture.
  *
  * All three Drizzle repositories are real implementations talking to the isolated
- * test schema. The Mastra agent and memory are `vi.fn()` stubs — tests must set
+ * test schema. The Mastra agent and memory are `vi.fn()` stubs -- tests must set
  * up their return values explicitly.
  *
  * Call this inside `beforeEach` (or at the top of each test) so that every test
@@ -39,9 +58,10 @@ export interface AiTestContext {
  * beforeEach(() => { ctx = createAiTestContext(); });
  */
 export function createAiTestContext(): AiTestContext {
-  const promptRepo = new PromptDrizzleRepository(pg.db);
-  const versionRepo = new PromptVersionDrizzleRepository(pg.db);
-  const sessionRepo = new SessionDrizzleRepository(pg.db);
+  const client = wrapAsPostgresClient();
+  const promptRepo = new PromptDrizzleRepository(client);
+  const versionRepo = new PromptVersionDrizzleRepository(client);
+  const sessionRepo = new SessionDrizzleRepository(client);
 
   const promptService = new PromptService(promptRepo, versionRepo);
 
