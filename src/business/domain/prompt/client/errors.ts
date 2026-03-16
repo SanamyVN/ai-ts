@@ -6,6 +6,7 @@ export class PromptClientError extends Error {
   }
 }
 
+/** Thrown when a prompt cannot be found by ID or slug. */
 export class PromptNotFoundClientError extends PromptClientError {
   constructor(
     public readonly identifier: string,
@@ -15,6 +16,7 @@ export class PromptNotFoundClientError extends PromptClientError {
   }
 }
 
+/** Type guard for {@link PromptNotFoundClientError}. */
 export function isPromptNotFoundClientError(error: unknown): error is PromptNotFoundClientError {
   return error instanceof PromptNotFoundClientError;
 }

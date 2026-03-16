@@ -6,6 +6,7 @@ export class ConversationClientError extends Error {
   }
 }
 
+/** Thrown when a conversation cannot be found by ID. */
 export class ConversationNotFoundClientError extends ConversationClientError {
   constructor(
     public readonly conversationId: string,
@@ -15,6 +16,7 @@ export class ConversationNotFoundClientError extends ConversationClientError {
   }
 }
 
+/** Type guard for {@link ConversationNotFoundClientError}. */
 export function isConversationNotFoundClientError(
   error: unknown,
 ): error is ConversationNotFoundClientError {

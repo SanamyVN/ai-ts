@@ -1,4 +1,4 @@
-/** Base error for Mastra adapter operations. */
+/** Thrown when a Mastra SDK operation (generate, stream, memory) fails. */
 export class MastraAdapterError extends Error {
   constructor(
     public readonly operation: string,
@@ -9,6 +9,7 @@ export class MastraAdapterError extends Error {
   }
 }
 
+/** Type guard for {@link MastraAdapterError}. */
 export function isMastraAdapterError(error: unknown): error is MastraAdapterError {
   return error instanceof MastraAdapterError;
 }

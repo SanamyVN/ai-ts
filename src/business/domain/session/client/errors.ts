@@ -6,6 +6,7 @@ export class SessionClientError extends Error {
   }
 }
 
+/** Thrown when a session cannot be found by ID. */
 export class SessionNotFoundClientError extends SessionClientError {
   constructor(
     public readonly identifier: string,
@@ -15,6 +16,7 @@ export class SessionNotFoundClientError extends SessionClientError {
   }
 }
 
+/** Type guard for {@link SessionNotFoundClientError}. */
 export function isSessionNotFoundClientError(error: unknown): error is SessionNotFoundClientError {
   return error instanceof SessionNotFoundClientError;
 }
