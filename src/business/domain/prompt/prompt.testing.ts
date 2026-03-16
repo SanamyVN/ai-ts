@@ -1,16 +1,15 @@
-// src/business/domain/prompt/prompt.testing.ts
 import { vi } from 'vitest';
 import type { IPromptService } from './prompt.interface.js';
 
-export function createMockPromptService(): IPromptService {
+export function createMockPromptService() {
   return {
-    create: vi.fn(),
-    getBySlug: vi.fn(),
-    list: vi.fn(),
-    update: vi.fn(),
-    createVersion: vi.fn(),
-    listVersions: vi.fn(),
-    setActiveVersion: vi.fn(),
-    resolve: vi.fn(),
+    create: vi.fn<IPromptService['create']>(),
+    getBySlug: vi.fn<IPromptService['getBySlug']>(),
+    list: vi.fn<IPromptService['list']>(),
+    update: vi.fn<IPromptService['update']>(),
+    createVersion: vi.fn<IPromptService['createVersion']>(),
+    listVersions: vi.fn<IPromptService['listVersions']>(),
+    setActiveVersion: vi.fn<IPromptService['setActiveVersion']>(),
+    resolve: vi.fn<IPromptService['resolve']>(),
   };
 }
