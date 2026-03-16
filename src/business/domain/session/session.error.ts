@@ -6,6 +6,7 @@ export class SessionError extends Error {
   }
 }
 
+/** Thrown when a session ID cannot be found. */
 export class SessionNotFoundError extends SessionError {
   constructor(
     public readonly identifier: string,
@@ -15,6 +16,7 @@ export class SessionNotFoundError extends SessionError {
   }
 }
 
+/** Thrown when an operation is attempted on a session that has already ended. */
 export class SessionAlreadyEndedError extends SessionError {
   constructor(
     public readonly sessionId: string,

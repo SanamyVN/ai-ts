@@ -6,6 +6,7 @@ export class PromptError extends Error {
   }
 }
 
+/** Thrown when a prompt template or slug cannot be found. */
 export class PromptNotFoundError extends PromptError {
   constructor(
     public readonly identifier: string,
@@ -15,6 +16,7 @@ export class PromptNotFoundError extends PromptError {
   }
 }
 
+/** Thrown when creating a prompt with a slug that is already taken. */
 export class PromptAlreadyExistsError extends PromptError {
   constructor(
     public readonly slug: string,
@@ -24,6 +26,7 @@ export class PromptAlreadyExistsError extends PromptError {
   }
 }
 
+/** Thrown when a prompt version ID does not exist. */
 export class PromptVersionNotFoundError extends PromptError {
   constructor(
     public readonly identifier: string,
@@ -33,6 +36,7 @@ export class PromptVersionNotFoundError extends PromptError {
   }
 }
 
+/** Thrown when the supplied parameters do not satisfy the prompt's parameter schema. */
 export class InvalidPromptParametersError extends PromptError {
   constructor(
     public readonly slug: string,
@@ -43,6 +47,7 @@ export class InvalidPromptParametersError extends PromptError {
   }
 }
 
+/** Thrown when Mustache rendering of the prompt template fails. */
 export class PromptRenderError extends PromptError {
   constructor(
     public readonly slug: string,

@@ -6,6 +6,7 @@ export class ConversationError extends Error {
   }
 }
 
+/** Thrown when a conversation ID cannot be found. */
 export class ConversationNotFoundError extends ConversationError {
   constructor(
     public readonly conversationId: string,
@@ -15,6 +16,7 @@ export class ConversationNotFoundError extends ConversationError {
   }
 }
 
+/** Thrown when sending a message to the AI backend fails. */
 export class ConversationSendError extends ConversationError {
   constructor(
     public readonly conversationId: string,
