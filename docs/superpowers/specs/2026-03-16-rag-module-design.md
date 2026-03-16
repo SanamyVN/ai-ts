@@ -14,7 +14,7 @@ The `aiya` project has a RAG module that directly uses `@mastra/rag` and `@mastr
 
 | Concern | Owner |
 | --- | --- |
-| Content processing (text, HTML, markdown, JSON) | `@sanamyvn/ai-ts` (pluggable processors) |
+| Content processing (text, HTML, markdown, JSON) | `@sanamyvn/ai-ts` (via `MDocument` factories) |
 | Chunking pipeline | `@sanamyvn/ai-ts` (via `@mastra/rag` MDocument) |
 | Embedding generation | `@sanamyvn/ai-ts` (via `ai` SDK `embedMany`) |
 | Vector storage (PgVector) | `@sanamyvn/ai-ts` (adapter wraps `@mastra/pg`) |
@@ -91,7 +91,6 @@ src/
 │   │       ├── rag.business.ts             # RagBusiness implementation
 │   │       ├── rag.model.ts                # IngestInput, DeleteInput, ReplaceInput, etc.
 │   │       ├── rag.error.ts                # RagIngestError, RagDeleteError, etc.
-│   │       ├── rag.content-processor.ts    # IContentProcessor + built-in processors
 │   │       ├── rag.providers.ts            # ragBusinessProviders()
 │   │       ├── rag.testing.ts              # createMockRagBusiness()
 │   │       └── client/
@@ -291,69 +290,17 @@ export interface ReplaceResult {
 }
 ```
 
-### Content Processors
-
-Pluggable interface for converting content types into `MDocument` instances. Built-in processors cover the 4 types `MDocument` supports natively. Downstream apps can add custom processors (e.g., for proprietary formats) via module options.
-
-```typescript
-export interface IContentProcessor {
-  readonly type: string;
-  toDocument(data: string, metadata?: Record<string, unknown>): MDocument;
-}
-```
-
-Built-in implementations:
-
-```typescript
-export class TextContentProcessor implements IContentProcessor {
-  readonly type = 'text';
-  toDocument(data: string, metadata?: Record<string, unknown>): MDocument {
-    return MDocument.fromText(data, metadata);
-  }
-}
-
-export class HtmlContentProcessor implements IContentProcessor {
-  readonly type = 'html';
-  toDocument(data: string, metadata?: Record<string, unknown>): MDocument {
-    return MDocument.fromHTML(data, metadata);
-  }
-}
-
-export class MarkdownContentProcessor implements IContentProcessor {
-  readonly type = 'markdown';
-  toDocument(data: string, metadata?: Record<string, unknown>): MDocument {
-    return MDocument.fromMarkdown(data, metadata);
-  }
-}
-
-export class JsonContentProcessor implements IContentProcessor {
-  readonly type = 'json';
-  toDocument(data: string, metadata?: Record<string, unknown>): MDocument {
-    return MDocument.fromJSON(data, metadata);
-  }
-}
-```
-
-```typescript
-export const RAG_CONTENT_PROCESSORS = createToken<IContentProcessor[]>('RAG_CONTENT_PROCESSORS');
-```
-
-Processors are registered as a map keyed by `type`. The business layer looks up the processor for a given `RagContent.type` and throws `RagContentProcessingError` if none is found.
-
 ### Business Implementation
+
+The business layer maps `RagContent.type` directly to the corresponding `MDocument.from*()` factory. No pluggable processor abstraction — `MDocument` already supports text, HTML, markdown, and JSON. For unsupported formats (PDF, proprietary), downstream apps convert to one of these types before calling ingest.
 
 ```typescript
 @Injectable()
 export class RagBusiness implements IRagBusiness {
-  private readonly processors: Map<string, IContentProcessor>;
-
   constructor(
     @Inject(MASTRA_RAG) private readonly mastraRag: IMastraRag,
     @Inject(AI_CONFIG) private readonly config: AiConfig,
-    @Inject(RAG_CONTENT_PROCESSORS) processors: IContentProcessor[],
-  ) {
-    this.processors = new Map(processors.map((p) => [p.type, p]));
-  }
+  ) {}
 
   async ingest(input: IngestInput): Promise<IngestResult> {
     await this.mastraRag.createIndex(input.scopeId, this.config.embeddingDimension);
@@ -361,8 +308,7 @@ export class RagBusiness implements IRagBusiness {
     let totalChunks = 0;
 
     for (const doc of input.documents) {
-      const processor = this.getProcessor(doc.content.type);
-      const mdoc = processor.toDocument(doc.content.data, {
+      const mdoc = this.createDocument(doc.content, {
         documentId: doc.documentId,
         scopeId: input.scopeId,
       });
@@ -407,12 +353,13 @@ export class RagBusiness implements IRagBusiness {
     return { chunksDeleted, chunksStored };
   }
 
-  private getProcessor(type: string): IContentProcessor {
-    const processor = this.processors.get(type);
-    if (!processor) {
-      throw new RagContentProcessingError(`No content processor registered for type: ${type}`);
+  private createDocument(content: RagContent, metadata: Record<string, unknown>): MDocument {
+    switch (content.type) {
+      case 'text':     return MDocument.fromText(content.data, metadata);
+      case 'html':     return MDocument.fromHTML(content.data, metadata);
+      case 'markdown': return MDocument.fromMarkdown(content.data, metadata);
+      case 'json':     return MDocument.fromJSON(content.data, metadata);
     }
-    return processor;
   }
 
   // Uses embedMany from 'ai' SDK and ModelRouterEmbeddingModel from '@mastra/core/llm'
@@ -446,7 +393,6 @@ const DEFAULT_EMBEDDING_BATCH_SIZE = 100;
 RagBusinessError (base)
 ├── RagIngestError              — wraps MastraAdapterError during ingest pipeline
 ├── RagDeleteError              — wraps MastraAdapterError during delete
-├── RagContentProcessingError   — no processor found for content type
 └── RagEmbeddingError           — embedding generation failure
 ```
 
@@ -567,7 +513,6 @@ Thin orchestrator. Maps business errors to HTTP errors:
 
 | Business Error | HTTP Error |
 | --- | --- |
-| `RagContentProcessingError` | 400 Bad Request |
 | `RagIngestError` | 500 Internal Server Error |
 | `RagDeleteError` | 500 Internal Server Error |
 | `RagEmbeddingError` | 500 Internal Server Error |
@@ -578,8 +523,6 @@ Thin orchestrator. Maps business errors to HTTP errors:
 export class RagAppModule extends Module {
   static forRoot(options: RagAppModuleOptions): ModuleDefinition {
     // options.middleware — per-route middleware config
-    // options.contentProcessors — additional IContentProcessor[] (merged with built-ins)
-    // Content processors are passed through to ragBusinessProviders()
   }
 }
 
@@ -589,11 +532,8 @@ interface RagAppModuleOptions {
     delete?: Middleware[];
     replace?: Middleware[];
   };
-  contentProcessors?: IContentProcessor[];
 }
 ```
-
-Built-in processors (text, html, markdown, json) are always registered. Additional processors from `options.contentProcessors` are merged in, and can override built-ins by matching `type`. The app module passes processors down to `ragBusinessProviders()` which binds them to `RAG_CONTENT_PROCESSORS` — processor registration is a business-layer concern, the app module just forwards the configuration.
 
 ### Mediator Clients
 
@@ -645,7 +585,6 @@ Client (mediator):
 App:
   RagHttpIngestError extends HttpInternalServerError
   RagHttpDeleteError extends HttpInternalServerError
-  RagHttpContentError extends HttpBadRequestError
 ```
 
 Error wrapping flow:
@@ -657,9 +596,6 @@ PgVector throws → MastraAdapterError (SDK adapter boundary)
 
 embedMany() throws → RagEmbeddingError (business catches embedding error)
   → RagHttpIngestError 500 (app service maps business error)
-
-Unknown content type → RagContentProcessingError (business layer)
-  → RagHttpContentError 400 (app service maps business error)
 ```
 
 ## Package Exports
@@ -704,7 +640,7 @@ import { PgVector } from '@mastra/pg';
 // Provide the raw PgVector instance
 bind(MASTRA_CORE_RAG, new PgVector(process.env.DATABASE_URL));
 
-// Wire up the RAG module with middleware and optional custom processors
+// Wire up the RAG module with middleware
 RagAppModule.forRoot({
   middleware: {
     ingest: [AuthMiddleware],
@@ -720,13 +656,11 @@ RagAppModule.forRoot({
 | --- | --- |
 | Write path only (no query/search) | Mastra agents handle retrieval through built-in tool use. The RAG module manages the data pipeline. |
 | PgVector only, no pluggable vector store | The package already requires PostgreSQL. PgVector is the natural fit. Avoids premature abstraction. |
-| Pluggable content processors | `MDocument` supports text/HTML/markdown/JSON natively. The interface allows downstream to add custom types without modifying the package. |
-| No PDF support in package | PDF parsing requires binary handling and `pdf-parse` dependency. Downstream extracts text and passes `{ type: 'text' }`. |
+| No PDF or custom format support in package | `MDocument` supports text/HTML/markdown/JSON natively — the business layer maps directly to these factories. For unsupported formats (PDF, proprietary), downstream converts to a supported type before calling ingest. |
 | Batch ingest | Multiple documents per request reduces HTTP overhead for bulk operations. |
 | Replace as a first-class operation | Common workflow when content changes. Performs delete then ingest sequentially. Not transactionally atomic — if ingest fails after delete, the old vectors are lost. Acceptable for a search index where brief inconsistency windows are tolerable. |
 | Embedding config in `AI_CONFIG` | Centralized configuration. No separate RAG config token. |
 | Chunking defaults hardcoded | Implementation detail. Per-ingest `chunkOptions` provides flexibility without config complexity. |
-| Content processors via module options | Simple and explicit. No multi-token or dynamic registration needed. |
 
 ## Out of Scope
 
