@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import type { IMastraAgent, IMastraMemory } from './mastra.interface.js';
+import type { IMastraAgent, IMastraMemory, IMastraRag } from './mastra.interface.js';
 
 /**
  * Creates a mock `IMastraAgent` with all methods stubbed via `vi.fn()`.
@@ -29,5 +29,21 @@ export function createMockMastraMemory() {
     createThread: vi.fn<IMastraMemory['createThread']>(),
     getMessages: vi.fn<IMastraMemory['getMessages']>(),
     listThreads: vi.fn<IMastraMemory['listThreads']>(),
+  };
+}
+
+/**
+ * Creates a mock `IMastraRag` with all methods stubbed via `vi.fn()`.
+ * Use in unit tests to stub RAG operations without a real vector store.
+ *
+ * @example
+ * const rag = createMockMastraRag();
+ * rag.upsert.mockResolvedValue(undefined);
+ */
+export function createMockMastraRag() {
+  return {
+    createIndex: vi.fn<IMastraRag['createIndex']>(),
+    upsert: vi.fn<IMastraRag['upsert']>(),
+    delete: vi.fn<IMastraRag['delete']>(),
   };
 }

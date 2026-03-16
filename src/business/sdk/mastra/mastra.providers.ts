@@ -1,12 +1,13 @@
 import { bind } from '@sanamyvn/foundation/di/node/providers';
-import { MASTRA_AGENT, MASTRA_MEMORY } from './mastra.interface.js';
+import { MASTRA_AGENT, MASTRA_MEMORY, MASTRA_RAG } from './mastra.interface.js';
 import { MastraAgentAdapter } from './adapters/mastra.agent.js';
 import { MastraMemoryAdapter } from './adapters/mastra.memory.js';
+import { MastraRagAdapter } from './adapters/mastra.rag.js';
 
 /**
  * Returns the DI provider bindings for the Mastra SDK adapters.
- * Include this in your module's provider list to make `MASTRA_AGENT` and
- * `MASTRA_MEMORY` injectable throughout the business layer.
+ * Include this in your module's provider list to make `MASTRA_AGENT`,
+ * `MASTRA_MEMORY`, and `MASTRA_RAG` injectable throughout the business layer.
  *
  * @example
  * const module = createModule({
@@ -15,7 +16,11 @@ import { MastraMemoryAdapter } from './adapters/mastra.memory.js';
  */
 export function mastraProviders() {
   return {
-    providers: [bind(MASTRA_AGENT, MastraAgentAdapter), bind(MASTRA_MEMORY, MastraMemoryAdapter)],
-    exports: [MASTRA_AGENT, MASTRA_MEMORY],
+    providers: [
+      bind(MASTRA_AGENT, MastraAgentAdapter),
+      bind(MASTRA_MEMORY, MastraMemoryAdapter),
+      bind(MASTRA_RAG, MastraRagAdapter),
+    ],
+    exports: [MASTRA_AGENT, MASTRA_MEMORY, MASTRA_RAG],
   };
 }
