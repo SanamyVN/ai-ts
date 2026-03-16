@@ -4,6 +4,7 @@ import { promptBusinessProviders } from './domain/prompt/prompt.providers.js';
 import { sessionBusinessProviders } from './domain/session/session.providers.js';
 import { conversationBusinessProviders } from './domain/conversation/conversation.providers.js';
 import { ragBusinessProviders } from './domain/rag/rag.providers.js';
+import { voiceBusinessProviders } from './domain/voice/voice.providers.js';
 
 export function aiBusinessProviders(): ProviderBundle {
   const mastra = mastraProviders();
@@ -11,6 +12,7 @@ export function aiBusinessProviders(): ProviderBundle {
   const session = sessionBusinessProviders();
   const conversation = conversationBusinessProviders();
   const rag = ragBusinessProviders();
+  const voice = voiceBusinessProviders();
 
   return {
     providers: [
@@ -19,6 +21,7 @@ export function aiBusinessProviders(): ProviderBundle {
       ...session.providers,
       ...conversation.providers,
       ...rag.providers,
+      ...voice.providers,
     ],
     exports: [
       ...mastra.exports,
@@ -26,6 +29,7 @@ export function aiBusinessProviders(): ProviderBundle {
       ...session.exports,
       ...conversation.exports,
       ...rag.exports,
+      ...voice.exports,
     ],
   };
 }
