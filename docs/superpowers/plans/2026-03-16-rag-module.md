@@ -11,6 +11,7 @@
 **Spec:** `docs/superpowers/specs/2026-03-16-rag-module-design.md`
 
 **Spec deviations (following codebase convention over spec):**
+
 - Spec says `RagAppModule.forRoot()` — implemented as `forMonolith()` / `forStandalone()` to match `ConversationAppModule` pattern
 - Spec says `RagClientModule` class with static methods — implemented as `ragClientMonolithProviders()` / `ragClientStandaloneProviders()` functions to match `conversation-client.module.ts`
 
@@ -20,45 +21,45 @@
 
 ### New files
 
-| File | Responsibility |
-| --- | --- |
-| `src/business/sdk/mastra/adapters/mastra.rag.ts` | `MastraRagAdapter` — wraps PgVector behind `IMastraRag` |
-| `src/business/domain/rag/rag.interface.ts` | `IRagBusiness` interface + `RAG_BUSINESS` token |
-| `src/business/domain/rag/rag.model.ts` | Domain types: `RagContent`, `IngestInput`, `DeleteInput`, etc. |
-| `src/business/domain/rag/rag.error.ts` | `RagBusinessError`, `RagIngestError`, `RagDeleteError`, `RagEmbeddingError` |
-| `src/business/domain/rag/rag.business.ts` | `RagBusiness` — orchestrates chunk→embed→store pipeline |
-| `src/business/domain/rag/rag.business.spec.ts` | Unit tests for `RagBusiness` |
-| `src/business/domain/rag/rag.providers.ts` | `ragBusinessProviders()` |
-| `src/business/domain/rag/rag.testing.ts` | `createMockRagBusiness()` |
-| `src/business/domain/rag/client/schemas.ts` | Zod schemas for mediator payloads/responses |
-| `src/business/domain/rag/client/queries.ts` | `RagIngestCommand`, `RagDeleteCommand`, `RagReplaceCommand` |
-| `src/business/domain/rag/client/errors.ts` | `RagClientError` hierarchy |
-| `src/business/domain/rag/client/mediator.ts` | `IRagMediator` + `RAG_MEDIATOR` token |
-| `src/app/domain/rag/rag.router.ts` | REST routes: `/ai/rag/ingest`, `/ai/rag/documents` |
-| `src/app/domain/rag/rag.service.ts` | `RagAppService` — error mapping layer |
-| `src/app/domain/rag/rag.service.spec.ts` | Unit tests for `RagAppService` |
-| `src/app/domain/rag/rag.dto.ts` | Zod request/response DTOs |
-| `src/app/domain/rag/rag.mapper.ts` | Business → DTO transformations |
-| `src/app/domain/rag/rag.error.ts` | HTTP error classes + `mapRagError` |
-| `src/app/domain/rag/rag.tokens.ts` | `RAG_MIDDLEWARE_CONFIG` DI token |
-| `src/app/domain/rag/rag.providers.ts` | `ragAppProviders()` |
-| `src/app/domain/rag/rag.module.ts` | `RagAppModule.forMonolith()` / `forStandalone()` |
-| `src/app/sdk/rag-client/rag-local.mediator.ts` | In-process mediator wrapping `IRagBusiness` |
-| `src/app/sdk/rag-client/rag-remote.mediator.ts` | HTTP-based mediator for standalone deployment |
-| `src/app/sdk/rag-client/rag-client.module.ts` | `ragClientMonolithProviders()` / `ragClientStandaloneProviders()` |
-| `src/app/sdk/rag-client/rag.mapper.ts` | Business → client model mappers |
+| File                                             | Responsibility                                                              |
+| ------------------------------------------------ | --------------------------------------------------------------------------- |
+| `src/business/sdk/mastra/adapters/mastra.rag.ts` | `MastraRagAdapter` — wraps PgVector behind `IMastraRag`                     |
+| `src/business/domain/rag/rag.interface.ts`       | `IRagBusiness` interface + `RAG_BUSINESS` token                             |
+| `src/business/domain/rag/rag.model.ts`           | Domain types: `RagContent`, `IngestInput`, `DeleteInput`, etc.              |
+| `src/business/domain/rag/rag.error.ts`           | `RagBusinessError`, `RagIngestError`, `RagDeleteError`, `RagEmbeddingError` |
+| `src/business/domain/rag/rag.business.ts`        | `RagBusiness` — orchestrates chunk→embed→store pipeline                     |
+| `src/business/domain/rag/rag.business.spec.ts`   | Unit tests for `RagBusiness`                                                |
+| `src/business/domain/rag/rag.providers.ts`       | `ragBusinessProviders()`                                                    |
+| `src/business/domain/rag/rag.testing.ts`         | `createMockRagBusiness()`                                                   |
+| `src/business/domain/rag/client/schemas.ts`      | Zod schemas for mediator payloads/responses                                 |
+| `src/business/domain/rag/client/queries.ts`      | `RagIngestCommand`, `RagDeleteCommand`, `RagReplaceCommand`                 |
+| `src/business/domain/rag/client/errors.ts`       | `RagClientError` hierarchy                                                  |
+| `src/business/domain/rag/client/mediator.ts`     | `IRagMediator` + `RAG_MEDIATOR` token                                       |
+| `src/app/domain/rag/rag.router.ts`               | REST routes: `/ai/rag/ingest`, `/ai/rag/documents`                          |
+| `src/app/domain/rag/rag.service.ts`              | `RagAppService` — error mapping layer                                       |
+| `src/app/domain/rag/rag.service.spec.ts`         | Unit tests for `RagAppService`                                              |
+| `src/app/domain/rag/rag.dto.ts`                  | Zod request/response DTOs                                                   |
+| `src/app/domain/rag/rag.mapper.ts`               | Business → DTO transformations                                              |
+| `src/app/domain/rag/rag.error.ts`                | HTTP error classes + `mapRagError`                                          |
+| `src/app/domain/rag/rag.tokens.ts`               | `RAG_MIDDLEWARE_CONFIG` DI token                                            |
+| `src/app/domain/rag/rag.providers.ts`            | `ragAppProviders()`                                                         |
+| `src/app/domain/rag/rag.module.ts`               | `RagAppModule.forMonolith()` / `forStandalone()`                            |
+| `src/app/sdk/rag-client/rag-local.mediator.ts`   | In-process mediator wrapping `IRagBusiness`                                 |
+| `src/app/sdk/rag-client/rag-remote.mediator.ts`  | HTTP-based mediator for standalone deployment                               |
+| `src/app/sdk/rag-client/rag-client.module.ts`    | `ragClientMonolithProviders()` / `ragClientStandaloneProviders()`           |
+| `src/app/sdk/rag-client/rag.mapper.ts`           | Business → client model mappers                                             |
 
 ### Modified files
 
-| File | Change |
-| --- | --- |
-| `src/config.ts` | Add `embeddingModel`, `embeddingDimension` to `aiConfigSchema` |
-| `src/business/sdk/mastra/mastra.interface.ts` | Add `IMastraRag`, `MASTRA_RAG`, `MASTRA_CORE_RAG` |
-| `src/business/sdk/mastra/mastra.providers.ts` | Add `bind(MASTRA_RAG, MastraRagAdapter)` |
-| `src/business/sdk/mastra/mastra.testing.ts` | Add `createMockMastraRag()` |
-| `src/business/providers.ts` | Add `ragBusinessProviders()` to composition |
-| `src/app/providers.ts` | Add `ragAppProviders()` to composition |
-| `package.json` | Add peer deps + exports for RAG domain |
+| File                                          | Change                                                         |
+| --------------------------------------------- | -------------------------------------------------------------- |
+| `src/config.ts`                               | Add `embeddingModel`, `embeddingDimension` to `aiConfigSchema` |
+| `src/business/sdk/mastra/mastra.interface.ts` | Add `IMastraRag`, `MASTRA_RAG`, `MASTRA_CORE_RAG`              |
+| `src/business/sdk/mastra/mastra.providers.ts` | Add `bind(MASTRA_RAG, MastraRagAdapter)`                       |
+| `src/business/sdk/mastra/mastra.testing.ts`   | Add `createMockMastraRag()`                                    |
+| `src/business/providers.ts`                   | Add `ragBusinessProviders()` to composition                    |
+| `src/app/providers.ts`                        | Add `ragAppProviders()` to composition                         |
+| `package.json`                                | Add peer deps + exports for RAG domain                         |
 
 ---
 
@@ -67,6 +68,7 @@
 ### Task 1: Add embedding config to `aiConfigSchema`
 
 **Files:**
+
 - Modify: `src/config.ts`
 
 - [ ] **Step 1: Add embedding fields to config schema**
@@ -105,6 +107,7 @@ git commit -m "feat(rag): add embeddingModel and embeddingDimension to aiConfigS
 ### Task 2: Add `IMastraRag` interface and tokens
 
 **Files:**
+
 - Modify: `src/business/sdk/mastra/mastra.interface.ts`
 
 - [ ] **Step 1: Add PgVector import and IMastraRag interface**
@@ -176,6 +179,7 @@ git commit -m "feat(rag): add IMastraRag interface and DI tokens"
 ### Task 3: Implement `MastraRagAdapter`
 
 **Files:**
+
 - Create: `src/business/sdk/mastra/adapters/mastra.rag.ts`
 
 - [ ] **Step 1: Create the adapter file**
@@ -246,6 +250,7 @@ git commit -m "feat(rag): implement MastraRagAdapter wrapping PgVector"
 ### Task 4: Register adapter in providers and add mock
 
 **Files:**
+
 - Modify: `src/business/sdk/mastra/mastra.providers.ts`
 - Modify: `src/business/sdk/mastra/mastra.testing.ts`
 
@@ -319,6 +324,7 @@ git commit -m "feat(rag): register MastraRagAdapter in providers and add mock"
 ### Task 5: Create RAG domain models
 
 **Files:**
+
 - Create: `src/business/domain/rag/rag.model.ts`
 
 - [ ] **Step 1: Create the models file**
@@ -409,6 +415,7 @@ git commit -m "feat(rag): add RAG domain models"
 ### Task 6: Create RAG business errors
 
 **Files:**
+
 - Create: `src/business/domain/rag/rag.error.ts`
 
 - [ ] **Step 1: Create the error file**
@@ -490,6 +497,7 @@ git commit -m "feat(rag): add RAG business error hierarchy"
 ### Task 7: Create RAG business interface
 
 **Files:**
+
 - Create: `src/business/domain/rag/rag.interface.ts`
 
 - [ ] **Step 1: Create the interface file**
@@ -498,7 +506,14 @@ Create `src/business/domain/rag/rag.interface.ts`:
 
 ```typescript
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
-import type { IngestInput, IngestResult, DeleteInput, DeleteResult, ReplaceInput, ReplaceResult } from './rag.model.js';
+import type {
+  IngestInput,
+  IngestResult,
+  DeleteInput,
+  DeleteResult,
+  ReplaceInput,
+  ReplaceResult,
+} from './rag.model.js';
 
 /** Orchestrates RAG write-path operations: ingest, delete, and replace. */
 export interface IRagBusiness {
@@ -553,6 +568,7 @@ git commit -m "feat(rag): add IRagBusiness interface and DI token"
 ### Task 8: Implement `RagBusiness`
 
 **Files:**
+
 - Create: `src/business/domain/rag/rag.business.ts`
 
 - [ ] **Step 1: Create the business implementation**
@@ -577,7 +593,12 @@ import type {
   ReplaceResult,
   RagContent,
 } from './rag.model.js';
-import { RagIngestError, RagDeleteError, RagEmbeddingError, RagContentProcessingError } from './rag.error.js';
+import {
+  RagIngestError,
+  RagDeleteError,
+  RagEmbeddingError,
+  RagContentProcessingError,
+} from './rag.error.js';
 
 const DEFAULT_CHUNK_STRATEGY = 'recursive' as const;
 const DEFAULT_CHUNK_SIZE = 512;
@@ -724,6 +745,7 @@ git commit -m "feat(rag): implement RagBusiness with chunk-embed-store pipeline"
 ### Task 9: Write unit tests for `RagBusiness`
 
 **Files:**
+
 - Create: `src/business/domain/rag/rag.business.spec.ts`
 
 Reference existing test pattern: `src/business/domain/conversation/conversation.business.spec.ts`
@@ -762,7 +784,10 @@ vi.mock('@mastra/rag', () => ({
 // Mock ai SDK
 vi.mock('ai', () => ({
   embedMany: vi.fn().mockResolvedValue({
-    embeddings: [[0.1, 0.2], [0.3, 0.4]],
+    embeddings: [
+      [0.1, 0.2],
+      [0.3, 0.4],
+    ],
   }),
 }));
 
@@ -807,7 +832,10 @@ describe('RagBusiness', () => {
       expect(mastraRag.createIndex).toHaveBeenCalledWith(SCOPE_ID, 1536);
       expect(mastraRag.upsert).toHaveBeenCalledWith(
         SCOPE_ID,
-        [[0.1, 0.2], [0.3, 0.4]],
+        [
+          [0.1, 0.2],
+          [0.3, 0.4],
+        ],
         expect.arrayContaining([
           expect.objectContaining({ documentId: DOC_ID, scopeId: SCOPE_ID }),
         ]),
@@ -816,7 +844,9 @@ describe('RagBusiness', () => {
     });
 
     it('wraps MastraAdapterError during upsert as RagIngestError', async () => {
-      mastraRag.upsert.mockRejectedValueOnce(new MastraAdapterError('upsert', new Error('pg error')));
+      mastraRag.upsert.mockRejectedValueOnce(
+        new MastraAdapterError('upsert', new Error('pg error')),
+      );
 
       await expect(business.ingest(input)).rejects.toThrow(RagIngestError);
     });
@@ -854,7 +884,9 @@ describe('RagBusiness', () => {
     });
 
     it('wraps MastraAdapterError as RagDeleteError', async () => {
-      mastraRag.delete.mockRejectedValueOnce(new MastraAdapterError('delete', new Error('pg error')));
+      mastraRag.delete.mockRejectedValueOnce(
+        new MastraAdapterError('delete', new Error('pg error')),
+      );
 
       await expect(business.delete(input)).rejects.toThrow(RagDeleteError);
     });
@@ -895,6 +927,7 @@ git commit -m "test(rag): add unit tests for RagBusiness"
 ### Task 10: Create RAG business providers and testing mock
 
 **Files:**
+
 - Create: `src/business/domain/rag/rag.providers.ts`
 - Create: `src/business/domain/rag/rag.testing.ts`
 - Modify: `src/business/providers.ts`
@@ -1003,6 +1036,7 @@ git commit -m "feat(rag): add RAG business providers, testing mock, and composit
 ### Task 11: Create RAG client schemas
 
 **Files:**
+
 - Create: `src/business/domain/rag/client/schemas.ts`
 
 - [ ] **Step 1: Create client schemas**
@@ -1018,7 +1052,19 @@ const ragContentSchema = z.object({
 });
 
 const chunkOptionsSchema = z.object({
-  strategy: z.enum(['recursive', 'character', 'token', 'markdown', 'html', 'json', 'latex', 'sentence', 'semantic-markdown']).optional(),
+  strategy: z
+    .enum([
+      'recursive',
+      'character',
+      'token',
+      'markdown',
+      'html',
+      'json',
+      'latex',
+      'sentence',
+      'semantic-markdown',
+    ])
+    .optional(),
   maxSize: z.number().positive().optional(),
   overlap: z.number().nonnegative().optional(),
 });
@@ -1084,6 +1130,7 @@ git commit -m "feat(rag): add RAG client Zod schemas"
 ### Task 12: Create RAG client queries, errors, and mediator
 
 **Files:**
+
 - Create: `src/business/domain/rag/client/queries.ts`
 - Create: `src/business/domain/rag/client/errors.ts`
 - Create: `src/business/domain/rag/client/mediator.ts`
@@ -1199,6 +1246,7 @@ git commit -m "feat(rag): add RAG client mediator contracts"
 ### Task 13: Create RAG app DTOs
 
 **Files:**
+
 - Create: `src/app/domain/rag/rag.dto.ts`
 
 - [ ] **Step 1: Create DTO file**
@@ -1214,17 +1262,33 @@ const ragContentDto = z.object({
 });
 
 const chunkOptionsDto = z.object({
-  strategy: z.enum(['recursive', 'character', 'token', 'markdown', 'html', 'json', 'latex', 'sentence', 'semantic-markdown']).optional(),
+  strategy: z
+    .enum([
+      'recursive',
+      'character',
+      'token',
+      'markdown',
+      'html',
+      'json',
+      'latex',
+      'sentence',
+      'semantic-markdown',
+    ])
+    .optional(),
   maxSize: z.number().positive().optional(),
   overlap: z.number().nonnegative().optional(),
 });
 
 export const ingestRequestDto = z.object({
   scopeId: z.string().check(z.uuid()),
-  documents: z.array(z.object({
-    documentId: z.string().check(z.uuid()),
-    content: ragContentDto,
-  })).min(1),
+  documents: z
+    .array(
+      z.object({
+        documentId: z.string().check(z.uuid()),
+        content: ragContentDto,
+      }),
+    )
+    .min(1),
   chunkOptions: chunkOptionsDto.optional(),
 });
 export type IngestRequestDto = z.infer<typeof ingestRequestDto>;
@@ -1275,6 +1339,7 @@ git commit -m "feat(rag): add RAG app DTOs"
 ### Task 14: Create RAG app tokens, errors, mapper
 
 **Files:**
+
 - Create: `src/app/domain/rag/rag.tokens.ts`
 - Create: `src/app/domain/rag/rag.error.ts`
 - Create: `src/app/domain/rag/rag.mapper.ts`
@@ -1301,8 +1366,15 @@ export const RAG_MIDDLEWARE_CONFIG = createToken<RagMiddlewareConfig>('RAG_MIDDL
 Create `src/app/domain/rag/rag.error.ts`:
 
 ```typescript
-import { isRagIngestError, isRagDeleteError, isRagEmbeddingError } from '@/business/domain/rag/rag.error.js';
-import { isRagIngestClientError, isRagDeleteClientError } from '@/business/domain/rag/client/errors.js';
+import {
+  isRagIngestError,
+  isRagDeleteError,
+  isRagEmbeddingError,
+} from '@/business/domain/rag/rag.error.js';
+import {
+  isRagIngestClientError,
+  isRagDeleteClientError,
+} from '@/business/domain/rag/client/errors.js';
 
 export class RagHttpIngestError extends Error {
   readonly statusCode = 500;
@@ -1339,7 +1411,11 @@ export function mapRagError(error: unknown): never {
 Create `src/app/domain/rag/rag.mapper.ts`:
 
 ```typescript
-import type { IngestClientResult, DeleteClientResult, ReplaceClientResult } from '@/business/domain/rag/client/schemas.js';
+import type {
+  IngestClientResult,
+  DeleteClientResult,
+  ReplaceClientResult,
+} from '@/business/domain/rag/client/schemas.js';
 import type { IngestResponseDto, DeleteResponseDto, ReplaceResponseDto } from './rag.dto.js';
 
 export function toIngestResponseDto(result: IngestClientResult): IngestResponseDto {
@@ -1367,6 +1443,7 @@ git commit -m "feat(rag): add RAG app tokens, error mapping, and mapper"
 ### Task 15: Create RAG app service
 
 **Files:**
+
 - Create: `src/app/domain/rag/rag.service.ts`
 
 - [ ] **Step 1: Create service file**
@@ -1378,10 +1455,21 @@ import { createToken } from '@sanamyvn/foundation/di/core/tokens';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
 import { AI_MEDIATOR } from '@/shared/tokens.js';
-import { RagIngestCommand, RagDeleteCommand, RagReplaceCommand } from '@/business/domain/rag/client/queries.js';
+import {
+  RagIngestCommand,
+  RagDeleteCommand,
+  RagReplaceCommand,
+} from '@/business/domain/rag/client/queries.js';
 import { mapRagError } from './rag.error.js';
 import { toIngestResponseDto, toDeleteResponseDto, toReplaceResponseDto } from './rag.mapper.js';
-import type { IngestRequestDto, IngestResponseDto, DeleteRequestDto, DeleteResponseDto, ReplaceRequestDto, ReplaceResponseDto } from './rag.dto.js';
+import type {
+  IngestRequestDto,
+  IngestResponseDto,
+  DeleteRequestDto,
+  DeleteResponseDto,
+  ReplaceRequestDto,
+  ReplaceResponseDto,
+} from './rag.dto.js';
 
 @Injectable()
 export class RagAppService {
@@ -1408,7 +1496,12 @@ export class RagAppService {
   async replace(documentId: string, input: ReplaceRequestDto): Promise<ReplaceResponseDto> {
     try {
       const result = await this.mediator.send(
-        new RagReplaceCommand({ scopeId: input.scopeId, documentId, content: input.content, chunkOptions: input.chunkOptions }),
+        new RagReplaceCommand({
+          scopeId: input.scopeId,
+          documentId,
+          content: input.content,
+          chunkOptions: input.chunkOptions,
+        }),
       );
       return toReplaceResponseDto(result);
     } catch (error) {
@@ -1437,6 +1530,7 @@ git commit -m "feat(rag): add RAG app service with error mapping"
 ### Task 16: Write unit tests for `RagAppService`
 
 **Files:**
+
 - Create: `src/app/domain/rag/rag.service.spec.ts`
 
 - [ ] **Step 1: Create test file**
@@ -1535,6 +1629,7 @@ git commit -m "test(rag): add unit tests for RagAppService"
 ### Task 17: Create RAG router
 
 **Files:**
+
 - Create: `src/app/domain/rag/rag.router.ts`
 
 - [ ] **Step 1: Create router file**
@@ -1607,6 +1702,7 @@ git commit -m "feat(rag): add RAG REST router"
 ### Task 18: Create RAG app providers and module
 
 **Files:**
+
 - Create: `src/app/domain/rag/rag.providers.ts`
 - Create: `src/app/domain/rag/rag.module.ts`
 - Modify: `src/app/providers.ts`
@@ -1654,9 +1750,7 @@ export class RagAppModule extends Module {
     };
   }
 
-  static forStandalone(
-    options: RagAppModuleOptions & { ragServiceUrl: string },
-  ): ModuleDefinition {
+  static forStandalone(options: RagAppModuleOptions & { ragServiceUrl: string }): ModuleDefinition {
     return {
       module: RagAppModule,
       providers: [value(RAG_MIDDLEWARE_CONFIG, options.middleware ?? {})],
@@ -1684,7 +1778,12 @@ export function aiAppProviders(): ProviderBundle {
   const rag = ragAppProviders();
 
   return {
-    providers: [...prompt.providers, ...session.providers, ...conversation.providers, ...rag.providers],
+    providers: [
+      ...prompt.providers,
+      ...session.providers,
+      ...conversation.providers,
+      ...rag.providers,
+    ],
     exports: [...prompt.exports, ...session.exports, ...conversation.exports, ...rag.exports],
   };
 }
@@ -1707,6 +1806,7 @@ git commit -m "feat(rag): add RAG app module, providers, and composition"
 ### Task 19: Create RAG client SDK (local + remote mediators)
 
 **Files:**
+
 - Create: `src/app/sdk/rag-client/rag.mapper.ts`
 - Create: `src/app/sdk/rag-client/rag-local.mediator.ts`
 - Create: `src/app/sdk/rag-client/rag-remote.mediator.ts`
@@ -1718,7 +1818,11 @@ Create `src/app/sdk/rag-client/rag.mapper.ts`:
 
 ```typescript
 import type { IngestResult, DeleteResult, ReplaceResult } from '@/business/domain/rag/rag.model.js';
-import type { IngestClientResult, DeleteClientResult, ReplaceClientResult } from '@/business/domain/rag/client/schemas.js';
+import type {
+  IngestClientResult,
+  DeleteClientResult,
+  ReplaceClientResult,
+} from '@/business/domain/rag/client/schemas.js';
 
 export function toIngestClientResult(result: IngestResult): IngestClientResult {
   return { chunksStored: result.chunksStored };
@@ -1741,8 +1845,16 @@ Create `src/app/sdk/rag-client/rag-local.mediator.ts`:
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import { RAG_BUSINESS, type IRagBusiness } from '@/business/domain/rag/rag.interface.js';
 import type { IRagMediator } from '@/business/domain/rag/client/mediator.js';
-import type { IngestClientResult, DeleteClientResult, ReplaceClientResult } from '@/business/domain/rag/client/schemas.js';
-import type { RagIngestCommand, RagDeleteCommand, RagReplaceCommand } from '@/business/domain/rag/client/queries.js';
+import type {
+  IngestClientResult,
+  DeleteClientResult,
+  ReplaceClientResult,
+} from '@/business/domain/rag/client/schemas.js';
+import type {
+  RagIngestCommand,
+  RagDeleteCommand,
+  RagReplaceCommand,
+} from '@/business/domain/rag/client/queries.js';
 import { toIngestClientResult, toDeleteClientResult, toReplaceClientResult } from './rag.mapper.js';
 
 /**
@@ -1789,9 +1901,21 @@ Create `src/app/sdk/rag-client/rag-remote.mediator.ts`:
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { IRagMediator } from '@/business/domain/rag/client/mediator.js';
-import type { IngestClientResult, DeleteClientResult, ReplaceClientResult } from '@/business/domain/rag/client/schemas.js';
-import { ingestResultSchema, deleteResultSchema, replaceResultSchema } from '@/business/domain/rag/client/schemas.js';
-import type { RagIngestCommand, RagDeleteCommand, RagReplaceCommand } from '@/business/domain/rag/client/queries.js';
+import type {
+  IngestClientResult,
+  DeleteClientResult,
+  ReplaceClientResult,
+} from '@/business/domain/rag/client/schemas.js';
+import {
+  ingestResultSchema,
+  deleteResultSchema,
+  replaceResultSchema,
+} from '@/business/domain/rag/client/schemas.js';
+import type {
+  RagIngestCommand,
+  RagDeleteCommand,
+  RagReplaceCommand,
+} from '@/business/domain/rag/client/queries.js';
 import { RagIngestClientError, RagDeleteClientError } from '@/business/domain/rag/client/errors.js';
 
 export interface HttpClient {
@@ -1922,6 +2046,7 @@ git commit -m "feat(rag): add RAG client SDK with local and remote mediators"
 ### Task 20: Add peer dependencies and package exports
 
 **Files:**
+
 - Modify: `package.json`
 
 - [ ] **Step 1: Add new peer dependencies**
@@ -2015,15 +2140,19 @@ git commit -m "feat(rag): add peer dependencies and package exports for RAG doma
 ### Task 21: Update original design doc
 
 **Files:**
+
 - Modify: `docs/plans/2026-03-15-ai-package-design.md`
 
 - [ ] **Step 1: Update the "Relationship to Mastra" table**
 
 In the table at line ~29, change:
+
 ```
 | RAG / context injection                                           | Mastra (direct)                             |
 ```
+
 to:
+
 ```
 | RAG write path (ingest, delete, replace)                          | `@sanamy/ai` (adapter wraps `@mastra/pg`)   |
 | RAG read path (retrieval, similarity search)                      | Mastra (direct)                             |
@@ -2032,10 +2161,13 @@ to:
 - [ ] **Step 2: Update the Decisions table**
 
 In the decisions table at line ~768, change:
+
 ```
 | Don't wrap voice/RAG/evals                        | Too varied and config-heavy. Wrapping adds friction without value. Downstream uses Mastra directly.
 ```
+
 to:
+
 ```
 | Don't wrap voice/evals                            | Too varied and config-heavy. Wrapping adds friction without value. Downstream uses Mastra directly.                                                                                                                             |
 | Wrap RAG write path only                          | Experience building `aiya` showed the ingest/delete/replace pipeline is common enough to standardize. The read path (retrieval) remains Mastra-direct since agents handle it through built-in tools. See `docs/superpowers/specs/2026-03-16-rag-module-design.md`. |

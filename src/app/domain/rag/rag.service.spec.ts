@@ -12,6 +12,7 @@ describe('RagAppService', () => {
 
   beforeEach(() => {
     mediator = { send: vi.fn() };
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     service = new RagAppService(mediator as never);
   });
 

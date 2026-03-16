@@ -71,13 +71,13 @@ The returned `ResolvedPrompt` contains three fields: the prompt `slug`, the `ver
 
 All errors extend `PromptError`. Import them from `@sanamyvn/ai-ts/business/prompt/error`.
 
-| Error | When | Type Guard |
-|-------|------|------------|
-| `PromptNotFoundError` | Slug not found or no active version | `isPromptNotFoundError()` |
-| `PromptAlreadyExistsError` | Duplicate slug on create | `isPromptAlreadyExistsError()` |
-| `PromptVersionNotFoundError` | Version ID not found during `setActiveVersion` | -- |
-| `InvalidPromptParametersError` | Parameters fail schema validation | -- |
-| `PromptRenderError` | Mustache rendering fails | -- |
+| Error                          | When                                           | Type Guard                     |
+| ------------------------------ | ---------------------------------------------- | ------------------------------ |
+| `PromptNotFoundError`          | Slug not found or no active version            | `isPromptNotFoundError()`      |
+| `PromptAlreadyExistsError`     | Duplicate slug on create                       | `isPromptAlreadyExistsError()` |
+| `PromptVersionNotFoundError`   | Version ID not found during `setActiveVersion` | --                             |
+| `InvalidPromptParametersError` | Parameters fail schema validation              | --                             |
+| `PromptRenderError`            | Mustache rendering fails                       | --                             |
 
 ```typescript
 import {

@@ -78,33 +78,33 @@ Each domain module accepts a `middleware` config that maps route names to arrays
 
 ### PromptMiddlewareConfig
 
-| Route | Operation |
-|-------|-----------|
-| `create` | Create a prompt |
-| `list` | List prompts |
-| `getBySlug` | Get prompt by slug |
-| `update` | Update a prompt |
-| `createVersion` | Create a prompt version |
-| `activateVersion` | Activate a prompt version |
-| `listVersions` | List versions for a prompt |
+| Route             | Operation                  |
+| ----------------- | -------------------------- |
+| `create`          | Create a prompt            |
+| `list`            | List prompts               |
+| `getBySlug`       | Get prompt by slug         |
+| `update`          | Update a prompt            |
+| `createVersion`   | Create a prompt version    |
+| `activateVersion` | Activate a prompt version  |
+| `listVersions`    | List versions for a prompt |
 
 ### SessionMiddlewareConfig
 
-| Route | Operation |
-|-------|-----------|
-| `list` | List sessions |
-| `get` | Get session by ID |
-| `getMessages` | Get session messages |
+| Route              | Operation                 |
+| ------------------ | ------------------------- |
+| `list`             | List sessions             |
+| `get`              | Get session by ID         |
+| `getMessages`      | Get session messages      |
 | `exportTranscript` | Export session transcript |
-| `end` | End a session |
+| `end`              | End a session             |
 
 ### ConversationMiddlewareConfig
 
-| Route | Operation |
-|-------|-----------|
-| `create` | Create a conversation |
-| `sendMessage` | Send a message |
-| `streamMessage` | Stream a message |
+| Route           | Operation             |
+| --------------- | --------------------- |
+| `create`        | Create a conversation |
+| `sendMessage`   | Send a message        |
+| `streamMessage` | Stream a message      |
 
 ### Example: iam-ts auth middleware
 
@@ -154,11 +154,11 @@ The default repositories use Drizzle with PostgreSQL. Replace any of them by imp
 
 ### Repository interfaces
 
-| Token | Interface | Methods |
-|-------|-----------|---------|
-| `PROMPT_REPOSITORY` | `IPromptRepository` | `create`, `findById`, `findBySlug`, `list`, `update`, `delete` |
+| Token                       | Interface                  | Methods                                                                                       |
+| --------------------------- | -------------------------- | --------------------------------------------------------------------------------------------- |
+| `PROMPT_REPOSITORY`         | `IPromptRepository`        | `create`, `findById`, `findBySlug`, `list`, `update`, `delete`                                |
 | `PROMPT_VERSION_REPOSITORY` | `IPromptVersionRepository` | `create`, `findById`, `findActiveByPromptId`, `listByPromptId`, `setActive`, `getNextVersion` |
-| `SESSION_REPOSITORY` | `ISessionRepository` | `create`, `findById`, `list`, `updateStatus` |
+| `SESSION_REPOSITORY`        | `ISessionRepository`       | `create`, `findById`, `list`, `updateStatus`                                                  |
 
 ### Binding a custom repository
 

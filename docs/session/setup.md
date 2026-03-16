@@ -59,13 +59,13 @@ const sessionClient = sessionClientStandaloneProviders({
 
 ## Required Tokens
 
-| Token | Type | Who Provides |
-|-------|------|--------------|
-| `AI_DB` | `PostgresClient<AiSchema>` | Downstream app |
-| `AI_MEDIATOR` | `IMediator` | Downstream app (foundation mediator) |
-| `MASTRA_MEMORY` | `IMastraMemory` | Downstream app (Mastra integration) |
-| `SESSION_REPOSITORY` | `ISessionRepository` | Auto-bound by repository providers |
-| `SESSION_MIDDLEWARE_CONFIG` | `SessionMiddlewareConfig` | Auto-bound by `SessionAppModule.forRoot()` |
+| Token                       | Type                       | Who Provides                               |
+| --------------------------- | -------------------------- | ------------------------------------------ |
+| `AI_DB`                     | `PostgresClient<AiSchema>` | Downstream app                             |
+| `AI_MEDIATOR`               | `IMediator`                | Downstream app (foundation mediator)       |
+| `MASTRA_MEMORY`             | `IMastraMemory`            | Downstream app (Mastra integration)        |
+| `SESSION_REPOSITORY`        | `ISessionRepository`       | Auto-bound by repository providers         |
+| `SESSION_MIDDLEWARE_CONFIG` | `SessionMiddlewareConfig`  | Auto-bound by `SessionAppModule.forRoot()` |
 
 `AI_DB`, `AI_MEDIATOR`, and `MASTRA_MEMORY` are the tokens your application must bind. The module and repository providers handle the rest.
 

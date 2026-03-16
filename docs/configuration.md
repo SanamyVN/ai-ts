@@ -4,11 +4,11 @@
 
 ## Schema Reference
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `defaultModel` | `string` | `'anthropic/claude-sonnet-4-20250514'` | Model identifier passed to the Mastra agent |
-| `prompt.maxVersions` | `number` | `50` | Maximum versions retained per prompt template |
-| `session.transcriptPageSize` | `number` | `100` | Messages per page in transcript export |
+| Field                        | Type     | Default                                | Description                                   |
+| ---------------------------- | -------- | -------------------------------------- | --------------------------------------------- |
+| `defaultModel`               | `string` | `'anthropic/claude-sonnet-4-20250514'` | Model identifier passed to the Mastra agent   |
+| `prompt.maxVersions`         | `number` | `50`                                   | Maximum versions retained per prompt template |
+| `session.transcriptPageSize` | `number` | `100`                                  | Messages per page in transcript export        |
 
 ## Providing Config
 

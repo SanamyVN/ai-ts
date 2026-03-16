@@ -4,16 +4,16 @@
 
 ## Mock Factories
 
-| Factory | Import Path | Mocks |
-|---------|-------------|-------|
-| `createMockPromptRepository()` | `@sanamyvn/ai-ts/repository/prompt/testing` | `IPromptRepository` |
+| Factory                               | Import Path                                         | Mocks                      |
+| ------------------------------------- | --------------------------------------------------- | -------------------------- |
+| `createMockPromptRepository()`        | `@sanamyvn/ai-ts/repository/prompt/testing`         | `IPromptRepository`        |
 | `createMockPromptVersionRepository()` | `@sanamyvn/ai-ts/repository/prompt-version/testing` | `IPromptVersionRepository` |
-| `createMockSessionRepository()` | `@sanamyvn/ai-ts/repository/session/testing` | `ISessionRepository` |
-| `createMockPromptService()` | `@sanamyvn/ai-ts/business/prompt/testing` | `IPromptService` |
-| `createMockSessionService()` | `@sanamyvn/ai-ts/business/session/testing` | `ISessionService` |
-| `createMockConversationEngine()` | `@sanamyvn/ai-ts/business/conversation/testing` | `IConversationEngine` |
-| `createMockMastraAgent()` | `@sanamyvn/ai-ts/business/mastra/testing` | `IMastraAgent` |
-| `createMockMastraMemory()` | `@sanamyvn/ai-ts/business/mastra/testing` | `IMastraMemory` |
+| `createMockSessionRepository()`       | `@sanamyvn/ai-ts/repository/session/testing`        | `ISessionRepository`       |
+| `createMockPromptService()`           | `@sanamyvn/ai-ts/business/prompt/testing`           | `IPromptService`           |
+| `createMockSessionService()`          | `@sanamyvn/ai-ts/business/session/testing`          | `ISessionService`          |
+| `createMockConversationEngine()`      | `@sanamyvn/ai-ts/business/conversation/testing`     | `IConversationEngine`      |
+| `createMockMastraAgent()`             | `@sanamyvn/ai-ts/business/mastra/testing`           | `IMastraAgent`             |
+| `createMockMastraMemory()`            | `@sanamyvn/ai-ts/business/mastra/testing`           | `IMastraMemory`            |
 
 Every stub is declared as `vi.fn<Interface['method']>()`. This means TypeScript enforces the correct argument and return types when you call `.mockResolvedValue()`, `.mockReturnValue()`, or `.mockImplementation()`.
 
@@ -52,9 +52,7 @@ describe('ChatController', () => {
     });
 
     expect(result.id).toBe('conv-1');
-    expect(engine.create).toHaveBeenCalledWith(
-      expect.objectContaining({ promptSlug: 'greet' }),
-    );
+    expect(engine.create).toHaveBeenCalledWith(expect.objectContaining({ promptSlug: 'greet' }));
   });
 
   it('sends a message and returns the response text', async () => {
@@ -98,21 +96,25 @@ import { aiSchema } from '@/shared/schema.js';
 export const pg = createPostgresFixture({ schema: aiSchema });
 
 export function createAiTestContext(): AiTestContext {
-  const client = wrapAsPostgresClient();       // shim around pg.db
+  const client = wrapAsPostgresClient(); // shim around pg.db
   const promptRepo = new PromptDrizzleRepository(client);
   const versionRepo = new PromptVersionDrizzleRepository(client);
   const sessionRepo = new SessionDrizzleRepository(client);
 
   const promptService = new PromptService(promptRepo, versionRepo);
 
-  const mastraAgent = createMockMastraAgent();  // still mocked
+  const mastraAgent = createMockMastraAgent(); // still mocked
   const mastraMemory = createMockMastraMemory();
   const sessionService = new SessionService(sessionRepo, mastraMemory);
 
   return {
-    promptRepo, versionRepo, sessionRepo,
-    promptService, sessionService,
-    mastraAgent, mastraMemory,
+    promptRepo,
+    versionRepo,
+    sessionRepo,
+    promptService,
+    sessionService,
+    mastraAgent,
+    mastraMemory,
   };
 }
 ```
@@ -130,19 +132,19 @@ describe('Feature / Integration', () => {
   let ctx: AiTestContext;
 
   beforeAll(async () => {
-    await pg.start();             // start container, run migrations
+    await pg.start(); // start container, run migrations
   });
 
   afterAll(async () => {
-    await pg.stop();              // tear down container
+    await pg.stop(); // tear down container
   });
 
   beforeEach(() => {
-    ctx = createAiTestContext();   // fresh repos and mocks per test
+    ctx = createAiTestContext(); // fresh repos and mocks per test
   });
 
   afterEach(async () => {
-    await pg.truncateAll();        // clear all rows between tests
+    await pg.truncateAll(); // clear all rows between tests
   });
 
   it('does something with real database access', async () => {

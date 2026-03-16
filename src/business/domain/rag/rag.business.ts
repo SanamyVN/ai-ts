@@ -57,6 +57,7 @@ export class RagBusiness implements IRagBusiness {
           scopeId: input.scopeId,
         });
 
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         const chunkParams: ChunkParams = {
           strategy: input.chunkOptions?.strategy ?? DEFAULT_CHUNK_STRATEGY,
           maxSize: input.chunkOptions?.maxSize ?? DEFAULT_CHUNK_SIZE,
@@ -136,9 +137,8 @@ export class RagBusiness implements IRagBusiness {
     for (let i = 0; i < texts.length; i += DEFAULT_EMBEDDING_BATCH_SIZE) {
       const batch = texts.slice(i, i + DEFAULT_EMBEDDING_BATCH_SIZE);
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { embeddings } = await embedMany({
-          model: this.embeddingModel as any,
+          model: this.embeddingModel as any, // eslint-disable-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
           values: batch,
         });
         allEmbeddings.push(...embeddings);

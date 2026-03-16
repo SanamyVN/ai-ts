@@ -25,15 +25,15 @@ const conversation = await engine.create({
 
 ### ConversationConfig Fields
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `promptSlug` | `string` | Yes | Slug of the prompt template to resolve |
-| `promptParams` | `Record<string, unknown>` | Yes | Parameters passed to the prompt template |
-| `userId` | `string` | Yes | User who owns the conversation |
-| `tenantId` | `string` | No | Tenant for multi-tenant deployments |
-| `purpose` | `string` | Yes | Label describing the conversation's intent |
-| `model` | `string` | No | Override the default model from `AiConfig` |
-| `outputSchema` | `unknown` | No | Schema for structured output from the agent |
+| Field          | Type                      | Required | Description                                 |
+| -------------- | ------------------------- | -------- | ------------------------------------------- |
+| `promptSlug`   | `string`                  | Yes      | Slug of the prompt template to resolve      |
+| `promptParams` | `Record<string, unknown>` | Yes      | Parameters passed to the prompt template    |
+| `userId`       | `string`                  | Yes      | User who owns the conversation              |
+| `tenantId`     | `string`                  | No       | Tenant for multi-tenant deployments         |
+| `purpose`      | `string`                  | Yes      | Label describing the conversation's intent  |
+| `model`        | `string`                  | No       | Override the default model from `AiConfig`  |
+| `outputSchema` | `unknown`                 | No       | Schema for structured output from the agent |
 
 ### Orchestration Flow
 
@@ -122,10 +122,10 @@ sequenceDiagram
 
 All errors extend `ConversationError`. Import them from `@sanamyvn/ai-ts/business/conversation/error`.
 
-| Error | When | Type Guard |
-|-------|------|------------|
-| `ConversationNotFoundError` | Session lookup fails during reconstruction | `isConversationNotFoundError()` |
-| `ConversationSendError` | Mastra agent fails (wraps `MastraAdapterError`) | `isConversationSendError()` |
+| Error                       | When                                            | Type Guard                      |
+| --------------------------- | ----------------------------------------------- | ------------------------------- |
+| `ConversationNotFoundError` | Session lookup fails during reconstruction      | `isConversationNotFoundError()` |
+| `ConversationSendError`     | Mastra agent fails (wraps `MastraAdapterError`) | `isConversationSendError()`     |
 
 ```typescript
 import {

@@ -36,7 +36,9 @@ vi.mock('ai', () => ({
 
 // Mock @mastra/core/llm
 vi.mock('@mastra/core/llm', () => ({
-  ModelRouterEmbeddingModel: class MockModelRouterEmbeddingModel {},
+  ModelRouterEmbeddingModel: class MockModelRouterEmbeddingModel {
+    readonly specificationVersion = 'v1' as const;
+  },
 }));
 
 const SCOPE_ID = '11111111-1111-4111-a111-111111111111';

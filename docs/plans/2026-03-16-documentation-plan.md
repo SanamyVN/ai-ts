@@ -33,25 +33,38 @@ import type { ISessionRepository } from '@sanamyvn/ai-ts/repository/session';
 
 // Business — Prompt
 import type { IPromptService } from '@sanamyvn/ai-ts/business/prompt';
-import type { PromptTemplate, ResolvedPrompt, CreatePromptInput } from '@sanamyvn/ai-ts/business/prompt/model';
+import type {
+  PromptTemplate,
+  ResolvedPrompt,
+  CreatePromptInput,
+} from '@sanamyvn/ai-ts/business/prompt/model';
 import {
-  PromptNotFoundError, PromptAlreadyExistsError, PromptVersionNotFoundError,
-  InvalidPromptParametersError, PromptRenderError,
-  isPromptNotFoundError, isPromptAlreadyExistsError,
+  PromptNotFoundError,
+  PromptAlreadyExistsError,
+  PromptVersionNotFoundError,
+  InvalidPromptParametersError,
+  PromptRenderError,
+  isPromptNotFoundError,
+  isPromptAlreadyExistsError,
 } from '@sanamyvn/ai-ts/business/prompt/error';
 
 // Business — Session
 import type { ISessionService } from '@sanamyvn/ai-ts/business/session';
 import type { Session, StartSessionInput } from '@sanamyvn/ai-ts/business/session/model';
 import {
-  SessionNotFoundError, SessionAlreadyEndedError,
-  isSessionNotFoundError, isSessionAlreadyEndedError,
+  SessionNotFoundError,
+  SessionAlreadyEndedError,
+  isSessionNotFoundError,
+  isSessionAlreadyEndedError,
 } from '@sanamyvn/ai-ts/business/session/error';
 
 // Business — Conversation
 import type { IConversationEngine } from '@sanamyvn/ai-ts/business/conversation';
 import type { Conversation, ConversationConfig } from '@sanamyvn/ai-ts/business/conversation/model';
-import { ConversationNotFoundError, ConversationSendError } from '@sanamyvn/ai-ts/business/conversation/error';
+import {
+  ConversationNotFoundError,
+  ConversationSendError,
+} from '@sanamyvn/ai-ts/business/conversation/error';
 
 // Business — Mastra
 import type { IMastraAgent, IMastraMemory } from '@sanamyvn/ai-ts/business/mastra';
@@ -76,7 +89,10 @@ import { conversationClientStandaloneProviders } from '@sanamyvn/ai-ts/app/conve
 import { createMockPromptService } from '@sanamyvn/ai-ts/business/prompt/testing';
 import { createMockSessionService } from '@sanamyvn/ai-ts/business/session/testing';
 import { createMockConversationEngine } from '@sanamyvn/ai-ts/business/conversation/testing';
-import { createMockMastraAgent, createMockMastraMemory } from '@sanamyvn/ai-ts/business/mastra/testing';
+import {
+  createMockMastraAgent,
+  createMockMastraMemory,
+} from '@sanamyvn/ai-ts/business/mastra/testing';
 import { createMockPromptRepository } from '@sanamyvn/ai-ts/repository/prompt/testing';
 import { createMockPromptVersionRepository } from '@sanamyvn/ai-ts/repository/prompt-version/testing';
 import { createMockSessionRepository } from '@sanamyvn/ai-ts/repository/session/testing';
@@ -94,6 +110,7 @@ import { Module } from '@sanamyvn/foundation/di/node/module';
 ### Task 1: Fix prompt service mock typing
 
 **Files:**
+
 - Modify: `src/business/domain/prompt/prompt.testing.ts`
 
 The prompt service mock uses untyped `vi.fn()`. Fix it to match the typed pattern used by all other mocks. Read `src/business/domain/session/session.testing.ts` first to confirm the exact pattern, then replicate it. Key change: remove the explicit `: IPromptService` return type annotation so TypeScript infers `Mock<T>` types instead.
@@ -138,6 +155,7 @@ git commit -m "fix: type prompt service mock factory for TypeScript compatibilit
 ### Task 2: Getting started guide
 
 **Files:**
+
 - Create: `docs/getting-started.md`
 
 - [ ] **Step 1: Write getting-started.md**
@@ -150,7 +168,9 @@ Use `/writing-clearly-and-concisely` skill. All code examples MUST use the verif
 ## Install
 
 pnpm add @sanamyvn/ai-ts
+
 # Peer dependencies
+
 pnpm add @sanamyvn/foundation @mastra/core drizzle-orm zod
 
 ## Provide Infrastructure Tokens
@@ -190,6 +210,7 @@ git commit -m "docs: add getting started guide"
 ### Task 3: Integration guide
 
 **Files:**
+
 - Create: `docs/integration.md`
 
 - [ ] **Step 1: Write integration.md**
@@ -229,6 +250,7 @@ Explain: these register the in-process mediator adapters so cross-domain calls w
 ## Module Dependency Graph
 
 [Mermaid flowchart showing:
+
 - App modules → business providers → repo providers
 - Mediator clients connecting domains
 - Infrastructure tokens (AI_DB, MASTRA_CORE_AGENT, etc.) provided by downstream]
@@ -252,6 +274,7 @@ git commit -m "docs: add integration guide with module dependency diagram"
 ### Task 4: Configuration reference
 
 **Files:**
+
 - Create: `docs/configuration.md`
 
 - [ ] **Step 1: Write configuration.md**
@@ -265,11 +288,11 @@ The `aiConfigSchema` defines runtime settings. Parse it and bind to `AI_CONFIG`.
 
 ## Schema Reference
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `defaultModel` | `string` | `'anthropic/claude-sonnet-4-20250514'` | Model identifier passed to Mastra agent |
-| `prompt.maxVersions` | `number` | `50` | Maximum versions per prompt template |
-| `session.transcriptPageSize` | `number` | `100` | Messages per page in transcript export |
+| Field                        | Type     | Default                                | Description                             |
+| ---------------------------- | -------- | -------------------------------------- | --------------------------------------- |
+| `defaultModel`               | `string` | `'anthropic/claude-sonnet-4-20250514'` | Model identifier passed to Mastra agent |
+| `prompt.maxVersions`         | `number` | `50`                                   | Maximum versions per prompt template    |
+| `session.transcriptPageSize` | `number` | `100`                                  | Messages per page in transcript export  |
 
 ## Providing Config
 
@@ -294,6 +317,7 @@ git commit -m "docs: add configuration reference"
 ### Task 5: Customization guide
 
 **Files:**
+
 - Create: `docs/customization.md`
 
 - [ ] **Step 1: Write customization.md**
@@ -310,9 +334,11 @@ Left: Monolith — AppModule → LocalMediator → PromptService (in-process).
 Right: Standalone — AppModule → RemoteMediator → HTTP → PromptService (separate process).]
 
 ### Monolith (default)
+
 [Code: *ClientMonolithProviders()]
 
 ### Standalone
+
 [Code: *ClientStandaloneProviders({ baseUrl, httpClientToken })]
 
 [Explain: zero changes in business code — only module composition changes.]
@@ -347,6 +373,7 @@ git commit -m "docs: add customization guide with deployment mode diagrams"
 ### Task 6: Testing guide
 
 **Files:**
+
 - Create: `docs/testing.md`
 
 - [ ] **Step 1: Write testing.md**
@@ -358,16 +385,16 @@ Use `/writing-clearly-and-concisely` skill. Structure:
 
 ## Mock Factories
 
-| Factory | Import Path | Mocks |
-|---------|-------------|-------|
-| `createMockPromptRepository()` | `@sanamyvn/ai-ts/repository/prompt/testing` | `IPromptRepository` |
+| Factory                               | Import Path                                         | Mocks                      |
+| ------------------------------------- | --------------------------------------------------- | -------------------------- |
+| `createMockPromptRepository()`        | `@sanamyvn/ai-ts/repository/prompt/testing`         | `IPromptRepository`        |
 | `createMockPromptVersionRepository()` | `@sanamyvn/ai-ts/repository/prompt-version/testing` | `IPromptVersionRepository` |
-| `createMockSessionRepository()` | `@sanamyvn/ai-ts/repository/session/testing` | `ISessionRepository` |
-| `createMockPromptService()` | `@sanamyvn/ai-ts/business/prompt/testing` | `IPromptService` |
-| `createMockSessionService()` | `@sanamyvn/ai-ts/business/session/testing` | `ISessionService` |
-| `createMockConversationEngine()` | `@sanamyvn/ai-ts/business/conversation/testing` | `IConversationEngine` |
-| `createMockMastraAgent()` | `@sanamyvn/ai-ts/business/mastra/testing` | `IMastraAgent` |
-| `createMockMastraMemory()` | `@sanamyvn/ai-ts/business/mastra/testing` | `IMastraMemory` |
+| `createMockSessionRepository()`       | `@sanamyvn/ai-ts/repository/session/testing`        | `ISessionRepository`       |
+| `createMockPromptService()`           | `@sanamyvn/ai-ts/business/prompt/testing`           | `IPromptService`           |
+| `createMockSessionService()`          | `@sanamyvn/ai-ts/business/session/testing`          | `ISessionService`          |
+| `createMockConversationEngine()`      | `@sanamyvn/ai-ts/business/conversation/testing`     | `IConversationEngine`      |
+| `createMockMastraAgent()`             | `@sanamyvn/ai-ts/business/mastra/testing`           | `IMastraAgent`             |
+| `createMockMastraMemory()`            | `@sanamyvn/ai-ts/business/mastra/testing`           | `IMastraMemory`            |
 
 All mocks use typed `vi.fn<Interface['method']>()`, so `.mockResolvedValue()` works with TypeScript.
 
@@ -403,6 +430,7 @@ git commit -m "docs: add testing guide with mock factories and patterns"
 ### Task 7: Prompt setup
 
 **Files:**
+
 - Create: `docs/prompt/setup.md`
 
 - [ ] **Step 1: Write prompt/setup.md**
@@ -420,18 +448,20 @@ Show all 7 middleware operations: create, list, getBySlug, update, createVersion
 ## Mediator Client
 
 ### Monolith
+
 [Code: promptClientMonolithProviders()]
 
 ### Standalone
+
 [Code: promptClientStandaloneProviders({ baseUrl, httpClientToken })]
 
 ## Required Tokens
 
-| Token | Type | Who Provides |
-|-------|------|-------------|
-| `AI_DB` | `PostgresClient<AiSchema>` | Downstream app |
-| `AI_CONFIG` | `AiConfig` | Downstream app |
-| `PROMPT_REPOSITORY` | `IPromptRepository` | Auto-bound by repo providers |
+| Token                       | Type                       | Who Provides                 |
+| --------------------------- | -------------------------- | ---------------------------- |
+| `AI_DB`                     | `PostgresClient<AiSchema>` | Downstream app               |
+| `AI_CONFIG`                 | `AiConfig`                 | Downstream app               |
+| `PROMPT_REPOSITORY`         | `IPromptRepository`        | Auto-bound by repo providers |
 | `PROMPT_VERSION_REPOSITORY` | `IPromptVersionRepository` | Auto-bound by repo providers |
 
 ## Module Flow
@@ -451,6 +481,7 @@ git commit -m "docs: add prompt setup guide"
 ### Task 8: Prompt usage
 
 **Files:**
+
 - Create: `docs/prompt/usage.md`
 
 - [ ] **Step 1: Write prompt/usage.md**
@@ -480,13 +511,13 @@ Explain: finds active version, validates params against parameterSchema, renders
 
 ## Error Handling
 
-| Error | When | Type Guard |
-|-------|------|------------|
-| `PromptNotFoundError` | Slug not found or no active version | `isPromptNotFoundError()` |
-| `PromptAlreadyExistsError` | Duplicate slug on create | `isPromptAlreadyExistsError()` |
-| `PromptVersionNotFoundError` | Version ID not found during setActive | — |
-| `InvalidPromptParametersError` | Params fail schema validation | — |
-| `PromptRenderError` | Mustache rendering fails | — |
+| Error                          | When                                  | Type Guard                     |
+| ------------------------------ | ------------------------------------- | ------------------------------ |
+| `PromptNotFoundError`          | Slug not found or no active version   | `isPromptNotFoundError()`      |
+| `PromptAlreadyExistsError`     | Duplicate slug on create              | `isPromptAlreadyExistsError()` |
+| `PromptVersionNotFoundError`   | Version ID not found during setActive | —                              |
+| `InvalidPromptParametersError` | Params fail schema validation         | —                              |
+| `PromptRenderError`            | Mustache rendering fails              | —                              |
 
 All errors extend `PromptError`. Import from `@sanamyvn/ai-ts/business/prompt/error`.
 ```
@@ -503,6 +534,7 @@ git commit -m "docs: add prompt usage guide"
 ### Task 9: Prompt endpoints
 
 **Files:**
+
 - Create: `docs/prompt/endpoints.md`
 
 - [ ] **Step 1: Write prompt/endpoints.md**
@@ -514,15 +546,15 @@ Use `/writing-clearly-and-concisely` skill. Structure:
 
 Base path: `/ai/prompts`
 
-| Method | Path | Operation | Request | Response |
-|--------|------|-----------|---------|----------|
-| `POST` | `/ai/prompts` | `create` | `createPromptDto` (body) | `promptResponseDto` |
-| `GET` | `/ai/prompts` | `list` | `promptListQueryDto` (query) | `promptResponseDto[]` |
-| `GET` | `/ai/prompts/:slug` | `getBySlug` | — | `promptResponseDto` |
-| `PUT` | `/ai/prompts/:slug` | `update` | `updatePromptDto` (body) | `promptResponseDto` |
-| `POST` | `/ai/prompts/:slug/versions` | `createVersion` | `createVersionDto` (body) | `promptResponseDto` |
-| `PUT` | `/ai/prompts/:slug/versions/:id/activate` | `activateVersion` | — | 204 No Content |
-| `GET` | `/ai/prompts/:slug/versions` | `listVersions` | — | `promptResponseDto` |
+| Method | Path                                      | Operation         | Request                      | Response              |
+| ------ | ----------------------------------------- | ----------------- | ---------------------------- | --------------------- |
+| `POST` | `/ai/prompts`                             | `create`          | `createPromptDto` (body)     | `promptResponseDto`   |
+| `GET`  | `/ai/prompts`                             | `list`            | `promptListQueryDto` (query) | `promptResponseDto[]` |
+| `GET`  | `/ai/prompts/:slug`                       | `getBySlug`       | —                            | `promptResponseDto`   |
+| `PUT`  | `/ai/prompts/:slug`                       | `update`          | `updatePromptDto` (body)     | `promptResponseDto`   |
+| `POST` | `/ai/prompts/:slug/versions`              | `createVersion`   | `createVersionDto` (body)    | `promptResponseDto`   |
+| `PUT`  | `/ai/prompts/:slug/versions/:id/activate` | `activateVersion` | —                            | 204 No Content        |
+| `GET`  | `/ai/prompts/:slug/versions`              | `listVersions`    | —                            | `promptResponseDto`   |
 
 **Operation names** match the keys in `PromptMiddlewareConfig`, so you can cross-reference which middleware applies to which route.
 
@@ -545,6 +577,7 @@ git commit -m "docs: add prompt endpoint reference"
 ### Task 10: Session docs (setup + usage + endpoints)
 
 **Files:**
+
 - Create: `docs/session/setup.md`
 - Create: `docs/session/usage.md`
 - Create: `docs/session/endpoints.md`
@@ -552,6 +585,7 @@ git commit -m "docs: add prompt endpoint reference"
 - [ ] **Step 1: Write session/setup.md**
 
 Use `/writing-clearly-and-concisely` skill. Same structure as prompt/setup.md:
+
 - `SessionAppModule.forRoot({ middleware: SessionMiddlewareConfig })` with 5 operations: `list`, `get`, `getMessages`, `exportTranscript`, `end`
 - Mediator client: `sessionClientMonolithProviders()` / `sessionClientStandaloneProviders()`
 - Required tokens table
@@ -574,15 +608,16 @@ Explain: creates a Mastra thread + ai_sessions row linked via mastraThreadId.]
 
 [Mermaid state diagram:
 stateDiagram-v2
-  [*] --> active
-  active --> paused : pause()
-  paused --> active : resume()
-  active --> ended : end()
-  paused --> ended : end()
-  ended --> [*]
+[*] --> active
+active --> paused : pause()
+paused --> active : resume()
+active --> ended : end()
+paused --> ended : end()
+ended --> [*]
 ]
 
 Code examples for each transition:
+
 - `sessionService.pause(sessionId)` — pauses an active session
 - `sessionService.resume(sessionId)` — resumes a paused session, returns updated `Session`
 - `sessionService.end(sessionId)` — ends any non-ended session, sets `endedAt`
@@ -599,9 +634,9 @@ Explain: fetches all messages, formats as JSON or plain text.]
 
 ## Error Handling
 
-| Error | When | Type Guard |
-|-------|------|------------|
-| `SessionNotFoundError` | Session ID not found | `isSessionNotFoundError()` |
+| Error                      | When                                        | Type Guard                     |
+| -------------------------- | ------------------------------------------- | ------------------------------ |
+| `SessionNotFoundError`     | Session ID not found                        | `isSessionNotFoundError()`     |
 | `SessionAlreadyEndedError` | Trying to pause/resume/end an ended session | `isSessionAlreadyEndedError()` |
 ```
 
@@ -614,13 +649,13 @@ Use `/writing-clearly-and-concisely` skill. Full route table:
 
 Base path: `/ai/sessions`
 
-| Method | Path | Operation | Request | Response |
-|--------|------|-----------|---------|----------|
-| `GET` | `/ai/sessions` | `list` | `sessionListQueryDto` (query) | `sessionSummaryResponseDto[]` |
-| `GET` | `/ai/sessions/:id` | `get` | — | `sessionResponseDto` |
-| `GET` | `/ai/sessions/:id/messages` | `getMessages` | `paginationQueryDto` (query) | `messageResponseDto[]` |
-| `GET` | `/ai/sessions/:id/transcript` | `exportTranscript` | `transcriptQueryDto` (query) | `transcriptResponseDto` |
-| `PUT` | `/ai/sessions/:id/end` | `end` | — | 204 No Content |
+| Method | Path                          | Operation          | Request                       | Response                      |
+| ------ | ----------------------------- | ------------------ | ----------------------------- | ----------------------------- |
+| `GET`  | `/ai/sessions`                | `list`             | `sessionListQueryDto` (query) | `sessionSummaryResponseDto[]` |
+| `GET`  | `/ai/sessions/:id`            | `get`              | —                             | `sessionResponseDto`          |
+| `GET`  | `/ai/sessions/:id/messages`   | `getMessages`      | `paginationQueryDto` (query)  | `messageResponseDto[]`        |
+| `GET`  | `/ai/sessions/:id/transcript` | `exportTranscript` | `transcriptQueryDto` (query)  | `transcriptResponseDto`       |
+| `PUT`  | `/ai/sessions/:id/end`        | `end`              | —                             | 204 No Content                |
 
 **Operation names** match the keys in `SessionMiddlewareConfig`.
 
@@ -641,6 +676,7 @@ git commit -m "docs: add session setup, usage, and endpoint guides"
 ### Task 11: Conversation docs (setup + usage + endpoints)
 
 **Files:**
+
 - Create: `docs/conversation/setup.md`
 - Create: `docs/conversation/usage.md`
 - Create: `docs/conversation/endpoints.md`
@@ -660,9 +696,9 @@ Plus: conversationClientMonolithProviders()]
 ## Standalone Mode
 
 [Code: ConversationAppModule.forStandalone({
-  middleware: { ... },
-  promptServiceUrl: 'https://prompt.internal',
-  sessionServiceUrl: 'https://session.internal',
+middleware: { ... },
+promptServiceUrl: 'https://prompt.internal',
+sessionServiceUrl: 'https://session.internal',
 })
 Plus: conversationClientStandaloneProviders({ baseUrl, httpClientToken })]
 
@@ -683,10 +719,10 @@ Use `/writing-clearly-and-concisely` skill. Use `/mermaidjs-v11` and `/mermaid-d
 ## Create a Conversation
 
 [Code: conversationEngine.create({
-  promptSlug: 'ielts-speaking-examiner',
-  promptParams: { part: 2, topic: 'describe a place' },
-  userId: 'student-1',
-  purpose: 'ielts-speaking',
+promptSlug: 'ielts-speaking-examiner',
+promptParams: { part: 2, topic: 'describe a place' },
+userId: 'student-1',
+purpose: 'ielts-speaking',
 }).
 Explain ConversationConfig fields. Note: outputSchema for structured output (quiz JSON, rubrics).]
 
@@ -712,8 +748,8 @@ Returns ConversationResponse { text, object? }.]
 ## Stream a Response
 
 [Code: for await (const chunk of conversationEngine.stream(conversation.id, 'Begin the test')) {
-  // chunk.type: 'text-delta' | 'tool-call' | 'finish'
-  // chunk.content: string
+// chunk.type: 'text-delta' | 'tool-call' | 'finish'
+// chunk.content: string
 }]
 
 ## Multi-Instance Reconstruction
@@ -737,10 +773,10 @@ ConversationEngine --> Caller : ConversationResponse]
 
 ## Error Handling
 
-| Error | When | Type Guard |
-|-------|------|------------|
-| `ConversationNotFoundError` | Session lookup fails during reconstruction | `isConversationNotFoundError()` |
-| `ConversationSendError` | Mastra agent fails (wraps `MastraAdapterError`) | `isConversationSendError()` |
+| Error                       | When                                            | Type Guard                      |
+| --------------------------- | ----------------------------------------------- | ------------------------------- |
+| `ConversationNotFoundError` | Session lookup fails during reconstruction      | `isConversationNotFoundError()` |
+| `ConversationSendError`     | Mastra agent fails (wraps `MastraAdapterError`) | `isConversationSendError()`     |
 ```
 
 - [ ] **Step 3: Write conversation/endpoints.md**
@@ -752,11 +788,11 @@ Use `/writing-clearly-and-concisely` skill. Full route table:
 
 Base path: `/ai/conversations`
 
-| Method | Path | Operation | Request | Response |
-|--------|------|-----------|---------|----------|
-| `POST` | `/ai/conversations` | `create` | `createConversationDto` (body) | `conversationResponseDto` |
-| `POST` | `/ai/conversations/:id/messages` | `sendMessage` | `sendMessageDto` (body) | `messageResponseDto` |
-| `POST` | `/ai/conversations/:id/messages/stream` | `streamMessage` | `sendMessageDto` (body) | SSE stream of `StreamChunk` |
+| Method | Path                                    | Operation       | Request                        | Response                    |
+| ------ | --------------------------------------- | --------------- | ------------------------------ | --------------------------- |
+| `POST` | `/ai/conversations`                     | `create`        | `createConversationDto` (body) | `conversationResponseDto`   |
+| `POST` | `/ai/conversations/:id/messages`        | `sendMessage`   | `sendMessageDto` (body)        | `messageResponseDto`        |
+| `POST` | `/ai/conversations/:id/messages/stream` | `streamMessage` | `sendMessageDto` (body)        | SSE stream of `StreamChunk` |
 
 **Operation names** match the keys in `ConversationMiddlewareConfig`.
 
@@ -779,6 +815,7 @@ git commit -m "docs: add conversation setup, usage, and endpoint guides"
 ### Task 12: JSDoc — Repository layer
 
 **Files:**
+
 - Modify: `src/repository/domain/prompt/prompt.interface.ts`
 - Modify: `src/repository/domain/prompt/prompt.error.ts`
 - Modify: `src/repository/domain/prompt-version/prompt-version.interface.ts`
@@ -789,6 +826,7 @@ git commit -m "docs: add conversation setup, usage, and endpoint guides"
 - [ ] **Step 1: Add JSDoc to IPromptRepository**
 
 Read `src/repository/domain/prompt/prompt.interface.ts`. Add:
+
 - Interface-level doc: "Stores and retrieves prompt templates from the database."
 - Method docs with `@param`, `@returns` for all 6 methods
 - `@throws` where applicable (e.g., `update` throws `PromptNotFoundRepoError`)
@@ -827,6 +865,7 @@ git commit -m "docs: add JSDoc to repository interfaces and errors"
 ### Task 13: JSDoc — Business layer (prompt, session, conversation)
 
 **Files:**
+
 - Modify: `src/business/domain/prompt/prompt.interface.ts`
 - Modify: `src/business/domain/prompt/prompt.model.ts`
 - Modify: `src/business/domain/prompt/prompt.error.ts`
@@ -840,6 +879,7 @@ git commit -m "docs: add JSDoc to repository interfaces and errors"
 - [ ] **Step 1: Add JSDoc to IPromptService**
 
 Read `src/business/domain/prompt/prompt.interface.ts`. Add:
+
 - Interface-level doc: "Manages versioned prompt templates with Mustache rendering."
 - All 8 methods with `@param`, `@returns`, `@throws`
 - Usage example on `resolve()` method
@@ -886,6 +926,7 @@ git commit -m "docs: add JSDoc to business interfaces, models, and errors"
 ### Task 14: JSDoc — Mastra interfaces, shared tokens, config
 
 **Files:**
+
 - Modify: `src/business/sdk/mastra/mastra.interface.ts`
 - Modify: `src/business/sdk/mastra/mastra.error.ts`
 - Modify: `src/shared/tokens.ts`
@@ -894,6 +935,7 @@ git commit -m "docs: add JSDoc to business interfaces, models, and errors"
 - [ ] **Step 1: Add JSDoc to IMastraAgent and IMastraMemory**
 
 Read `src/business/sdk/mastra/mastra.interface.ts`. Add:
+
 - Interface docs for `IMastraAgent`, `IMastraMemory`
 - Method docs with `@param`, `@returns`, `@throws`
 - Interface docs for all model types: `AgentResponse`, `StreamChunk`, `GenerateOptions`, `Thread`, `Message`, `Pagination`, `MessageList`, `ThreadFilter`
@@ -934,6 +976,7 @@ git commit -m "docs: add JSDoc to Mastra interfaces, shared tokens, config, and 
 ### Task 15: Docs index
 
 **Files:**
+
 - Create: `docs/README.md`
 
 - [ ] **Step 1: Write docs/README.md**
@@ -945,44 +988,44 @@ Use `/writing-clearly-and-concisely` skill. Structure:
 
 ## Start Here
 
-| Guide | Description |
-|-------|-------------|
+| Guide                                   | Description                                           |
+| --------------------------------------- | ----------------------------------------------------- |
 | [Getting Started](./getting-started.md) | Install, wire modules, create your first conversation |
-| [Integration Guide](./integration.md) | Full app wiring with database, Mastra, and middleware |
+| [Integration Guide](./integration.md)   | Full app wiring with database, Mastra, and middleware |
 
 ## Features
 
 ### Prompt — Versioned Template Registry
 
-| Guide | Description |
-|-------|-------------|
-| [Setup](./prompt/setup.md) | Module wiring and middleware config |
-| [Usage](./prompt/usage.md) | Create, version, and resolve templates |
-| [Endpoints](./prompt/endpoints.md) | REST API reference |
+| Guide                              | Description                            |
+| ---------------------------------- | -------------------------------------- |
+| [Setup](./prompt/setup.md)         | Module wiring and middleware config    |
+| [Usage](./prompt/usage.md)         | Create, version, and resolve templates |
+| [Endpoints](./prompt/endpoints.md) | REST API reference                     |
 
 ### Session — Lifecycle Management
 
-| Guide | Description |
-|-------|-------------|
-| [Setup](./session/setup.md) | Module wiring and middleware config |
-| [Usage](./session/usage.md) | Start, pause, resume, end sessions |
-| [Endpoints](./session/endpoints.md) | REST API reference |
+| Guide                               | Description                         |
+| ----------------------------------- | ----------------------------------- |
+| [Setup](./session/setup.md)         | Module wiring and middleware config |
+| [Usage](./session/usage.md)         | Start, pause, resume, end sessions  |
+| [Endpoints](./session/endpoints.md) | REST API reference                  |
 
 ### Conversation — AI Orchestration Engine
 
-| Guide | Description |
-|-------|-------------|
-| [Setup](./conversation/setup.md) | Monolith and standalone deployment |
-| [Usage](./conversation/usage.md) | Create conversations, send messages, stream responses |
-| [Endpoints](./conversation/endpoints.md) | REST API reference |
+| Guide                                    | Description                                           |
+| ---------------------------------------- | ----------------------------------------------------- |
+| [Setup](./conversation/setup.md)         | Monolith and standalone deployment                    |
+| [Usage](./conversation/usage.md)         | Create conversations, send messages, stream responses |
+| [Endpoints](./conversation/endpoints.md) | REST API reference                                    |
 
 ## Reference
 
-| Guide | Description |
-|-------|-------------|
-| [Configuration](./configuration.md) | Config schema fields and defaults |
+| Guide                               | Description                                               |
+| ----------------------------------- | --------------------------------------------------------- |
+| [Configuration](./configuration.md) | Config schema fields and defaults                         |
 | [Customization](./customization.md) | Deployment modes, custom middleware, swap implementations |
-| [Testing](./testing.md) | Mock factories, unit patterns, integration setup |
+| [Testing](./testing.md)             | Mock factories, unit patterns, integration setup          |
 ```
 
 - [ ] **Step 2: Commit**
@@ -997,6 +1040,7 @@ git commit -m "docs: add documentation index"
 ### Task 16: Update root README.md
 
 **Files:**
+
 - Modify: `README.md`
 
 - [ ] **Step 1: Read current README.md**
@@ -1004,6 +1048,7 @@ git commit -m "docs: add documentation index"
 - [ ] **Step 2: Update README**
 
 Use `/writing-clearly-and-concisely` skill. Changes:
+
 - Add **Documentation** section after "What It Does" linking to `docs/README.md` and listing the guide categories
 - Trim **Quick Start** to a teaser: install command + 5-line code snippet, then "See [Getting Started](docs/getting-started.md) for the full walkthrough"
 - Replace endpoint tables with links to `docs/prompt/endpoints.md`, `docs/session/endpoints.md`, `docs/conversation/endpoints.md`

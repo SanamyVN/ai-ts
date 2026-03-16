@@ -14,13 +14,13 @@ Shared AI primitives — prompt registry, conversation engine, session lifecycle
 
 See the [full documentation](docs/README.md) for guides, API reference, and examples.
 
-| Category | Guides |
-|----------|--------|
-| **Start Here** | [Getting Started](docs/getting-started.md), [Integration Guide](docs/integration.md) |
-| **Prompt** | [Setup](docs/prompt/setup.md), [Usage](docs/prompt/usage.md), [Endpoints](docs/prompt/endpoints.md) |
-| **Session** | [Setup](docs/session/setup.md), [Usage](docs/session/usage.md), [Endpoints](docs/session/endpoints.md) |
+| Category         | Guides                                                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Start Here**   | [Getting Started](docs/getting-started.md), [Integration Guide](docs/integration.md)                                  |
+| **Prompt**       | [Setup](docs/prompt/setup.md), [Usage](docs/prompt/usage.md), [Endpoints](docs/prompt/endpoints.md)                   |
+| **Session**      | [Setup](docs/session/setup.md), [Usage](docs/session/usage.md), [Endpoints](docs/session/endpoints.md)                |
 | **Conversation** | [Setup](docs/conversation/setup.md), [Usage](docs/conversation/usage.md), [Endpoints](docs/conversation/endpoints.md) |
-| **Reference** | [Configuration](docs/configuration.md), [Customization](docs/customization.md), [Testing](docs/testing.md) |
+| **Reference**    | [Configuration](docs/configuration.md), [Customization](docs/customization.md), [Testing](docs/testing.md)            |
 
 ## Install
 

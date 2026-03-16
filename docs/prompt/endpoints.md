@@ -2,15 +2,15 @@
 
 Base path: `/ai/prompts`
 
-| Method | Path | Operation | Request | Response |
-|--------|------|-----------|---------|----------|
-| `POST` | `/ai/prompts` | `create` | `createPromptDto` (body) | `promptResponseDto` |
-| `GET` | `/ai/prompts` | `list` | `promptListQueryDto` (query) | `promptResponseDto[]` |
-| `GET` | `/ai/prompts/:slug` | `getBySlug` | — | `promptResponseDto` |
-| `PUT` | `/ai/prompts/:slug` | `update` | `updatePromptDto` (body) | `promptResponseDto` |
-| `POST` | `/ai/prompts/:slug/versions` | `createVersion` | `createVersionDto` (body) | `promptResponseDto` |
-| `PUT` | `/ai/prompts/:slug/versions/:id/activate` | `activateVersion` | — | 204 No Content |
-| `GET` | `/ai/prompts/:slug/versions` | `listVersions` | — | `promptResponseDto` |
+| Method | Path                                      | Operation         | Request                      | Response              |
+| ------ | ----------------------------------------- | ----------------- | ---------------------------- | --------------------- |
+| `POST` | `/ai/prompts`                             | `create`          | `createPromptDto` (body)     | `promptResponseDto`   |
+| `GET`  | `/ai/prompts`                             | `list`            | `promptListQueryDto` (query) | `promptResponseDto[]` |
+| `GET`  | `/ai/prompts/:slug`                       | `getBySlug`       | —                            | `promptResponseDto`   |
+| `PUT`  | `/ai/prompts/:slug`                       | `update`          | `updatePromptDto` (body)     | `promptResponseDto`   |
+| `POST` | `/ai/prompts/:slug/versions`              | `createVersion`   | `createVersionDto` (body)    | `promptResponseDto`   |
+| `PUT`  | `/ai/prompts/:slug/versions/:id/activate` | `activateVersion` | —                            | 204 No Content        |
+| `GET`  | `/ai/prompts/:slug/versions`              | `listVersions`    | —                            | `promptResponseDto`   |
 
 **Operation names** match the keys in `PromptMiddlewareConfig`, so you can cross-reference which middleware applies to which route.
 

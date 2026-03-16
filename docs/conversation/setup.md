@@ -79,12 +79,12 @@ const conversationClient = conversationClientStandaloneProviders({
 
 ## Required Tokens
 
-| Token | Type | Who Provides |
-|-------|------|--------------|
-| `AI_MEDIATOR` | `IMediator` | Downstream app (foundation mediator) |
-| `AI_CONFIG` | `AiConfig` | Downstream app (must include `defaultModel`) |
-| `MASTRA_AGENT` | `IMastraAgent` | Downstream app (Mastra integration) |
-| `CONVERSATION_MIDDLEWARE_CONFIG` | `ConversationMiddlewareConfig` | Auto-bound by `ConversationAppModule` |
+| Token                            | Type                           | Who Provides                                 |
+| -------------------------------- | ------------------------------ | -------------------------------------------- |
+| `AI_MEDIATOR`                    | `IMediator`                    | Downstream app (foundation mediator)         |
+| `AI_CONFIG`                      | `AiConfig`                     | Downstream app (must include `defaultModel`) |
+| `MASTRA_AGENT`                   | `IMastraAgent`                 | Downstream app (Mastra integration)          |
+| `CONVERSATION_MIDDLEWARE_CONFIG` | `ConversationMiddlewareConfig` | Auto-bound by `ConversationAppModule`        |
 
 `AI_MEDIATOR`, `AI_CONFIG`, and `MASTRA_AGENT` are the tokens your application must bind. The module handles the rest.
 

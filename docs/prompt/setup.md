@@ -61,13 +61,13 @@ const promptClient = promptClientStandaloneProviders({
 
 ## Required Tokens
 
-| Token | Type | Who Provides |
-|-------|------|--------------|
-| `AI_DB` | `PostgresClient<AiSchema>` | Downstream app |
-| `AI_MEDIATOR` | `IMediator` | Downstream app (foundation mediator) |
-| `PROMPT_REPOSITORY` | `IPromptRepository` | Auto-bound by repository providers |
-| `PROMPT_VERSION_REPOSITORY` | `IPromptVersionRepository` | Auto-bound by repository providers |
-| `PROMPT_MIDDLEWARE_CONFIG` | `PromptMiddlewareConfig` | Auto-bound by `PromptAppModule.forRoot()` |
+| Token                       | Type                       | Who Provides                              |
+| --------------------------- | -------------------------- | ----------------------------------------- |
+| `AI_DB`                     | `PostgresClient<AiSchema>` | Downstream app                            |
+| `AI_MEDIATOR`               | `IMediator`                | Downstream app (foundation mediator)      |
+| `PROMPT_REPOSITORY`         | `IPromptRepository`        | Auto-bound by repository providers        |
+| `PROMPT_VERSION_REPOSITORY` | `IPromptVersionRepository` | Auto-bound by repository providers        |
+| `PROMPT_MIDDLEWARE_CONFIG`  | `PromptMiddlewareConfig`   | Auto-bound by `PromptAppModule.forRoot()` |
 
 `AI_DB` and `AI_MEDIATOR` are the only tokens your application must bind. The module and repository providers handle the rest.
 

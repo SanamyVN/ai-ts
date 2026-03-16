@@ -12,15 +12,15 @@ The `aiya` project has a RAG module that directly uses `@mastra/rag` and `@mastr
 
 ## Relationship to Existing Architecture
 
-| Concern | Owner |
-| --- | --- |
-| Content processing (text, HTML, markdown, JSON) | `@sanamyvn/ai-ts` (via `MDocument` factories) |
-| Chunking pipeline | `@sanamyvn/ai-ts` (via `@mastra/rag` MDocument) |
-| Embedding generation | `@sanamyvn/ai-ts` (via `ai` SDK `embedMany`) |
-| Vector storage (PgVector) | `@sanamyvn/ai-ts` (adapter wraps `@mastra/pg`) |
-| Vector retrieval / similarity search | Mastra agent (direct, via built-in tools) |
-| Binary file parsing (PDF, etc.) | Downstream app |
-| File fetching (S3, mediator, etc.) | Downstream app |
+| Concern                                         | Owner                                           |
+| ----------------------------------------------- | ----------------------------------------------- |
+| Content processing (text, HTML, markdown, JSON) | `@sanamyvn/ai-ts` (via `MDocument` factories)   |
+| Chunking pipeline                               | `@sanamyvn/ai-ts` (via `@mastra/rag` MDocument) |
+| Embedding generation                            | `@sanamyvn/ai-ts` (via `ai` SDK `embedMany`)    |
+| Vector storage (PgVector)                       | `@sanamyvn/ai-ts` (adapter wraps `@mastra/pg`)  |
+| Vector retrieval / similarity search            | Mastra agent (direct, via built-in tools)       |
+| Binary file parsing (PDF, etc.)                 | Downstream app                                  |
+| File fetching (S3, mediator, etc.)              | Downstream app                                  |
 
 ## Architecture
 
@@ -144,7 +144,11 @@ export interface IMastraRag {
   /** Create a vector index if it does not already exist (idempotent). */
   createIndex(indexName: string, dimension: number): Promise<void>;
   /** Upsert vectors with metadata. Returns the number of vectors submitted (not necessarily stored — PgVector may deduplicate). */
-  upsert(indexName: string, vectors: number[][], metadata: Record<string, unknown>[]): Promise<number>;
+  upsert(
+    indexName: string,
+    vectors: number[][],
+    metadata: Record<string, unknown>[],
+  ): Promise<number>;
   /** Delete vectors matching the metadata filter. Returns the number of vectors deleted. Note: assumes PgVector.deleteVectors returns a count — verify against @mastra/pg API when adding the dependency. */
   delete(indexName: string, filter: Record<string, unknown>): Promise<number>;
 }
@@ -171,7 +175,11 @@ export class MastraRagAdapter implements IMastraRag {
     }
   }
 
-  async upsert(indexName: string, vectors: number[][], metadata: Record<string, unknown>[]): Promise<number> {
+  async upsert(
+    indexName: string,
+    vectors: number[][],
+    metadata: Record<string, unknown>[],
+  ): Promise<number> {
     try {
       await this.pgVector.upsert(indexName, vectors, metadata);
       return vectors.length;
@@ -250,7 +258,16 @@ export interface DocumentInput {
 
 // Chunking options (overrides defaults)
 export interface ChunkOptions {
-  strategy?: 'recursive' | 'character' | 'token' | 'markdown' | 'html' | 'json' | 'latex' | 'sentence' | 'semantic-markdown';
+  strategy?:
+    | 'recursive'
+    | 'character'
+    | 'token'
+    | 'markdown'
+    | 'html'
+    | 'json'
+    | 'latex'
+    | 'sentence'
+    | 'semantic-markdown';
   maxSize?: number;
   overlap?: number;
 }
@@ -355,10 +372,14 @@ export class RagBusiness implements IRagBusiness {
 
   private createDocument(content: RagContent, metadata: Record<string, unknown>): MDocument {
     switch (content.type) {
-      case 'text':     return MDocument.fromText(content.data, metadata);
-      case 'html':     return MDocument.fromHTML(content.data, metadata);
-      case 'markdown': return MDocument.fromMarkdown(content.data, metadata);
-      case 'json':     return MDocument.fromJSON(content.data, metadata);
+      case 'text':
+        return MDocument.fromText(content.data, metadata);
+      case 'html':
+        return MDocument.fromHTML(content.data, metadata);
+      case 'markdown':
+        return MDocument.fromMarkdown(content.data, metadata);
+      case 'json':
+        return MDocument.fromJSON(content.data, metadata);
     }
   }
 
@@ -403,7 +424,14 @@ Following the existing `createCommand`/`createQuery` factory pattern with Zod sc
 ```typescript
 // client/queries.ts
 import { createCommand } from '@sanamyvn/foundation/mediator/request';
-import { ingestClientSchema, deleteClientSchema, replaceClientSchema, ingestResultSchema, deleteResultSchema, replaceResultSchema } from './schemas.js';
+import {
+  ingestClientSchema,
+  deleteClientSchema,
+  replaceClientSchema,
+  ingestResultSchema,
+  deleteResultSchema,
+  replaceResultSchema,
+} from './schemas.js';
 
 export const RagIngestCommand = createCommand({
   type: 'ai.rag.ingest',
@@ -447,11 +475,11 @@ export const RAG_MEDIATOR = createMediatorToken<IRagMediator>('RAG_MEDIATOR', {
 
 ### REST Endpoints
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `POST` | `/ai/rag/ingest` | Ingest batch of documents into a scope |
-| `DELETE` | `/ai/rag/documents` | Delete vectors by metadata filter |
-| `PUT` | `/ai/rag/documents/:documentId` | Replace a document's vectors with new content |
+| Method   | Path                            | Purpose                                       |
+| -------- | ------------------------------- | --------------------------------------------- |
+| `POST`   | `/ai/rag/ingest`                | Ingest batch of documents into a scope        |
+| `DELETE` | `/ai/rag/documents`             | Delete vectors by metadata filter             |
+| `PUT`    | `/ai/rag/documents/:documentId` | Replace a document's vectors with new content |
 
 ### DTOs
 
@@ -460,18 +488,36 @@ export const RAG_MEDIATOR = createMediatorToken<IRagMediator>('RAG_MEDIATOR', {
 ```typescript
 const ingestRequestSchema = z.object({
   scopeId: z.string().check(z.uuid()),
-  documents: z.array(z.object({
-    documentId: z.string().check(z.uuid()),
-    content: z.object({
-      type: z.enum(['text', 'html', 'markdown', 'json']),
-      data: z.string(),
-    }),
-  })).min(1),
-  chunkOptions: z.object({
-    strategy: z.enum(['recursive', 'character', 'token', 'markdown', 'html', 'json', 'latex', 'sentence', 'semantic-markdown']).optional(),
-    maxSize: z.number().positive().optional(),
-    overlap: z.number().nonnegative().optional(),
-  }).optional(),
+  documents: z
+    .array(
+      z.object({
+        documentId: z.string().check(z.uuid()),
+        content: z.object({
+          type: z.enum(['text', 'html', 'markdown', 'json']),
+          data: z.string(),
+        }),
+      }),
+    )
+    .min(1),
+  chunkOptions: z
+    .object({
+      strategy: z
+        .enum([
+          'recursive',
+          'character',
+          'token',
+          'markdown',
+          'html',
+          'json',
+          'latex',
+          'sentence',
+          'semantic-markdown',
+        ])
+        .optional(),
+      maxSize: z.number().positive().optional(),
+      overlap: z.number().nonnegative().optional(),
+    })
+    .optional(),
 });
 ```
 
@@ -497,11 +543,25 @@ const replaceRequestSchema = z.object({
     type: z.enum(['text', 'html', 'markdown', 'json']),
     data: z.string(),
   }),
-  chunkOptions: z.object({
-    strategy: z.enum(['recursive', 'character', 'token', 'markdown', 'html', 'json', 'latex', 'sentence', 'semantic-markdown']).optional(),
-    maxSize: z.number().positive().optional(),
-    overlap: z.number().nonnegative().optional(),
-  }).optional(),
+  chunkOptions: z
+    .object({
+      strategy: z
+        .enum([
+          'recursive',
+          'character',
+          'token',
+          'markdown',
+          'html',
+          'json',
+          'latex',
+          'sentence',
+          'semantic-markdown',
+        ])
+        .optional(),
+      maxSize: z.number().positive().optional(),
+      overlap: z.number().nonnegative().optional(),
+    })
+    .optional(),
 });
 ```
 
@@ -511,10 +571,10 @@ const replaceRequestSchema = z.object({
 
 Thin orchestrator. Maps business errors to HTTP errors:
 
-| Business Error | HTTP Error |
-| --- | --- |
-| `RagIngestError` | 500 Internal Server Error |
-| `RagDeleteError` | 500 Internal Server Error |
+| Business Error      | HTTP Error                |
+| ------------------- | ------------------------- |
+| `RagIngestError`    | 500 Internal Server Error |
+| `RagDeleteError`    | 500 Internal Server Error |
 | `RagEmbeddingError` | 500 Internal Server Error |
 
 ### Module
@@ -560,8 +620,8 @@ Extend the existing `aiConfigSchema` in `src/config.ts`:
 export const aiConfigSchema = z.object({
   defaultModel: z.string(),
   // ... existing fields
-  embeddingModel: z.string(),       // e.g. 'openai/text-embedding-3-small'
-  embeddingDimension: z.number(),   // e.g. 1536
+  embeddingModel: z.string(), // e.g. 'openai/text-embedding-3-small'
+  embeddingDimension: z.number(), // e.g. 1536
 });
 ```
 
@@ -652,15 +712,15 @@ RagAppModule.forRoot({
 
 ## Decisions
 
-| Decision | Rationale |
-| --- | --- |
-| Write path only (no query/search) | Mastra agents handle retrieval through built-in tool use. The RAG module manages the data pipeline. |
-| PgVector only, no pluggable vector store | The package already requires PostgreSQL. PgVector is the natural fit. Avoids premature abstraction. |
-| No PDF or custom format support in package | `MDocument` supports text/HTML/markdown/JSON natively — the business layer maps directly to these factories. For unsupported formats (PDF, proprietary), downstream converts to a supported type before calling ingest. |
-| Batch ingest | Multiple documents per request reduces HTTP overhead for bulk operations. |
-| Replace as a first-class operation | Common workflow when content changes. Performs delete then ingest sequentially. Not transactionally atomic — if ingest fails after delete, the old vectors are lost. Acceptable for a search index where brief inconsistency windows are tolerable. |
-| Embedding config in `AI_CONFIG` | Centralized configuration. No separate RAG config token. |
-| Chunking defaults hardcoded | Implementation detail. Per-ingest `chunkOptions` provides flexibility without config complexity. |
+| Decision                                   | Rationale                                                                                                                                                                                                                                           |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Write path only (no query/search)          | Mastra agents handle retrieval through built-in tool use. The RAG module manages the data pipeline.                                                                                                                                                 |
+| PgVector only, no pluggable vector store   | The package already requires PostgreSQL. PgVector is the natural fit. Avoids premature abstraction.                                                                                                                                                 |
+| No PDF or custom format support in package | `MDocument` supports text/HTML/markdown/JSON natively — the business layer maps directly to these factories. For unsupported formats (PDF, proprietary), downstream converts to a supported type before calling ingest.                             |
+| Batch ingest                               | Multiple documents per request reduces HTTP overhead for bulk operations.                                                                                                                                                                           |
+| Replace as a first-class operation         | Common workflow when content changes. Performs delete then ingest sequentially. Not transactionally atomic — if ingest fails after delete, the old vectors are lost. Acceptable for a search index where brief inconsistency windows are tolerable. |
+| Embedding config in `AI_CONFIG`            | Centralized configuration. No separate RAG config token.                                                                                                                                                                                            |
+| Chunking defaults hardcoded                | Implementation detail. Per-ingest `chunkOptions` provides flexibility without config complexity.                                                                                                                                                    |
 
 ## Out of Scope
 

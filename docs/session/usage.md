@@ -11,7 +11,7 @@ const session = await sessionService.start({
   promptSlug: 'onboarding-chat',
   resolvedPrompt: 'You are a helpful onboarding assistant...',
   purpose: 'onboarding',
-  tenantId: 'tenant-1',        // optional
+  tenantId: 'tenant-1', // optional
   metadata: { source: 'web' }, // optional
 });
 ```
@@ -92,9 +92,9 @@ import {
 } from '@sanamyvn/ai-ts/business/session/error';
 ```
 
-| Error | When | Type Guard |
-|-------|------|------------|
-| `SessionNotFoundError` | Session ID does not match any record | `isSessionNotFoundError()` |
+| Error                      | When                                                          | Type Guard                     |
+| -------------------------- | ------------------------------------------------------------- | ------------------------------ |
+| `SessionNotFoundError`     | Session ID does not match any record                          | `isSessionNotFoundError()`     |
 | `SessionAlreadyEndedError` | Calling `pause()`, `resume()`, or `end()` on an ended session | `isSessionAlreadyEndedError()` |
 
 Both errors extend `SessionError` and carry the offending session ID as a public `identifier` or `sessionId` property.

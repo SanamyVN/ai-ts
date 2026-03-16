@@ -4,13 +4,13 @@ Base path: `/ai/sessions`
 
 ## Route Table
 
-| Method | Path | Operation | Request | Response |
-|--------|------|-----------|---------|----------|
-| `GET` | `/ai/sessions` | `list` | `sessionListQueryDto` (query) | `sessionSummaryResponseDto[]` |
-| `GET` | `/ai/sessions/:id` | `get` | -- | `sessionResponseDto` |
-| `GET` | `/ai/sessions/:id/messages` | `getMessages` | `paginationQueryDto` (query) | `messageResponseDto[]` |
-| `GET` | `/ai/sessions/:id/transcript` | `exportTranscript` | `transcriptQueryDto` (query) | `transcriptResponseDto` |
-| `PUT` | `/ai/sessions/:id/end` | `end` | -- | 204 No Content |
+| Method | Path                          | Operation          | Request                       | Response                      |
+| ------ | ----------------------------- | ------------------ | ----------------------------- | ----------------------------- |
+| `GET`  | `/ai/sessions`                | `list`             | `sessionListQueryDto` (query) | `sessionSummaryResponseDto[]` |
+| `GET`  | `/ai/sessions/:id`            | `get`              | --                            | `sessionResponseDto`          |
+| `GET`  | `/ai/sessions/:id/messages`   | `getMessages`      | `paginationQueryDto` (query)  | `messageResponseDto[]`        |
+| `GET`  | `/ai/sessions/:id/transcript` | `exportTranscript` | `transcriptQueryDto` (query)  | `transcriptResponseDto`       |
+| `PUT`  | `/ai/sessions/:id/end`        | `end`              | --                            | 204 No Content                |
 
 ## Query Parameters
 
@@ -18,25 +18,25 @@ Base path: `/ai/sessions`
 
 All fields are optional. Omitting every field returns all sessions.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `userId` | `string` | Filter by user |
-| `tenantId` | `string` | Filter by tenant |
-| `purpose` | `string` | Filter by purpose tag |
-| `status` | `string` | Filter by lifecycle status (`active`, `paused`, `ended`) |
+| Field      | Type     | Description                                              |
+| ---------- | -------- | -------------------------------------------------------- |
+| `userId`   | `string` | Filter by user                                           |
+| `tenantId` | `string` | Filter by tenant                                         |
+| `purpose`  | `string` | Filter by purpose tag                                    |
+| `status`   | `string` | Filter by lifecycle status (`active`, `paused`, `ended`) |
 
 ### `paginationQueryDto`
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `page` | `number` | -- | Page number (positive integer) |
-| `perPage` | `number` | -- | Items per page (positive integer) |
+| Field     | Type     | Default | Description                       |
+| --------- | -------- | ------- | --------------------------------- |
+| `page`    | `number` | --      | Page number (positive integer)    |
+| `perPage` | `number` | --      | Items per page (positive integer) |
 
 ### `transcriptQueryDto`
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `format` | `'json' \| 'text'` | `json` | Output format for the transcript |
+| Field    | Type               | Default | Description                      |
+| -------- | ------------------ | ------- | -------------------------------- |
+| `format` | `'json' \| 'text'` | `json`  | Output format for the transcript |
 
 ## Response Schemas
 
@@ -50,20 +50,20 @@ Lightweight projection for list results: `id`, `userId`, `promptSlug`, `purpose`
 
 ### `messageResponseDto`
 
-| Field | Type | Required |
-|-------|------|----------|
-| `id` | `string` | no |
-| `role` | `string` | yes |
-| `content` | `string` | yes |
-| `createdAt` | `string` | no |
+| Field       | Type     | Required |
+| ----------- | -------- | -------- |
+| `id`        | `string` | no       |
+| `role`      | `string` | yes      |
+| `content`   | `string` | yes      |
+| `createdAt` | `string` | no       |
 
 ### `transcriptResponseDto`
 
-| Field | Type | Required |
-|-------|------|----------|
-| `format` | `'json' \| 'text'` | yes |
-| `content` | `string` | no |
-| `messages` | `messageResponseDto[]` | no |
+| Field      | Type                   | Required |
+| ---------- | ---------------------- | -------- |
+| `format`   | `'json' \| 'text'`     | yes      |
+| `content`  | `string`               | no       |
+| `messages` | `messageResponseDto[]` | no       |
 
 ## Stubs
 

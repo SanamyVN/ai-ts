@@ -39,6 +39,7 @@ export class MastraRagAdapter implements IMastraRag {
       // PGVectorFilter is an internal type not exported from @mastra/pg.
       // Cast through unknown to satisfy the internal filter type requirement.
       type DeleteParams = Parameters<PgVector['deleteVectors']>[0];
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       await this.pgVector.deleteVectors({ indexName, filter } as DeleteParams);
       // PgVector.deleteVectors returns void — no count is available from the API.
       return 0;

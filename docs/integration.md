@@ -169,11 +169,7 @@ export class AiModule extends Module {
         ...sessionClient.providers,
         ...conversationClient.providers,
       ],
-      exports: [
-        ...promptClient.exports,
-        ...sessionClient.exports,
-        ...conversationClient.exports,
-      ],
+      exports: [...promptClient.exports, ...sessionClient.exports, ...conversationClient.exports],
     };
   }
 }
@@ -183,11 +179,11 @@ export class AiModule extends Module {
 
 Each domain exposes a typed config that maps route names to middleware arrays:
 
-| Domain | Method | Routes |
-|--------|--------|--------|
-| Prompt | `PromptAppModule.forRoot()` | `create`, `list`, `getBySlug`, `update`, `createVersion`, `activateVersion`, `listVersions` |
-| Session | `SessionAppModule.forRoot()` | `list`, `get`, `getMessages`, `exportTranscript`, `end` |
-| Conversation | `ConversationAppModule.forMonolith()` | `create`, `sendMessage`, `streamMessage` |
+| Domain       | Method                                | Routes                                                                                      |
+| ------------ | ------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Prompt       | `PromptAppModule.forRoot()`           | `create`, `list`, `getBySlug`, `update`, `createVersion`, `activateVersion`, `listVersions` |
+| Session      | `SessionAppModule.forRoot()`          | `list`, `get`, `getMessages`, `exportTranscript`, `end`                                     |
+| Conversation | `ConversationAppModule.forMonolith()` | `create`, `sendMessage`, `streamMessage`                                                    |
 
 Pass an empty object or omit `middleware` entirely to register routes without middleware.
 

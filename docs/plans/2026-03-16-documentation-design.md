@@ -103,7 +103,7 @@ Code examples show the full import paths and token bindings. Each step is 5–10
        activateVersion: [AuthMiddleware, RoleMiddleware.require('admin')],
        listVersions: [AuthMiddleware],
      },
-   })
+   });
    ```
 
    Similar examples for `SessionAppModule.forRoot()` and `ConversationAppModule.forMonolith()`.
@@ -118,18 +118,19 @@ Code examples show the full import paths and token bindings. Each step is 5–10
 
 **Content:**
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `defaultModel` | `string` | `'anthropic/claude-sonnet-4-20250514'` | Model identifier passed to Mastra agent |
-| `prompt.maxVersions` | `number` | `50` | Maximum versions per prompt template |
-| `session.transcriptPageSize` | `number` | `100` | Messages per page in transcript export |
+| Field                        | Type     | Default                                | Description                             |
+| ---------------------------- | -------- | -------------------------------------- | --------------------------------------- |
+| `defaultModel`               | `string` | `'anthropic/claude-sonnet-4-20250514'` | Model identifier passed to Mastra agent |
+| `prompt.maxVersions`         | `number` | `50`                                   | Maximum versions per prompt template    |
+| `session.transcriptPageSize` | `number` | `100`                                  | Messages per page in transcript export  |
 
 Shows how to provide config:
+
 ```typescript
 import { value } from '@sanamyvn/foundation/di/core/providers';
 import { AI_CONFIG, aiConfigSchema } from '@sanamyvn/ai-ts/config';
 
-value(AI_CONFIG, aiConfigSchema.parse({ defaultModel: 'openai/gpt-4o' }))
+value(AI_CONFIG, aiConfigSchema.parse({ defaultModel: 'openai/gpt-4o' }));
 ```
 
 ### docs/customization.md
@@ -161,16 +162,16 @@ value(AI_CONFIG, aiConfigSchema.parse({ defaultModel: 'openai/gpt-4o' }))
 
 1. **Mock factories** — Every public service and repository has a mock factory. Table listing:
 
-   | Factory | Import Path | What It Mocks |
-   |---------|-------------|---------------|
-   | `createMockPromptRepository()` | `@sanamyvn/ai-ts/repository/prompt/testing` | `IPromptRepository` |
+   | Factory                               | Import Path                                         | What It Mocks              |
+   | ------------------------------------- | --------------------------------------------------- | -------------------------- |
+   | `createMockPromptRepository()`        | `@sanamyvn/ai-ts/repository/prompt/testing`         | `IPromptRepository`        |
    | `createMockPromptVersionRepository()` | `@sanamyvn/ai-ts/repository/prompt-version/testing` | `IPromptVersionRepository` |
-   | `createMockSessionRepository()` | `@sanamyvn/ai-ts/repository/session/testing` | `ISessionRepository` |
-   | `createMockPromptService()` | `@sanamyvn/ai-ts/business/prompt/testing` | `IPromptService` |
-   | `createMockSessionService()` | `@sanamyvn/ai-ts/business/session/testing` | `ISessionService` |
-   | `createMockConversationEngine()` | `@sanamyvn/ai-ts/business/conversation/testing` | `IConversationEngine` |
-   | `createMockMastraAgent()` | `@sanamyvn/ai-ts/business/mastra/testing` | `IMastraAgent` |
-   | `createMockMastraMemory()` | `@sanamyvn/ai-ts/business/mastra/testing` | `IMastraMemory` |
+   | `createMockSessionRepository()`       | `@sanamyvn/ai-ts/repository/session/testing`        | `ISessionRepository`       |
+   | `createMockPromptService()`           | `@sanamyvn/ai-ts/business/prompt/testing`           | `IPromptService`           |
+   | `createMockSessionService()`          | `@sanamyvn/ai-ts/business/session/testing`          | `ISessionService`          |
+   | `createMockConversationEngine()`      | `@sanamyvn/ai-ts/business/conversation/testing`     | `IConversationEngine`      |
+   | `createMockMastraAgent()`             | `@sanamyvn/ai-ts/business/mastra/testing`           | `IMastraAgent`             |
+   | `createMockMastraMemory()`            | `@sanamyvn/ai-ts/business/mastra/testing`           | `IMastraMemory`            |
 
    Most mocks use `vi.fn<Interface['method']>()` so `.mockResolvedValue()` works with TypeScript. The prompt service mock (`createMockPromptService()`) currently uses untyped `vi.fn()` — fix this to match the typed pattern before documenting it.
 
@@ -209,13 +210,13 @@ Each feature follows the same three-file template.
 3. **Resolve a template** — `resolve(slug, params)` finds the active version, validates params against the stored schema, renders with Mustache, returns `ResolvedPrompt { slug, version, text }`.
 4. **Error handling** — Table:
 
-   | Error | When |
-   |-------|------|
-   | `PromptNotFoundError` | Slug not found or no active version |
-   | `PromptAlreadyExistsError` | Duplicate slug on create |
-   | `PromptVersionNotFoundError` | Version ID not found during setActive |
-   | `InvalidPromptParametersError` | Params fail schema validation |
-   | `PromptRenderError` | Mustache template rendering fails |
+   | Error                          | When                                  |
+   | ------------------------------ | ------------------------------------- |
+   | `PromptNotFoundError`          | Slug not found or no active version   |
+   | `PromptAlreadyExistsError`     | Duplicate slug on create              |
+   | `PromptVersionNotFoundError`   | Version ID not found during setActive |
+   | `InvalidPromptParametersError` | Params fail schema validation         |
+   | `PromptRenderError`            | Mustache template rendering fails     |
 
    Import paths for error classes and type guards (`isPromptNotFoundError()`, etc.)
 
@@ -223,15 +224,15 @@ Each feature follows the same three-file template.
 
 Route table:
 
-| Method | Path | Operation | Request DTO | Response DTO |
-|--------|------|-----------|-------------|--------------|
-| `POST` | `/ai/prompts` | `create` | `createPromptDto` | `promptResponseDto` |
-| `GET` | `/ai/prompts` | `list` | `promptListQueryDto` (query) | `promptResponseDto[]` |
-| `GET` | `/ai/prompts/:slug` | `getBySlug` | — | `promptResponseDto` |
-| `PUT` | `/ai/prompts/:slug` | `update` | `updatePromptDto` | `promptResponseDto` |
-| `POST` | `/ai/prompts/:slug/versions` | `createVersion` | `createVersionDto` | `promptResponseDto` |
-| `PUT` | `/ai/prompts/:slug/versions/:id/activate` | `activateVersion` | — | 204 |
-| `GET` | `/ai/prompts/:slug/versions` | `listVersions` | — | `promptResponseDto` (returns the prompt with its active version — not a version list) |
+| Method | Path                                      | Operation         | Request DTO                  | Response DTO                                                                          |
+| ------ | ----------------------------------------- | ----------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
+| `POST` | `/ai/prompts`                             | `create`          | `createPromptDto`            | `promptResponseDto`                                                                   |
+| `GET`  | `/ai/prompts`                             | `list`            | `promptListQueryDto` (query) | `promptResponseDto[]`                                                                 |
+| `GET`  | `/ai/prompts/:slug`                       | `getBySlug`       | —                            | `promptResponseDto`                                                                   |
+| `PUT`  | `/ai/prompts/:slug`                       | `update`          | `updatePromptDto`            | `promptResponseDto`                                                                   |
+| `POST` | `/ai/prompts/:slug/versions`              | `createVersion`   | `createVersionDto`           | `promptResponseDto`                                                                   |
+| `PUT`  | `/ai/prompts/:slug/versions/:id/activate` | `activateVersion` | —                            | 204                                                                                   |
+| `GET`  | `/ai/prompts/:slug/versions`              | `listVersions`    | —                            | `promptResponseDto` (returns the prompt with its active version — not a version list) |
 
 DTO types are internal to the router — they are not exported from `package.json`. The route table references them by name for documentation purposes. Developers who need the exact shapes can check the Zod schemas in `src/app/domain/prompt/prompt.dto.ts`.
 
@@ -255,6 +256,7 @@ Same structure as prompt. `SessionAppModule.forRoot({ middleware })` with `Sessi
    - `paused → ended` (via `end()`)
 
    The `end()` method accepts any non-ended session. Methods: `pause(sessionId)`, `resume(sessionId)`, `end(sessionId)`.
+
 3. **Retrieve messages** — `getMessages(sessionId, { page, perPage })` loads the session's `mastraThreadId`, delegates to Mastra memory.
 4. **Export transcript** — `exportTranscript(sessionId, 'json' | 'text')` fetches all messages and formats them.
 5. **Error handling** — `SessionNotFoundError`, `SessionAlreadyEndedError` with type guards.
@@ -263,13 +265,13 @@ Same structure as prompt. `SessionAppModule.forRoot({ middleware })` with `Sessi
 
 Route table:
 
-| Method | Path | Operation | Request DTO | Response DTO |
-|--------|------|-----------|-------------|--------------|
-| `GET` | `/ai/sessions` | `list` | `sessionListQueryDto` (query) | `sessionSummaryResponseDto[]` |
-| `GET` | `/ai/sessions/:id` | `get` | — | `sessionResponseDto` |
-| `GET` | `/ai/sessions/:id/messages` | `getMessages` | `paginationQueryDto` (query) | `messageResponseDto[]` (stubbed — returns empty array pending Mastra mediator integration) |
-| `GET` | `/ai/sessions/:id/transcript` | `exportTranscript` | `transcriptQueryDto` (query) | `transcriptResponseDto` (stubbed — returns empty messages pending Mastra mediator integration) |
-| `PUT` | `/ai/sessions/:id/end` | `end` | — | 204 |
+| Method | Path                          | Operation          | Request DTO                   | Response DTO                                                                                   |
+| ------ | ----------------------------- | ------------------ | ----------------------------- | ---------------------------------------------------------------------------------------------- |
+| `GET`  | `/ai/sessions`                | `list`             | `sessionListQueryDto` (query) | `sessionSummaryResponseDto[]`                                                                  |
+| `GET`  | `/ai/sessions/:id`            | `get`              | —                             | `sessionResponseDto`                                                                           |
+| `GET`  | `/ai/sessions/:id/messages`   | `getMessages`      | `paginationQueryDto` (query)  | `messageResponseDto[]` (stubbed — returns empty array pending Mastra mediator integration)     |
+| `GET`  | `/ai/sessions/:id/transcript` | `exportTranscript` | `transcriptQueryDto` (query)  | `transcriptResponseDto` (stubbed — returns empty messages pending Mastra mediator integration) |
+| `PUT`  | `/ai/sessions/:id/end`        | `end`              | —                             | 204                                                                                            |
 
 ### Conversation Domain
 
@@ -305,11 +307,11 @@ Route table:
 
 Route table:
 
-| Method | Path | Operation | Request DTO | Response DTO |
-|--------|------|-----------|-------------|--------------|
-| `POST` | `/ai/conversations` | `create` | `createConversationDto` | `conversationResponseDto` |
-| `POST` | `/ai/conversations/:id/messages` | `sendMessage` | `sendMessageDto` | `messageResponseDto` |
-| `POST` | `/ai/conversations/:id/messages/stream` | `streamMessage` | `sendMessageDto` | SSE stream of `StreamChunk` |
+| Method | Path                                    | Operation       | Request DTO             | Response DTO                |
+| ------ | --------------------------------------- | --------------- | ----------------------- | --------------------------- |
+| `POST` | `/ai/conversations`                     | `create`        | `createConversationDto` | `conversationResponseDto`   |
+| `POST` | `/ai/conversations/:id/messages`        | `sendMessage`   | `sendMessageDto`        | `messageResponseDto`        |
+| `POST` | `/ai/conversations/:id/messages/stream` | `streamMessage` | `sendMessageDto`        | SSE stream of `StreamChunk` |
 
 ---
 
@@ -319,53 +321,53 @@ Add JSDoc to all public exports. Scope:
 
 ### Interfaces
 
-| Interface | File | Coverage |
-|-----------|------|----------|
-| `IPromptService` | `src/business/domain/prompt/prompt.interface.ts` | Class doc + all 8 methods with `@param`, `@returns`, `@throws` |
-| `ISessionService` | `src/business/domain/session/session.interface.ts` | Class doc + all 8 methods |
-| `IConversationEngine` | `src/business/domain/conversation/conversation.interface.ts` | Class doc + all 3 methods, usage example on `create()` |
-| `IMastraAgent` | `src/business/sdk/mastra/mastra.interface.ts` | Class doc + `generate()`, `stream()` |
-| `IMastraMemory` | `src/business/sdk/mastra/mastra.interface.ts` | Class doc + `createThread()`, `getMessages()`, `listThreads()` |
-| `IPromptRepository` | `src/repository/domain/prompt/prompt.interface.ts` | Class doc + all 6 methods |
-| `IPromptVersionRepository` | `src/repository/domain/prompt-version/prompt-version.interface.ts` | Class doc + all 6 methods |
-| `ISessionRepository` | `src/repository/domain/session/session.interface.ts` | Class doc + all 4 methods |
+| Interface                  | File                                                               | Coverage                                                       |
+| -------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------- |
+| `IPromptService`           | `src/business/domain/prompt/prompt.interface.ts`                   | Class doc + all 8 methods with `@param`, `@returns`, `@throws` |
+| `ISessionService`          | `src/business/domain/session/session.interface.ts`                 | Class doc + all 8 methods                                      |
+| `IConversationEngine`      | `src/business/domain/conversation/conversation.interface.ts`       | Class doc + all 3 methods, usage example on `create()`         |
+| `IMastraAgent`             | `src/business/sdk/mastra/mastra.interface.ts`                      | Class doc + `generate()`, `stream()`                           |
+| `IMastraMemory`            | `src/business/sdk/mastra/mastra.interface.ts`                      | Class doc + `createThread()`, `getMessages()`, `listThreads()` |
+| `IPromptRepository`        | `src/repository/domain/prompt/prompt.interface.ts`                 | Class doc + all 6 methods                                      |
+| `IPromptVersionRepository` | `src/repository/domain/prompt-version/prompt-version.interface.ts` | Class doc + all 6 methods                                      |
+| `ISessionRepository`       | `src/repository/domain/session/session.interface.ts`               | Class doc + all 4 methods                                      |
 
 ### Models
 
-| Model | File | Coverage |
-|-------|------|----------|
-| `PromptTemplate` | `src/business/domain/prompt/prompt.model.ts` | Interface doc + field docs for `parameterSchema`, `activeVersion` |
-| `PromptVersion` | same | Interface doc |
-| `ResolvedPrompt` | same | Interface doc |
-| `CreatePromptInput`, `UpdatePromptInput`, `CreateVersionInput`, `PromptFilter` | same | Interface docs |
-| `Session`, `SessionSummary` | `src/business/domain/session/session.model.ts` | Interface doc + field doc for `mastraThreadId` |
-| `StartSessionInput`, `SessionFilter`, `Transcript` | same | Interface docs |
-| `ConversationConfig` | `src/business/domain/conversation/conversation.model.ts` | Interface doc + field docs for `outputSchema`, `model` |
-| `Conversation`, `ConversationResponse` | same | Interface docs |
-| `AgentResponse`, `StreamChunk`, `GenerateOptions`, `Thread`, `Message`, `Pagination`, `MessageList`, `ThreadFilter` | `src/business/sdk/mastra/mastra.interface.ts` | Interface docs |
+| Model                                                                                                               | File                                                     | Coverage                                                          |
+| ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------- |
+| `PromptTemplate`                                                                                                    | `src/business/domain/prompt/prompt.model.ts`             | Interface doc + field docs for `parameterSchema`, `activeVersion` |
+| `PromptVersion`                                                                                                     | same                                                     | Interface doc                                                     |
+| `ResolvedPrompt`                                                                                                    | same                                                     | Interface doc                                                     |
+| `CreatePromptInput`, `UpdatePromptInput`, `CreateVersionInput`, `PromptFilter`                                      | same                                                     | Interface docs                                                    |
+| `Session`, `SessionSummary`                                                                                         | `src/business/domain/session/session.model.ts`           | Interface doc + field doc for `mastraThreadId`                    |
+| `StartSessionInput`, `SessionFilter`, `Transcript`                                                                  | same                                                     | Interface docs                                                    |
+| `ConversationConfig`                                                                                                | `src/business/domain/conversation/conversation.model.ts` | Interface doc + field docs for `outputSchema`, `model`            |
+| `Conversation`, `ConversationResponse`                                                                              | same                                                     | Interface docs                                                    |
+| `AgentResponse`, `StreamChunk`, `GenerateOptions`, `Thread`, `Message`, `Pagination`, `MessageList`, `ThreadFilter` | `src/business/sdk/mastra/mastra.interface.ts`            | Interface docs                                                    |
 
 ### Error Classes
 
-| Error | File | Coverage |
-|-------|------|----------|
-| `PromptError` hierarchy (1 base + 5 subclasses) | `src/business/domain/prompt/prompt.error.ts` | Class doc explaining when thrown |
-| `SessionError` hierarchy (2 classes) | `src/business/domain/session/session.error.ts` | Same |
-| `ConversationError` hierarchy (2 classes) | `src/business/domain/conversation/conversation.error.ts` | Same |
-| `MastraAdapterError` | `src/business/sdk/mastra/mastra.error.ts` | Same |
-| `PromptRepositoryError` hierarchy (2 classes) | `src/repository/domain/prompt/prompt.error.ts` | Same |
-| `PromptVersionRepositoryError` hierarchy (1 class) | `src/repository/domain/prompt-version/prompt-version.error.ts` | Same |
-| `SessionRepositoryError` hierarchy (1 class) | `src/repository/domain/session/session.error.ts` | Same |
-| Client errors (3 hierarchies) | `src/business/domain/*/client/errors.ts` | Same |
+| Error                                              | File                                                           | Coverage                         |
+| -------------------------------------------------- | -------------------------------------------------------------- | -------------------------------- |
+| `PromptError` hierarchy (1 base + 5 subclasses)    | `src/business/domain/prompt/prompt.error.ts`                   | Class doc explaining when thrown |
+| `SessionError` hierarchy (2 classes)               | `src/business/domain/session/session.error.ts`                 | Same                             |
+| `ConversationError` hierarchy (2 classes)          | `src/business/domain/conversation/conversation.error.ts`       | Same                             |
+| `MastraAdapterError`                               | `src/business/sdk/mastra/mastra.error.ts`                      | Same                             |
+| `PromptRepositoryError` hierarchy (2 classes)      | `src/repository/domain/prompt/prompt.error.ts`                 | Same                             |
+| `PromptVersionRepositoryError` hierarchy (1 class) | `src/repository/domain/prompt-version/prompt-version.error.ts` | Same                             |
+| `SessionRepositoryError` hierarchy (1 class)       | `src/repository/domain/session/session.error.ts`               | Same                             |
+| Client errors (3 hierarchies)                      | `src/business/domain/*/client/errors.ts`                       | Same                             |
 
 ### DI Tokens
 
-| Token | File | Coverage |
-|-------|------|----------|
-| `AI_DB`, `AI_CACHE`, `AI_MEDIATOR` | `src/shared/tokens.ts` | Brief doc: what it provides, who binds it |
-| `AI_CONFIG` | `src/config.ts` | Brief doc |
-| `PROMPT_SERVICE`, `SESSION_SERVICE`, `CONVERSATION_ENGINE` | respective interface files | Brief doc |
-| `MASTRA_AGENT`, `MASTRA_MEMORY`, `MASTRA_CORE_AGENT`, `MASTRA_CORE_MEMORY` | `src/business/sdk/mastra/mastra.interface.ts` | Brief doc |
-| `PROMPT_REPOSITORY`, `PROMPT_VERSION_REPOSITORY`, `SESSION_REPOSITORY` | respective interface files | Brief doc |
+| Token                                                                      | File                                          | Coverage                                  |
+| -------------------------------------------------------------------------- | --------------------------------------------- | ----------------------------------------- |
+| `AI_DB`, `AI_CACHE`, `AI_MEDIATOR`                                         | `src/shared/tokens.ts`                        | Brief doc: what it provides, who binds it |
+| `AI_CONFIG`                                                                | `src/config.ts`                               | Brief doc                                 |
+| `PROMPT_SERVICE`, `SESSION_SERVICE`, `CONVERSATION_ENGINE`                 | respective interface files                    | Brief doc                                 |
+| `MASTRA_AGENT`, `MASTRA_MEMORY`, `MASTRA_CORE_AGENT`, `MASTRA_CORE_MEMORY` | `src/business/sdk/mastra/mastra.interface.ts` | Brief doc                                 |
+| `PROMPT_REPOSITORY`, `PROMPT_VERSION_REPOSITORY`, `SESSION_REPOSITORY`     | respective interface files                    | Brief doc                                 |
 
 ### Not Covered
 
@@ -392,14 +394,14 @@ Update the root `README.md`:
 
 The following Mermaid diagrams appear in the docs:
 
-| Diagram | Location | Type | Shows |
-|---------|----------|------|-------|
-| Module dependency graph | `integration.md` | Flowchart | How app modules, business providers, repo providers, mediator clients, and tokens connect |
-| Monolith vs standalone | `customization.md` | Flowchart | Side-by-side: local mediator vs HTTP mediator wiring |
-| Prompt module flow | `prompt/setup.md` | Flowchart | PromptAppModule → Router → AppService → mediator → LocalMediator → PromptService → repos |
-| Session lifecycle | `session/usage.md` | State diagram | active ↔ paused, active → ended, paused → ended |
-| Conversation create+send | `conversation/usage.md` | Sequence diagram | Engine → mediator → PromptService (resolve) → mediator → SessionService (start) → MastraAgent (generate) |
-| Conversation reconstruction | `conversation/usage.md` | Sequence diagram | Engine receives send() → handle missing → load session → re-resolve prompt → agent ready → generate |
+| Diagram                     | Location                | Type             | Shows                                                                                                    |
+| --------------------------- | ----------------------- | ---------------- | -------------------------------------------------------------------------------------------------------- |
+| Module dependency graph     | `integration.md`        | Flowchart        | How app modules, business providers, repo providers, mediator clients, and tokens connect                |
+| Monolith vs standalone      | `customization.md`      | Flowchart        | Side-by-side: local mediator vs HTTP mediator wiring                                                     |
+| Prompt module flow          | `prompt/setup.md`       | Flowchart        | PromptAppModule → Router → AppService → mediator → LocalMediator → PromptService → repos                 |
+| Session lifecycle           | `session/usage.md`      | State diagram    | active ↔ paused, active → ended, paused → ended                                                          |
+| Conversation create+send    | `conversation/usage.md` | Sequence diagram | Engine → mediator → PromptService (resolve) → mediator → SessionService (start) → MastraAgent (generate) |
+| Conversation reconstruction | `conversation/usage.md` | Sequence diagram | Engine receives send() → handle missing → load session → re-resolve prompt → agent ready → generate      |
 
 All diagrams use Mermaid v11 syntax, validated with `/mermaidjs-v11` and `/mermaid-diagrams` skills during implementation.
 
