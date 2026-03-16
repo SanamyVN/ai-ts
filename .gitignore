@@ -28,3 +28,6 @@ npm-debug.log*
 pnpm-debug.log*
 
 .claude/settings.local.json
+
+# Git worktrees
+.worktree/
