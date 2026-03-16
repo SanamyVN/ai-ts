@@ -66,11 +66,17 @@ export class PromptDrizzleRepository implements IPromptRepository {
   }
 }
 
-function isUniqueViolation(error: unknown): boolean {
+function hasCode23505(err: unknown): boolean {
   return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    Reflect.get(error, 'code') === '23505'
+    typeof err === 'object' && err !== null && 'code' in err && Reflect.get(err, 'code') === '23505'
   );
+}
+
+/** Check the error and its cause chain for a Postgres unique violation (23505). */
+function isUniqueViolation(error: unknown): boolean {
+  if (hasCode23505(error)) return true;
+  if (typeof error === 'object' && error !== null && 'cause' in error) {
+    return hasCode23505(Reflect.get(error, 'cause'));
+  }
+  return false;
 }
