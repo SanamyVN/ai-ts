@@ -38,7 +38,7 @@ export type IngestClientInput = z.infer<typeof ingestClientSchema>;
 
 export const deleteClientSchema = z.object({
   scopeId: z.string(),
-  filter: z.record(z.unknown()),
+  filter: z.record(z.string(), z.unknown()),
 });
 
 export type DeleteClientInput = z.infer<typeof deleteClientSchema>;
