@@ -3,12 +3,14 @@ import { promptAppProviders } from './domain/prompt/prompt.providers.js';
 import { sessionAppProviders } from './domain/session/session.providers.js';
 import { conversationAppProviders } from './domain/conversation/conversation.providers.js';
 import { ragAppProviders } from './domain/rag/rag.providers.js';
+import { voiceAppProviders } from './domain/voice/voice.providers.js';
 
 export function aiAppProviders(): ProviderBundle {
   const prompt = promptAppProviders();
   const session = sessionAppProviders();
   const conversation = conversationAppProviders();
   const rag = ragAppProviders();
+  const voice = voiceAppProviders();
 
   return {
     providers: [
@@ -16,7 +18,14 @@ export function aiAppProviders(): ProviderBundle {
       ...session.providers,
       ...conversation.providers,
       ...rag.providers,
+      ...voice.providers,
     ],
-    exports: [...prompt.exports, ...session.exports, ...conversation.exports, ...rag.exports],
+    exports: [
+      ...prompt.exports,
+      ...session.exports,
+      ...conversation.exports,
+      ...rag.exports,
+      ...voice.exports,
+    ],
   };
 }
