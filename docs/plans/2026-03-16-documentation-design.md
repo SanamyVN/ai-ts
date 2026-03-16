@@ -172,18 +172,14 @@ value(AI_CONFIG, aiConfigSchema.parse({ defaultModel: 'openai/gpt-4o' }))
    | `createMockMastraAgent()` | `@sanamyvn/ai-ts/business/mastra/testing` | `IMastraAgent` |
    | `createMockMastraMemory()` | `@sanamyvn/ai-ts/business/mastra/testing` | `IMastraMemory` |
 
-   All mocks use `vi.fn<Interface['method']>()` so `.mockResolvedValue()` works with TypeScript.
+   Most mocks use `vi.fn<Interface['method']>()` so `.mockResolvedValue()` works with TypeScript. The prompt service mock (`createMockPromptService()`) currently uses untyped `vi.fn()` — fix this to match the typed pattern before documenting it.
 
 2. **Unit test pattern** — Example: testing a downstream service that calls `IConversationEngine.create()`:
    - Create mock with `createMockConversationEngine()`
    - Set up return values with `.mockResolvedValue()`
    - Assert calls and results
 
-3. **Integration test setup** — The package provides a Postgres fixture via foundation's `createPostgresFixture()`:
-   - `pg.start()` spins up a testcontainers Postgres, creates isolated schema
-   - `pg.stop()` drops schema, closes connection
-   - `pg.truncateAll()` clears all tables between tests
-   - `createAiTestContext()` wires real repos + mocked Mastra into a test context
+3. **Integration test setup** — The package uses foundation's `createPostgresFixture({ schema: aiSchema })` for integration tests. Reference the foundation testing docs for the fixture API (`pg.start()`, `pg.stop()`, `pg.truncateAll()`). The internal helper `createAiTestContext()` (in `src/__tests__/integration/helpers.ts`) wires real repos + mocked Mastra into a test context — show the pattern but note it is internal to this package, not an exported API. Downstream apps build their own test contexts using the exported mock factories.
 
    Example test structure with `beforeAll`, `afterAll`, `beforeEach`, `afterEach`.
 
@@ -217,6 +213,7 @@ Each feature follows the same three-file template.
    |-------|------|
    | `PromptNotFoundError` | Slug not found or no active version |
    | `PromptAlreadyExistsError` | Duplicate slug on create |
+   | `PromptVersionNotFoundError` | Version ID not found during setActive |
    | `InvalidPromptParametersError` | Params fail schema validation |
    | `PromptRenderError` | Mustache template rendering fails |
 
@@ -234,9 +231,9 @@ Route table:
 | `PUT` | `/ai/prompts/:slug` | `update` | `updatePromptDto` | `promptResponseDto` |
 | `POST` | `/ai/prompts/:slug/versions` | `createVersion` | `createVersionDto` | `promptResponseDto` |
 | `PUT` | `/ai/prompts/:slug/versions/:id/activate` | `activateVersion` | — | 204 |
-| `GET` | `/ai/prompts/:slug/versions` | `listVersions` | — | `promptResponseDto` |
+| `GET` | `/ai/prompts/:slug/versions` | `listVersions` | — | `promptResponseDto` (returns the prompt with its active version — not a version list) |
 
-DTO import path: `@sanamyvn/ai-ts/app/prompt/module` (or wherever DTOs are exported — to be verified).
+DTO types are internal to the router — they are not exported from `package.json`. The route table references them by name for documentation purposes. Developers who need the exact shapes can check the Zod schemas in `src/app/domain/prompt/prompt.dto.ts`.
 
 Note: Operation names in the table match the middleware config keys, so developers can cross-reference which middleware applies to which route.
 
@@ -250,12 +247,14 @@ Same structure as prompt. `SessionAppModule.forRoot({ middleware })` with `Sessi
 
 **Sections:**
 
-1. **Start a session** — `ISessionService.start({ userId, tenantId?, promptSlug, purpose, metadata? })`. Creates a Mastra thread via `IMastraMemory.createThread()`, then a row in `ai_sessions` linking them via `mastraThreadId`.
-2. **Session lifecycle** — State transitions with Mermaid state diagram:
-   ```
-   active → paused → active → ended
-   ```
-   Methods: `pause(sessionId)`, `resume(sessionId)`, `end(sessionId)`.
+1. **Start a session** — `ISessionService.start({ userId, tenantId?, promptSlug, resolvedPrompt, purpose, metadata? })`. Creates a Mastra thread via `IMastraMemory.createThread()`, then a row in `ai_sessions` linking them via `mastraThreadId`. Note: `resolvedPrompt` is required — the conversation engine resolves the prompt first and passes the text here. Direct callers must provide the resolved prompt string.
+2. **Session lifecycle** — State transitions with Mermaid state diagram showing all valid transitions:
+   - `active → paused` (via `pause()`)
+   - `paused → active` (via `resume()`)
+   - `active → ended` (via `end()`)
+   - `paused → ended` (via `end()`)
+
+   The `end()` method accepts any non-ended session. Methods: `pause(sessionId)`, `resume(sessionId)`, `end(sessionId)`.
 3. **Retrieve messages** — `getMessages(sessionId, { page, perPage })` loads the session's `mastraThreadId`, delegates to Mastra memory.
 4. **Export transcript** — `exportTranscript(sessionId, 'json' | 'text')` fetches all messages and formats them.
 5. **Error handling** — `SessionNotFoundError`, `SessionAlreadyEndedError` with type guards.
@@ -268,8 +267,8 @@ Route table:
 |--------|------|-----------|-------------|--------------|
 | `GET` | `/ai/sessions` | `list` | `sessionListQueryDto` (query) | `sessionSummaryResponseDto[]` |
 | `GET` | `/ai/sessions/:id` | `get` | — | `sessionResponseDto` |
-| `GET` | `/ai/sessions/:id/messages` | `getMessages` | `paginationQueryDto` (query) | `messageResponseDto[]` |
-| `GET` | `/ai/sessions/:id/transcript` | `exportTranscript` | `transcriptQueryDto` (query) | `transcriptResponseDto` |
+| `GET` | `/ai/sessions/:id/messages` | `getMessages` | `paginationQueryDto` (query) | `messageResponseDto[]` (stubbed — returns empty array pending Mastra mediator integration) |
+| `GET` | `/ai/sessions/:id/transcript` | `exportTranscript` | `transcriptQueryDto` (query) | `transcriptResponseDto` (stubbed — returns empty messages pending Mastra mediator integration) |
 | `PUT` | `/ai/sessions/:id/end` | `end` | — | 204 |
 
 ### Conversation Domain
@@ -289,7 +288,7 @@ Route table:
 1. **Create a conversation** — `IConversationEngine.create(config)` with `ConversationConfig` fields explained. Orchestration sequence:
    - Resolve prompt via mediator (`ResolvePromptQuery`)
    - Create session via mediator (`CreateSessionCommand`)
-   - Store in-memory conversation handle
+   - Store internal `ConversationState` in an in-memory map (includes `mastraThreadId`, `userId` beyond what `Conversation` exposes)
    - Return `Conversation { id, sessionId, promptSlug, resolvedPrompt, model }`
 
 2. **Send a message** — `send(conversationId, message)` returns `ConversationResponse { text, object? }`. Delegates to `IMastraAgent.generate()`.
@@ -341,14 +340,15 @@ Add JSDoc to all public exports. Scope:
 | `CreatePromptInput`, `UpdatePromptInput`, `CreateVersionInput`, `PromptFilter` | same | Interface docs |
 | `Session`, `SessionSummary` | `src/business/domain/session/session.model.ts` | Interface doc + field doc for `mastraThreadId` |
 | `StartSessionInput`, `SessionFilter`, `Transcript` | same | Interface docs |
-| `Conversation`, `ConversationConfig`, `ConversationResponse` | `src/business/domain/conversation/conversation.model.ts` | Interface doc + field docs for `outputSchema`, `model` |
+| `ConversationConfig` | `src/business/domain/conversation/conversation.model.ts` | Interface doc + field docs for `outputSchema`, `model` |
+| `Conversation`, `ConversationResponse` | same | Interface docs |
 | `AgentResponse`, `StreamChunk`, `GenerateOptions`, `Thread`, `Message`, `Pagination`, `MessageList`, `ThreadFilter` | `src/business/sdk/mastra/mastra.interface.ts` | Interface docs |
 
 ### Error Classes
 
 | Error | File | Coverage |
 |-------|------|----------|
-| `PromptError` hierarchy (5 classes) | `src/business/domain/prompt/prompt.error.ts` | Class doc explaining when thrown |
+| `PromptError` hierarchy (1 base + 5 subclasses) | `src/business/domain/prompt/prompt.error.ts` | Class doc explaining when thrown |
 | `SessionError` hierarchy (2 classes) | `src/business/domain/session/session.error.ts` | Same |
 | `ConversationError` hierarchy (2 classes) | `src/business/domain/conversation/conversation.error.ts` | Same |
 | `MastraAdapterError` | `src/business/sdk/mastra/mastra.error.ts` | Same |
@@ -397,7 +397,7 @@ The following Mermaid diagrams appear in the docs:
 | Module dependency graph | `integration.md` | Flowchart | How app modules, business providers, repo providers, mediator clients, and tokens connect |
 | Monolith vs standalone | `customization.md` | Flowchart | Side-by-side: local mediator vs HTTP mediator wiring |
 | Prompt module flow | `prompt/setup.md` | Flowchart | PromptAppModule → Router → AppService → mediator → LocalMediator → PromptService → repos |
-| Session lifecycle | `session/usage.md` | State diagram | active → paused → active → ended |
+| Session lifecycle | `session/usage.md` | State diagram | active ↔ paused, active → ended, paused → ended |
 | Conversation create+send | `conversation/usage.md` | Sequence diagram | Engine → mediator → PromptService (resolve) → mediator → SessionService (start) → MastraAgent (generate) |
 | Conversation reconstruction | `conversation/usage.md` | Sequence diagram | Engine receives send() → handle missing → load session → re-resolve prompt → agent ready → generate |
 
