@@ -285,6 +285,54 @@
     "./app/conversation-client/module": {
       "types": "./dist/app/sdk/conversation-client/conversation-client.module.d.ts",
       "default": "./dist/app/sdk/conversation-client/conversation-client.module.js"
+    },
+    "./business/rag": {
+      "types": "./dist/business/domain/rag/rag.interface.d.ts",
+      "default": "./dist/business/domain/rag/rag.interface.js"
+    },
+    "./business/rag/model": {
+      "types": "./dist/business/domain/rag/rag.model.d.ts",
+      "default": "./dist/business/domain/rag/rag.model.js"
+    },
+    "./business/rag/error": {
+      "types": "./dist/business/domain/rag/rag.error.d.ts",
+      "default": "./dist/business/domain/rag/rag.error.js"
+    },
+    "./business/rag/providers": {
+      "types": "./dist/business/domain/rag/rag.providers.d.ts",
+      "default": "./dist/business/domain/rag/rag.providers.js"
+    },
+    "./business/rag/testing": {
+      "types": "./dist/business/domain/rag/rag.testing.d.ts",
+      "default": "./dist/business/domain/rag/rag.testing.js"
+    },
+    "./business/rag/client/schemas": {
+      "types": "./dist/business/domain/rag/client/schemas.d.ts",
+      "default": "./dist/business/domain/rag/client/schemas.js"
+    },
+    "./business/rag/client/queries": {
+      "types": "./dist/business/domain/rag/client/queries.d.ts",
+      "default": "./dist/business/domain/rag/client/queries.js"
+    },
+    "./business/rag/client/errors": {
+      "types": "./dist/business/domain/rag/client/errors.d.ts",
+      "default": "./dist/business/domain/rag/client/errors.js"
+    },
+    "./business/rag/client/mediator": {
+      "types": "./dist/business/domain/rag/client/mediator.d.ts",
+      "default": "./dist/business/domain/rag/client/mediator.js"
+    },
+    "./app/rag/module": {
+      "types": "./dist/app/domain/rag/rag.module.d.ts",
+      "default": "./dist/app/domain/rag/rag.module.js"
+    },
+    "./app/rag/providers": {
+      "types": "./dist/app/domain/rag/rag.providers.d.ts",
+      "default": "./dist/app/domain/rag/rag.providers.js"
+    },
+    "./app/rag-client/module": {
+      "types": "./dist/app/sdk/rag-client/rag-client.module.d.ts",
+      "default": "./dist/app/sdk/rag-client/rag-client.module.js"
     }
   },
   "dependencies": {
@@ -292,9 +340,23 @@
   },
   "peerDependencies": {
     "@mastra/core": "^1.0.0",
+    "@mastra/pg": "^1.8.0",
+    "@mastra/rag": "^2.1.0",
     "@sanamyvn/foundation": "^1.12.0",
+    "ai": "^6.0.0",
     "drizzle-orm": ">=0.45.1",
     "zod": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@mastra/pg": {
+      "optional": true
+    },
+    "@mastra/rag": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.4",
