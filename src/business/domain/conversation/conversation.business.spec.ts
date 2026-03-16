@@ -29,6 +29,7 @@ const SESSION = {
   userId: 'user-1',
   tenantId: null,
   promptSlug: 'greet',
+  resolvedPrompt: 'Hello {{name}}',
   purpose: 'test',
   status: 'active',
   metadata: null,
@@ -135,15 +136,7 @@ describe('ConversationEngine', () => {
     });
 
     it('reconstructs state when handle is missing (multi-instance scenario)', async () => {
-      send.mockImplementation(async (request) => {
-        if (request instanceof FindSessionByIdQuery) {
-          return SESSION;
-        }
-        if (request instanceof ResolvePromptQuery) {
-          return RESOLVED_PROMPT;
-        }
-        throw new Error(`Unexpected request: ${request.type}`);
-      });
+      send.mockResolvedValue(SESSION);
 
       agent.generate.mockResolvedValue({
         text: 'Reconstructed!',
@@ -154,7 +147,6 @@ describe('ConversationEngine', () => {
       const response = await engine.send('session-1', 'Hello');
 
       expect(send).toHaveBeenCalledWith(expect.any(FindSessionByIdQuery));
-      expect(send).toHaveBeenCalledWith(expect.any(ResolvePromptQuery));
       expect(agent.generate).toHaveBeenCalledWith('Hello', {
         threadId: 'thread-1',
         resourceId: 'user-1',
@@ -238,15 +230,7 @@ describe('ConversationEngine', () => {
     });
 
     it('reconstructs state when handle is missing', async () => {
-      send.mockImplementation(async (request) => {
-        if (request instanceof FindSessionByIdQuery) {
-          return SESSION;
-        }
-        if (request instanceof ResolvePromptQuery) {
-          return RESOLVED_PROMPT;
-        }
-        throw new Error(`Unexpected request: ${request.type}`);
-      });
+      send.mockResolvedValue(SESSION);
 
       agent.stream.mockReturnValue(
         (async function* () {

@@ -25,6 +25,7 @@ export const CreateSessionCommand = createCommand({
     userId: z.string(),
     tenantId: z.string().optional(),
     promptSlug: z.string(),
+    resolvedPrompt: z.string(),
     purpose: z.string(),
     metadata: z.record(z.string(), z.unknown()).optional(),
   }),

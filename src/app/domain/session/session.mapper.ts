@@ -11,6 +11,7 @@ export function toSessionResponseDtoFromClient(model: SessionClientModel): Sessi
     userId: model.userId,
     tenantId: model.tenantId,
     promptSlug: model.promptSlug,
+    resolvedPrompt: model.resolvedPrompt,
     purpose: model.purpose,
     status: model.status,
     metadata: model.metadata,

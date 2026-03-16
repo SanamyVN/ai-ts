@@ -8,6 +8,7 @@ export function toSessionFromRecord(record: SessionRecord): Session {
     userId: record.userId,
     tenantId: record.tenantId,
     promptSlug: record.promptSlug,
+    resolvedPrompt: record.resolvedPrompt,
     purpose: record.purpose,
     status: record.status,
     metadata: record.metadata,

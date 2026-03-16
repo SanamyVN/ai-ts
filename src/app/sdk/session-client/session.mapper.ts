@@ -15,6 +15,7 @@ export function toSessionClientModelFromBusiness(session: Session): SessionClien
     userId: session.userId,
     tenantId: session.tenantId,
     promptSlug: session.promptSlug,
+    resolvedPrompt: session.resolvedPrompt,
     purpose: session.purpose,
     status: session.status,
     metadata: session.metadata,

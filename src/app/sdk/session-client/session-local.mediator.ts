@@ -57,6 +57,7 @@ export class SessionLocalMediator implements ISessionMediator {
       userId: command.userId,
       ...(command.tenantId !== undefined ? { tenantId: command.tenantId } : {}),
       promptSlug: command.promptSlug,
+      resolvedPrompt: command.resolvedPrompt,
       purpose: command.purpose,
       ...(command.metadata !== undefined ? { metadata: command.metadata } : {}),
     });

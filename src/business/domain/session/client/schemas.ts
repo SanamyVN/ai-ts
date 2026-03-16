@@ -6,6 +6,7 @@ export const sessionClientModelSchema = z.object({
   userId: z.string(),
   tenantId: z.string().nullable(),
   promptSlug: z.string(),
+  resolvedPrompt: z.string(),
   purpose: z.string(),
   status: z.string(),
   metadata: z.record(z.string(), z.unknown()).nullable(),

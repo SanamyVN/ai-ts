@@ -6,6 +6,7 @@ export interface Session {
   readonly userId: string;
   readonly tenantId: string | null;
   readonly promptSlug: string;
+  readonly resolvedPrompt: string;
   readonly purpose: string;
   readonly status: string;
   readonly metadata: Record<string, unknown> | null;
@@ -26,6 +27,7 @@ export interface StartSessionInput {
   readonly userId: string;
   readonly tenantId?: string;
   readonly promptSlug: string;
+  readonly resolvedPrompt: string;
   readonly purpose: string;
   readonly metadata?: Record<string, unknown>;
 }

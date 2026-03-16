@@ -35,6 +35,7 @@ function createTestMediator(ctx: AiTestContext): IMediator {
         const result = await ctx.sessionService.start({
           userId: request.userId,
           promptSlug: request.promptSlug,
+          resolvedPrompt: request.resolvedPrompt,
           purpose: request.purpose,
         });
         return result;
@@ -126,14 +127,6 @@ describe('Conversation / Flow', () => {
   });
 
   it('reconstructs conversation state when handle is missing (simulates multi-instance)', async () => {
-    // Use a prompt without parameterSchema so reconstruction (which resolves with {}) works
-    await ctx.promptService.create({ name: 'Simple Prompt', slug: 'simple-prompt' });
-    const simple = await ctx.promptService.getBySlug('simple-prompt');
-    await ctx.promptService.createVersion(simple.id, {
-      template: 'You are a helpful assistant.',
-      activate: true,
-    });
-
     ctx.mastraAgent.generate.mockResolvedValue({
       text: 'Reconstructed reply.',
       object: undefined,
@@ -141,8 +134,8 @@ describe('Conversation / Flow', () => {
     });
 
     const conversation = await engine.create({
-      promptSlug: 'simple-prompt',
-      promptParams: {},
+      promptSlug: 'test-prompt',
+      promptParams: { topic: 'history' },
       userId: 'user-2',
       purpose: 'tutoring',
     });

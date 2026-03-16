@@ -34,6 +34,7 @@ describe('Session / Lifecycle', () => {
     const session = await ctx.sessionService.start({
       userId: 'user-1',
       promptSlug: 'test-prompt',
+      resolvedPrompt: 'You are a test assistant.',
       purpose: 'testing',
     });
 
@@ -52,6 +53,7 @@ describe('Session / Lifecycle', () => {
     const session = await ctx.sessionService.start({
       userId: 'user-1',
       promptSlug: 'test-prompt',
+      resolvedPrompt: 'You are a test assistant.',
       purpose: 'testing',
     });
 
@@ -81,6 +83,7 @@ describe('Session / Lifecycle', () => {
     const session = await ctx.sessionService.start({
       userId: 'user-2',
       promptSlug: 'test-prompt',
+      resolvedPrompt: 'You are a test assistant.',
       purpose: 'testing',
     });
 
@@ -98,6 +101,7 @@ describe('Session / Lifecycle', () => {
     const session = await ctx.sessionService.start({
       userId: 'user-3',
       promptSlug: 'test-prompt',
+      resolvedPrompt: 'You are a test assistant.',
       purpose: 'testing',
     });
     await ctx.sessionService.pause(session.id);
@@ -115,6 +119,7 @@ describe('Session / Lifecycle', () => {
     const session = await ctx.sessionService.start({
       userId: 'user-4',
       promptSlug: 'test-prompt',
+      resolvedPrompt: 'You are a test assistant.',
       purpose: 'testing',
     });
 
@@ -134,6 +139,7 @@ describe('Session / Lifecycle', () => {
     const session = await ctx.sessionService.start({
       userId: 'user-5',
       promptSlug: 'test-prompt',
+      resolvedPrompt: 'You are a test assistant.',
       purpose: 'testing',
     });
     await ctx.sessionService.end(session.id);
@@ -155,6 +161,7 @@ describe('Session / Lifecycle', () => {
     const session = await ctx.sessionService.start({
       userId: 'user-6',
       promptSlug: 'test-prompt',
+      resolvedPrompt: 'You are a test assistant.',
       purpose: 'testing',
     });
 
@@ -186,6 +193,7 @@ describe('Session / Lifecycle', () => {
     const session = await ctx.sessionService.start({
       userId: 'user-7',
       promptSlug: 'test-prompt',
+      resolvedPrompt: 'You are a test assistant.',
       purpose: 'testing',
     });
 

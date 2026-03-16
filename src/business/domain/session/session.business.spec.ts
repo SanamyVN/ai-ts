@@ -27,6 +27,7 @@ describe('SessionService', () => {
         userId: 'user-1',
         tenantId: null,
         promptSlug: 'test-prompt',
+        resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
         status: 'active',
         metadata: null,
@@ -37,6 +38,7 @@ describe('SessionService', () => {
       const result = await service.start({
         userId: 'user-1',
         promptSlug: 'test-prompt',
+        resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
       });
 
@@ -61,6 +63,7 @@ describe('SessionService', () => {
         userId: 'user-1',
         tenantId: null,
         promptSlug: 'test',
+        resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
         status: 'active',
         metadata: null,
@@ -73,6 +76,7 @@ describe('SessionService', () => {
         userId: 'user-1',
         tenantId: null,
         promptSlug: 'test',
+        resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
         status: 'ended',
         metadata: null,
@@ -91,6 +95,7 @@ describe('SessionService', () => {
         userId: 'user-1',
         tenantId: null,
         promptSlug: 'test',
+        resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
         status: 'ended',
         metadata: null,
@@ -117,6 +122,7 @@ describe('SessionService', () => {
         userId: 'user-1',
         tenantId: null,
         promptSlug: 'test',
+        resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
         status: 'active',
         metadata: null,

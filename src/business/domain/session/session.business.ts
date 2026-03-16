@@ -34,6 +34,7 @@ export class SessionService implements ISessionService {
       userId: input.userId,
       tenantId: input.tenantId ?? null,
       promptSlug: input.promptSlug,
+      resolvedPrompt: input.resolvedPrompt,
       purpose: input.purpose,
       metadata: input.metadata ?? null,
     });

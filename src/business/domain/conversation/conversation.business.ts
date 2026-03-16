@@ -62,6 +62,7 @@ export class ConversationEngine implements IConversationEngine {
         userId: config.userId,
         ...(config.tenantId !== undefined ? { tenantId: config.tenantId } : {}),
         promptSlug: config.promptSlug,
+        resolvedPrompt: prompt.text,
         purpose: config.purpose,
       }),
     );
@@ -135,15 +136,11 @@ export class ConversationEngine implements IConversationEngine {
       throw new ConversationNotFoundError(conversationId);
     }
 
-    const prompt = await this.mediator.send(
-      new ResolvePromptQuery({ slug: session.promptSlug, params: {} }),
-    );
-
     const state: ConversationState = {
       sessionId: session.id,
       mastraThreadId: session.mastraThreadId,
       promptSlug: session.promptSlug,
-      resolvedPrompt: prompt.text,
+      resolvedPrompt: session.resolvedPrompt,
       model: this.config.defaultModel,
       userId: session.userId,
     };
