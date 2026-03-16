@@ -333,6 +333,54 @@
     "./app/rag-client/module": {
       "types": "./dist/app/sdk/rag-client/rag-client.module.d.ts",
       "default": "./dist/app/sdk/rag-client/rag-client.module.js"
+    },
+    "./business/voice": {
+      "types": "./dist/business/domain/voice/voice.interface.d.ts",
+      "default": "./dist/business/domain/voice/voice.interface.js"
+    },
+    "./business/voice/model": {
+      "types": "./dist/business/domain/voice/voice.model.d.ts",
+      "default": "./dist/business/domain/voice/voice.model.js"
+    },
+    "./business/voice/error": {
+      "types": "./dist/business/domain/voice/voice.error.d.ts",
+      "default": "./dist/business/domain/voice/voice.error.js"
+    },
+    "./business/voice/providers": {
+      "types": "./dist/business/domain/voice/voice.providers.d.ts",
+      "default": "./dist/business/domain/voice/voice.providers.js"
+    },
+    "./business/voice/testing": {
+      "types": "./dist/business/domain/voice/voice.testing.d.ts",
+      "default": "./dist/business/domain/voice/voice.testing.js"
+    },
+    "./business/voice/client/schemas": {
+      "types": "./dist/business/domain/voice/client/schemas.d.ts",
+      "default": "./dist/business/domain/voice/client/schemas.js"
+    },
+    "./business/voice/client/queries": {
+      "types": "./dist/business/domain/voice/client/queries.d.ts",
+      "default": "./dist/business/domain/voice/client/queries.js"
+    },
+    "./business/voice/client/errors": {
+      "types": "./dist/business/domain/voice/client/errors.d.ts",
+      "default": "./dist/business/domain/voice/client/errors.js"
+    },
+    "./business/voice/client/mediator": {
+      "types": "./dist/business/domain/voice/client/mediator.d.ts",
+      "default": "./dist/business/domain/voice/client/mediator.js"
+    },
+    "./app/voice/module": {
+      "types": "./dist/app/domain/voice/voice.module.d.ts",
+      "default": "./dist/app/domain/voice/voice.module.js"
+    },
+    "./app/voice/providers": {
+      "types": "./dist/app/domain/voice/voice.providers.d.ts",
+      "default": "./dist/app/domain/voice/voice.providers.js"
+    },
+    "./app/voice-client/module": {
+      "types": "./dist/app/sdk/voice-client/voice-client.module.d.ts",
+      "default": "./dist/app/sdk/voice-client/voice-client.module.js"
     }
   },
   "dependencies": {
