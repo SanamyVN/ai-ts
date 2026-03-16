@@ -1,7 +1,7 @@
 import { eq, ilike } from 'drizzle-orm';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
-import type { AiRequiredSchema } from '@/shared/schema.js';
+import type { AiSchema } from '@/shared/schema.js';
 import { AI_DB } from '@/shared/tokens.js';
 import { aiPrompts } from './prompt.schema.js';
 import type { IPromptRepository } from './prompt.interface.js';
@@ -14,7 +14,7 @@ import {
 
 @Injectable()
 export class PromptDrizzleRepository implements IPromptRepository {
-  constructor(@Inject(AI_DB) private readonly db: PostgresClient<AiRequiredSchema>) {}
+  constructor(@Inject(AI_DB) private readonly db: PostgresClient<AiSchema>) {}
 
   async create(data: NewPromptRecord): Promise<PromptRecord> {
     try {
