@@ -1,5 +1,12 @@
 import { vi } from 'vitest';
-import type { IMastraAgent, IMastraMemory, IMastraRag } from './mastra.interface.js';
+import type {
+  IMastraAgent,
+  IMastraMemory,
+  IMastraRag,
+  IMastraVoiceTts,
+  IMastraVoiceStt,
+  IMastraVoiceRealtime,
+} from './mastra.interface.js';
 
 /**
  * Creates a mock `IMastraAgent` with all methods stubbed via `vi.fn()`.
@@ -45,5 +52,55 @@ export function createMockMastraRag() {
     createIndex: vi.fn<IMastraRag['createIndex']>(),
     upsert: vi.fn<IMastraRag['upsert']>(),
     delete: vi.fn<IMastraRag['delete']>(),
+  };
+}
+
+/**
+ * Creates a mock `IMastraVoiceTts` with all methods stubbed via `vi.fn()`.
+ *
+ * @example
+ * const tts = createMockMastraVoiceTts();
+ * tts.textToSpeech.mockResolvedValue(audioStream);
+ */
+export function createMockMastraVoiceTts() {
+  return {
+    textToSpeech: vi.fn<IMastraVoiceTts['textToSpeech']>(),
+    getSpeakers: vi.fn<IMastraVoiceTts['getSpeakers']>(),
+  };
+}
+
+/**
+ * Creates a mock `IMastraVoiceStt` with all methods stubbed via `vi.fn()`.
+ *
+ * @example
+ * const stt = createMockMastraVoiceStt();
+ * stt.speechToText.mockResolvedValue('hello');
+ */
+export function createMockMastraVoiceStt() {
+  return {
+    speechToText: vi.fn<IMastraVoiceStt['speechToText']>(),
+    getListener: vi.fn<IMastraVoiceStt['getListener']>(),
+  };
+}
+
+/**
+ * Creates a mock `IMastraVoiceRealtime` with all methods stubbed via `vi.fn()`.
+ *
+ * @example
+ * const realtime = createMockMastraVoiceRealtime();
+ * realtime.openSession.mockResolvedValue(undefined);
+ */
+export function createMockMastraVoiceRealtime() {
+  return {
+    openSession: vi.fn<IMastraVoiceRealtime['openSession']>(),
+    closeSession: vi.fn<IMastraVoiceRealtime['closeSession']>(),
+    sendAudio: vi.fn<IMastraVoiceRealtime['sendAudio']>(),
+    sendText: vi.fn<IMastraVoiceRealtime['sendText']>(),
+    triggerResponse: vi.fn<IMastraVoiceRealtime['triggerResponse']>(),
+    onEvent: vi.fn<IMastraVoiceRealtime['onEvent']>(),
+    offEvent: vi.fn<IMastraVoiceRealtime['offEvent']>(),
+    addTools: vi.fn<IMastraVoiceRealtime['addTools']>(),
+    addInstructions: vi.fn<IMastraVoiceRealtime['addInstructions']>(),
+    updateConfig: vi.fn<IMastraVoiceRealtime['updateConfig']>(),
   };
 }
