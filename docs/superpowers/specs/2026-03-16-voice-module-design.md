@@ -220,6 +220,9 @@ export interface IMastraVoiceStt {
     audioStream: NodeJS.ReadableStream,
     options?: Record<string, unknown>,
   ): Promise<string | NodeJS.ReadableStream | void>;
+
+  /** Check whether the voice provider supports listening (STT). */
+  getListener(): Promise<{ enabled: boolean }>;
 }
 
 // ── Realtime Interface ──
@@ -240,9 +243,11 @@ export interface IMastraVoiceRealtime {
   /** Remove a voice event listener. */
   offEvent(event: string, callback: VoiceEventCallback): void;
   /** Add tools the provider can invoke during a realtime session. */
-  addTools(tools: unknown): void;
+  addTools(tools: Record<string, unknown>): void;
   /** Set system instructions for the realtime session. */
   addInstructions(instructions: string): void;
+  /** Update provider configuration at runtime (e.g., session parameters mid-session). */
+  updateConfig(options: Record<string, unknown>): void;
 }
 
 // ── DI Tokens ──
@@ -303,6 +308,14 @@ export class MastraVoiceSttAdapter implements IMastraVoiceStt {
       throw new MastraAdapterError('speechToText', error);
     }
   }
+
+  async getListener(): Promise<{ enabled: boolean }> {
+    try {
+      return await this.voice.getListener();
+    } catch (error) {
+      throw new MastraAdapterError('getListener', error);
+    }
+  }
 }
 ```
 
@@ -322,7 +335,11 @@ export class MastraVoiceRealtimeAdapter implements IMastraVoiceRealtime {
   }
 
   closeSession(): void {
-    this.voice.close();
+    try {
+      this.voice.close();
+    } catch (error) {
+      throw new MastraAdapterError('closeSession', error);
+    }
   }
 
   async sendAudio(audioData: NodeJS.ReadableStream | Int16Array): Promise<void> {
@@ -350,19 +367,44 @@ export class MastraVoiceRealtimeAdapter implements IMastraVoiceRealtime {
   }
 
   onEvent(event: string, callback: VoiceEventCallback): void {
-    this.voice.on(event, callback);
+    try {
+      this.voice.on(event, callback);
+    } catch (error) {
+      throw new MastraAdapterError('onEvent', error);
+    }
   }
 
   offEvent(event: string, callback: VoiceEventCallback): void {
-    this.voice.off(event, callback);
+    try {
+      this.voice.off(event, callback);
+    } catch (error) {
+      throw new MastraAdapterError('offEvent', error);
+    }
   }
 
-  addTools(tools: unknown): void {
-    this.voice.addTools(tools);
+  addTools(tools: Record<string, unknown>): void {
+    try {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      this.voice.addTools(tools as never);
+    } catch (error) {
+      throw new MastraAdapterError('addTools', error);
+    }
   }
 
   addInstructions(instructions: string): void {
-    this.voice.addInstructions(instructions);
+    try {
+      this.voice.addInstructions(instructions);
+    } catch (error) {
+      throw new MastraAdapterError('addInstructions', error);
+    }
+  }
+
+  updateConfig(options: Record<string, unknown>): void {
+    try {
+      this.voice.updateConfig(options);
+    } catch (error) {
+      throw new MastraAdapterError('updateConfig', error);
+    }
   }
 }
 ```
@@ -403,6 +445,7 @@ export function createMockMastraVoiceTts(): IMastraVoiceTts {
 export function createMockMastraVoiceStt(): IMastraVoiceStt {
   return {
     speechToText: vi.fn<IMastraVoiceStt['speechToText']>(),
+    getListener: vi.fn<IMastraVoiceStt['getListener']>(),
   };
 }
 
@@ -417,6 +460,7 @@ export function createMockMastraVoiceRealtime(): IMastraVoiceRealtime {
     offEvent: vi.fn<IMastraVoiceRealtime['offEvent']>(),
     addTools: vi.fn<IMastraVoiceRealtime['addTools']>(),
     addInstructions: vi.fn<IMastraVoiceRealtime['addInstructions']>(),
+    updateConfig: vi.fn<IMastraVoiceRealtime['updateConfig']>(),
   };
 }
 ```
@@ -533,6 +577,49 @@ VoiceBusinessError (base)
 ```
 
 ### Client (Mediator Contracts)
+
+#### Schemas
+
+```typescript
+// client/schemas.ts
+import { z } from 'zod';
+
+export const textToSpeechClientSchema = z.object({
+  text: z.string().min(1),
+  speaker: z.string().optional(),
+  options: z.record(z.unknown()).optional(),
+});
+
+// Note: TTS result over the mediator is base64-encoded audio, not a raw stream.
+// The local mediator converts ReadableStream → base64; the remote mediator receives
+// the binary HTTP response and base64-encodes it. Consumers decode on their end.
+export const textToSpeechResultSchema = z.object({
+  audio: z.string(),            // base64-encoded audio data
+  contentType: z.string(),      // MIME type, e.g. 'audio/mpeg'
+});
+
+export const speechToTextClientSchema = z.object({
+  audio: z.string(),            // base64-encoded audio data
+  contentType: z.string(),      // MIME type of the audio
+  options: z.record(z.unknown()).optional(),
+});
+
+export const speechToTextResultSchema = z.object({
+  text: z.string(),
+});
+
+export const getSpeakersResultSchema = z.object({
+  speakers: z.array(z.object({
+    voiceId: z.string(),
+  }).passthrough()),
+});
+
+export type TextToSpeechClientResult = z.infer<typeof textToSpeechResultSchema>;
+export type SpeechToTextClientResult = z.infer<typeof speechToTextResultSchema>;
+export type GetSpeakersClientResult = z.infer<typeof getSpeakersResultSchema>;
+```
+
+#### Commands & Queries
 
 ```typescript
 // client/queries.ts
@@ -672,6 +759,19 @@ New entries in `package.json`:
 
 Voice adapter tokens (`MASTRA_VOICE_TTS`, `MASTRA_VOICE_STT`, `MASTRA_VOICE_REALTIME`, `MASTRA_CORE_VOICE`) exported via the existing `./business/mastra` entry point.
 
+## Peer Dependencies
+
+No new peer dependencies. `MastraVoice` and `CompositeVoice` are exported from `@mastra/core/voice`, which is already a peer dependency (`@mastra/core`). Specific voice provider packages (`@mastra/voice-openai`, `@mastra/voice-elevenlabs`, `@mastra/voice-openai-realtime`, etc.) are downstream's responsibility — they construct the providers and pass them in via DI.
+
+## Mediator Transport: Audio Streams
+
+The mediator pattern requires serializable payloads. Audio streams (`NodeJS.ReadableStream`) are not directly serializable. The mediator contracts handle this via base64 encoding:
+
+- **Local mediator (`forMonolith`):** Converts `ReadableStream` → `Buffer` → base64 string. Minimal overhead since it's in-process.
+- **Remote mediator (`forStandalone`):** The TTS REST endpoint streams binary audio directly. The remote mediator receives the HTTP response, buffers it, and base64-encodes it for the mediator contract. For STT, the remote mediator base64-decodes the client payload and sends it as a multipart upload.
+
+This means mediator consumers always work with base64 strings, while the REST endpoints work with raw binary streams. The mediator clients handle the conversion transparently.
+
 ## Error Hierarchy
 
 ```
@@ -748,6 +848,12 @@ VoiceAppModule.forRoot({
 | No VAD abstraction | Provider-specific configuration, downstream's responsibility |
 | Method names: `textToSpeech`/`speechToText` | Clearer than Mastra's `speak`/`listen` |
 | Realtime method names: `openSession`/`closeSession`/`sendAudio`/etc. | Clearer semantics than Mastra's `connect`/`close`/`send` |
+| `addTools` typed as `Record<string, unknown>` with `as never` cast | Avoids leaking Mastra's `ToolsInput` generic; matches agent adapter's `outputSchema` pattern |
+| `onEvent`/`offEvent` callback typed as `(data: unknown) => void` | Intentional simplification — avoids leaking Mastra's event map generics. Consumers narrow `unknown` themselves. |
+| All adapter methods wrapped in try/catch | Consistent error boundary — even synchronous methods like `closeSession`, `onEvent`, `addTools` wrap exceptions |
+| Mediator payloads use base64 for audio | Streams are not serializable; base64 is the standard encoding for binary-over-JSON transport |
+| `getListener()` on STT interface | Wraps Mastra's capability check so consumers can verify STT support without raw Mastra imports |
+| `updateConfig()` on Realtime interface | Wraps Mastra's runtime config update for mid-session parameter changes |
 
 ## Out of Scope
 
