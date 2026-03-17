@@ -14,6 +14,7 @@ import {
   FindSessionByIdQuery,
 } from '@/business/domain/session/client/queries.js';
 import { aiConfigSchema } from '@/config.js';
+import { z } from 'zod';
 
 /**
  * Routes mediator requests to real PromptService and SessionService implementations.
@@ -37,6 +38,7 @@ function createTestMediator(ctx: AiTestContext): IMediator {
           promptSlug: request.promptSlug,
           resolvedPrompt: request.resolvedPrompt,
           purpose: request.purpose,
+          ...(request.outputSchema !== undefined ? { outputSchema: request.outputSchema } : {}),
         });
         return result;
       }
@@ -167,6 +169,85 @@ describe('Conversation / Flow', () => {
     await expect(engine.send(conversation.id, 'What is gravity?')).rejects.toThrow(
       ConversationSendError,
     );
+  });
+
+  it('passes outputSchema as structuredOutput to the Mastra agent', async () => {
+    const schema = z.object({ answer: z.string(), confidence: z.number() });
+
+    ctx.mastraAgent.generate.mockResolvedValue({
+      text: '',
+      object: { answer: 'Paris', confidence: 0.95 },
+      threadId: 'thread-1',
+    });
+
+    const conversation = await engine.create({
+      promptSlug: 'test-prompt',
+      promptParams: { topic: 'geography' },
+      userId: 'user-1',
+      purpose: 'quiz',
+      outputSchema: schema,
+    });
+
+    const response = await engine.send(conversation.id, 'What is the capital of France?');
+
+    expect(response.object).toEqual({ answer: 'Paris', confidence: 0.95 });
+    expect(ctx.mastraAgent.generate).toHaveBeenCalledWith(
+      'What is the capital of France?',
+      expect.objectContaining({ outputSchema: schema }),
+    );
+  });
+
+  it('persists outputSchema in session and uses it after state reconstruction', async () => {
+    const schema = z.object({ summary: z.string() });
+
+    ctx.mastraAgent.generate.mockResolvedValue({
+      text: '',
+      object: { summary: 'Rome was founded in 753 BC.' },
+      threadId: 'thread-1',
+    });
+
+    const conversation = await engine.create({
+      promptSlug: 'test-prompt',
+      promptParams: { topic: 'history' },
+      userId: 'user-2',
+      purpose: 'quiz',
+      outputSchema: schema,
+    });
+
+    // Verify the session record has outputSchema stored
+    const session = await ctx.sessionService.get(conversation.id);
+    expect(session.outputSchema).toBeDefined();
+
+    // Fresh engine with no cached state — reconstructs from DB
+    const freshEngine = new ConversationEngine(
+      createTestMediator(ctx),
+      ctx.mastraAgent,
+      aiConfigSchema.parse({}),
+    );
+
+    const response = await freshEngine.send(conversation.id, 'Tell me about Rome.');
+
+    expect(response.object).toEqual({ summary: 'Rome was founded in 753 BC.' });
+  });
+
+  it('does not pass outputSchema when none is provided', async () => {
+    ctx.mastraAgent.generate.mockResolvedValue({
+      text: 'Just plain text.',
+      object: undefined,
+      threadId: 'thread-1',
+    });
+
+    const conversation = await engine.create({
+      promptSlug: 'test-prompt',
+      promptParams: { topic: 'math' },
+      userId: 'user-1',
+      purpose: 'tutoring',
+    });
+
+    await engine.send(conversation.id, 'Hello');
+
+    const callOptions = ctx.mastraAgent.generate.mock.calls[0]?.[1];
+    expect(callOptions?.outputSchema).toBeUndefined();
   });
 
   it('throws ConversationNotFoundError when sending to an unknown conversation id', async () => {
