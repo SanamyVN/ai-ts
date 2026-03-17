@@ -31,3 +31,4 @@ pnpm-debug.log*
 
 # Git worktrees
 .worktree/
+.worktrees/
