@@ -19,6 +19,7 @@ export function toSessionClientModelFromBusiness(session: Session): SessionClien
     purpose: session.purpose,
     status: session.status,
     metadata: session.metadata,
+    outputSchema: session.outputSchema,
     startedAt: session.startedAt,
     endedAt: session.endedAt,
   };

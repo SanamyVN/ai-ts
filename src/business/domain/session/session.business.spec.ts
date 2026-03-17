@@ -31,6 +31,7 @@ describe('SessionService', () => {
         purpose: 'test',
         status: 'active',
         metadata: null,
+        outputSchema: null,
         startedAt: new Date(),
         endedAt: null,
       });
@@ -67,6 +68,7 @@ describe('SessionService', () => {
         purpose: 'test',
         status: 'active',
         metadata: null,
+        outputSchema: null,
         startedAt: new Date(),
         endedAt: null,
       });
@@ -80,6 +82,7 @@ describe('SessionService', () => {
         purpose: 'test',
         status: 'ended',
         metadata: null,
+        outputSchema: null,
         startedAt: new Date(),
         endedAt: new Date(),
       });
@@ -99,6 +102,7 @@ describe('SessionService', () => {
         purpose: 'test',
         status: 'ended',
         metadata: null,
+        outputSchema: null,
         startedAt: new Date(),
         endedAt: new Date(),
       });
@@ -126,6 +130,7 @@ describe('SessionService', () => {
         purpose: 'test',
         status: 'active',
         metadata: null,
+        outputSchema: null,
         startedAt: new Date(),
         endedAt: null,
       });

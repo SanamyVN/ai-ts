@@ -10,6 +10,7 @@ export const sessionClientModelSchema = z.object({
   purpose: z.string(),
   status: z.string(),
   metadata: z.record(z.string(), z.unknown()).nullable(),
+  outputSchema: z.unknown().nullable(),
   startedAt: z.date(),
   endedAt: z.date().nullable(),
 });

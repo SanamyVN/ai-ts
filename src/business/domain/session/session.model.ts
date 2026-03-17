@@ -13,6 +13,7 @@ export interface Session {
   readonly purpose: string;
   readonly status: string;
   readonly metadata: Record<string, unknown> | null;
+  readonly outputSchema: unknown;
   readonly startedAt: Date;
   readonly endedAt: Date | null;
 }
@@ -36,6 +37,7 @@ export interface StartSessionInput {
   readonly resolvedPrompt: string;
   readonly purpose: string;
   readonly metadata?: Record<string, unknown>;
+  readonly outputSchema?: unknown;
 }
 
 /** Criteria for filtering sessions in list queries. */

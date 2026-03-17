@@ -60,6 +60,7 @@ export class SessionLocalMediator implements ISessionMediator {
       resolvedPrompt: command.resolvedPrompt,
       purpose: command.purpose,
       ...(command.metadata !== undefined ? { metadata: command.metadata } : {}),
+      ...(command.outputSchema !== undefined ? { outputSchema: command.outputSchema } : {}),
     });
     return toSessionClientModelFromBusiness(session);
   }

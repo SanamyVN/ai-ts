@@ -28,6 +28,7 @@ interface ConversationState {
   readonly resolvedPrompt: string;
   readonly model: string;
   readonly userId: string;
+  readonly outputSchema: unknown;
 }
 
 /**
@@ -64,6 +65,7 @@ export class ConversationEngine implements IConversationEngine {
         promptSlug: config.promptSlug,
         resolvedPrompt: prompt.text,
         purpose: config.purpose,
+        outputSchema: config.outputSchema,
       }),
     );
 
@@ -75,6 +77,7 @@ export class ConversationEngine implements IConversationEngine {
       resolvedPrompt: prompt.text,
       model,
       userId: config.userId,
+      outputSchema: config.outputSchema
     };
     this.conversations.set(session.id, state);
 
@@ -93,6 +96,7 @@ export class ConversationEngine implements IConversationEngine {
       const response = await this.mastraAgent.generate(message, {
         threadId: state.mastraThreadId,
         resourceId: state.userId,
+        outputSchema: state.outputSchema
       });
       return { text: response.text, object: response.object };
     } catch (error) {
@@ -109,6 +113,7 @@ export class ConversationEngine implements IConversationEngine {
       yield* this.mastraAgent.stream(message, {
         threadId: state.mastraThreadId,
         resourceId: state.userId,
+        outputSchema: state.outputSchema
       });
     } catch (error) {
       if (isMastraAdapterError(error)) {
@@ -143,6 +148,7 @@ export class ConversationEngine implements IConversationEngine {
       resolvedPrompt: session.resolvedPrompt,
       model: this.config.defaultModel,
       userId: session.userId,
+      outputSchema: session.outputSchema ?? undefined,
     };
     this.conversations.set(session.id, state);
     return state;

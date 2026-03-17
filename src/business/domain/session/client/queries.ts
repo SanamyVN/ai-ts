@@ -28,6 +28,7 @@ export const CreateSessionCommand = createCommand({
     resolvedPrompt: z.string(),
     purpose: z.string(),
     metadata: z.record(z.string(), z.unknown()).optional(),
+    outputSchema: z.unknown().optional()
   }),
   response: sessionClientModelSchema,
 });

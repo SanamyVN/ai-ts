@@ -12,6 +12,7 @@ export function toSessionFromRecord(record: SessionRecord): Session {
     purpose: record.purpose,
     status: record.status,
     metadata: record.metadata,
+    outputSchema: record.outputSchema,
     startedAt: record.startedAt,
     endedAt: record.endedAt,
   };
