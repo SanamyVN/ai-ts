@@ -1,4 +1,5 @@
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import type { ZodType } from 'zod';
 import type { StreamChunk } from '@/business/sdk/mastra/mastra.interface.js';
 import type {
   Conversation,
@@ -21,7 +22,6 @@ export interface IConversationEngine {
    *   userId: 'user_123',
    *   purpose: 'billing-inquiry',
    *   model: 'gpt-4o',
-   *   outputSchema: { type: 'object', properties: { answer: { type: 'string' } } },
    * });
    * ```
    */
@@ -35,7 +35,22 @@ export interface IConversationEngine {
    * @throws {ConversationNotFoundError} If the conversation does not exist.
    * @throws {ConversationSendError} If the AI backend fails to produce a response.
    */
-  send(conversationId: string, message: string): Promise<ConversationResponse>;
+  /**
+   * Sends a message and returns the complete response.
+   * @param conversationId - Target conversation ID.
+   * @param message - User message text.
+   * @param outputSchema - Optional Zod schema for structured output.
+   * @returns The AI response containing text and optional structured object.
+   * @throws {ConversationNotFoundError} If the conversation does not exist.
+   * @throws {ConversationSendError} If the AI backend fails to produce a response.
+   *
+   * @example
+   * ```ts
+   * const response = await engine.send(conversation.id, 'Hello');
+   * const structured = await engine.send(conversation.id, 'Evaluate', myZodSchema);
+   * ```
+   */
+  send(conversationId: string, message: string, outputSchema?: ZodType): Promise<ConversationResponse>;
 
   /**
    * Sends a message and returns a streaming response.
@@ -45,7 +60,23 @@ export interface IConversationEngine {
    * @throws {ConversationNotFoundError} If the conversation does not exist.
    * @throws {ConversationSendError} If the AI backend fails to produce a response.
    */
-  stream(conversationId: string, message: string): AsyncIterable<StreamChunk>;
+  /**
+   * Sends a message and returns a streaming response.
+   * @param conversationId - Target conversation ID.
+   * @param message - User message text.
+   * @param outputSchema - Optional Zod schema for structured output.
+   * @returns An async iterable of streamed chunks.
+   * @throws {ConversationNotFoundError} If the conversation does not exist.
+   * @throws {ConversationSendError} If the AI backend fails to produce a response.
+   *
+   * @example
+   * ```ts
+   * for await (const chunk of engine.stream(conversation.id, 'Hello', myZodSchema)) {
+   *   console.log(chunk.content);
+   * }
+   * ```
+   */
+  stream(conversationId: string, message: string, outputSchema?: ZodType): AsyncIterable<StreamChunk>;
 }
 
 /** Dependency-injection token for {@link IConversationEngine}. */

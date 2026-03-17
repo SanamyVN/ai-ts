@@ -85,7 +85,6 @@ export class SessionRemoteMediator implements ISessionMediator {
       promptSlug: command.promptSlug,
       purpose: command.purpose,
       metadata: command.metadata,
-      outputSchema: command.outputSchema,
     });
     if (!response.ok) {
       throw new Error(`Failed to create session: ${response.status}`);

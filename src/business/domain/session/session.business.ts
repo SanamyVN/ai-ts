@@ -37,7 +37,6 @@ export class SessionService implements ISessionService {
       resolvedPrompt: input.resolvedPrompt,
       purpose: input.purpose,
       metadata: input.metadata ?? null,
-      outputSchema: input.outputSchema ?? null,
     });
     return toSessionFromRecord(record);
   }

@@ -10,7 +10,6 @@ export const aiSessions = pgTable('ai_sessions', {
   purpose: varchar('purpose', { length: 255 }).notNull(),
   status: varchar('status', { length: 50 }).notNull().default('active'),
   metadata: jsonb('metadata').$type<Record<string, unknown>>(),
-  outputSchema: jsonb('output_schema').$type<unknown>(),
   startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
   endedAt: timestamp('ended_at', { withTimezone: true }),
 });

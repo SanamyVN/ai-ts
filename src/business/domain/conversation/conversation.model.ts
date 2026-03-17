@@ -7,8 +7,6 @@ export interface ConversationConfig {
   readonly purpose: string;
   /** LLM model identifier override; falls back to the system default when omitted. */
   readonly model?: string;
-  /** JSON Schema describing the expected structured output, enabling structured-output mode. */
-  readonly outputSchema?: unknown;
 }
 
 /** A live conversation handle tied to a session and model. */
