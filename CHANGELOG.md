@@ -1,3 +1,9 @@
+## [1.6.0](https://github.com/SanamyVN/ai-ts/compare/v1.5.0...v1.6.0) (2026-03-17)
+
+### Features
+
+* **conversation:** add type-safe outputSchema flow to generate/stream ([2a0f2f6](https://github.com/SanamyVN/ai-ts/commit/2a0f2f63784fb5373d8033168772fc5b8409d72d))
+
 ## [1.5.0](https://github.com/SanamyVN/ai-ts/compare/v1.4.0...v1.5.0) (2026-03-17)
 
 ### Features
