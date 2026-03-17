@@ -3,7 +3,7 @@ import type { Agent } from '@mastra/core/agent';
 import type { MastraMemory } from '@mastra/core/memory';
 import type { PgVector } from '@mastra/pg';
 import type { MastraVoice } from '@mastra/core/voice';
-import type { StandardSchemaWithJSON } from '@mastra/core/schema';
+import type { ZodType } from 'zod';
 
 /** Result returned by an agent after generating a response. */
 export interface AgentResponse {
@@ -23,7 +23,7 @@ export interface StreamChunk {
 export interface GenerateOptions {
   readonly threadId?: string;
   readonly resourceId?: string;
-  readonly outputSchema?: StandardSchemaWithJSON ;
+  readonly outputSchema?: ZodType;
 }
 
 /** A conversation thread managed by Mastra memory. */

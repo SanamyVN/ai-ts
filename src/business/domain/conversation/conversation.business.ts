@@ -21,10 +21,7 @@ import type {
   ConversationResponse,
 } from './conversation.model.js';
 import { ConversationNotFoundError, ConversationSendError } from './conversation.error.js';
-
-function isOutputSchema(value: unknown): value is NonNullable<GenerateOptions['outputSchema']> {
-  return value != null && typeof value === 'object' && '~standard' in value;
-}
+import { ZodType } from 'zod';
 
 interface ConversationState {
   readonly sessionId: string;
@@ -33,7 +30,7 @@ interface ConversationState {
   readonly resolvedPrompt: string;
   readonly model: string;
   readonly userId: string;
-  readonly outputSchema?: unknown;
+  readonly generateOptions: GenerateOptions;
 }
 
 /**
@@ -82,7 +79,7 @@ export class ConversationEngine implements IConversationEngine {
       resolvedPrompt: prompt.text,
       model,
       userId: config.userId,
-      outputSchema: config.outputSchema
+      generateOptions: this.buildGenerateOptions(session.mastraThreadId, config.userId, config.outputSchema),
     };
     this.conversations.set(session.id, state);
 
@@ -98,7 +95,7 @@ export class ConversationEngine implements IConversationEngine {
   async send(conversationId: string, message: string): Promise<ConversationResponse> {
     const state = await this.getOrReconstructState(conversationId);
     try {
-      const response = await this.mastraAgent.generate(message, this.buildGenerateOptions(state));
+      const response = await this.mastraAgent.generate(message, state.generateOptions);
       return { text: response.text, object: response.object };
     } catch (error) {
       if (isMastraAdapterError(error)) {
@@ -111,7 +108,7 @@ export class ConversationEngine implements IConversationEngine {
   async *stream(conversationId: string, message: string): AsyncIterable<StreamChunk> {
     const state = await this.getOrReconstructState(conversationId);
     try {
-      yield* this.mastraAgent.stream(message, this.buildGenerateOptions(state));
+      yield* this.mastraAgent.stream(message, state.generateOptions);
     } catch (error) {
       if (isMastraAdapterError(error)) {
         throw new ConversationSendError(conversationId, error);
@@ -120,18 +117,18 @@ export class ConversationEngine implements IConversationEngine {
     }
   }
 
+  private buildGenerateOptions(threadId: string, userId: string, outputSchema?: unknown): GenerateOptions {
+    if (outputSchema instanceof ZodType) {
+      return { threadId, resourceId: userId, outputSchema };
+    }
+    return { threadId, resourceId: userId };
+  }
+
   /**
    * Returns the cached state or reconstructs it from the session store.
    * Reconstruction enables multi-instance deployments where a different
    * instance may have created the conversation.
    */
-  private buildGenerateOptions(state: ConversationState): GenerateOptions {
-    if (isOutputSchema(state.outputSchema)) {
-      return { threadId: state.mastraThreadId, resourceId: state.userId, outputSchema: state.outputSchema };
-    }
-    return { threadId: state.mastraThreadId, resourceId: state.userId };
-  }
-
   private async getOrReconstructState(conversationId: string): Promise<ConversationState> {
     const cached = this.conversations.get(conversationId);
     if (cached) {
@@ -152,7 +149,7 @@ export class ConversationEngine implements IConversationEngine {
       resolvedPrompt: session.resolvedPrompt,
       model: this.config.defaultModel,
       userId: session.userId,
-      outputSchema: session.outputSchema ?? undefined,
+      generateOptions: this.buildGenerateOptions(session.mastraThreadId, session.userId, session.outputSchema),
     };
     this.conversations.set(session.id, state);
     return state;

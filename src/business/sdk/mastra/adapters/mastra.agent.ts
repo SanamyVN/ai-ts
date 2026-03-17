@@ -24,22 +24,13 @@ export class MastraAgentAdapter implements IMastraAgent {
 
   async generate(prompt: string, options?: GenerateOptions): Promise<AgentResponse> {
     try {
-      const result = await this.agent.generate(prompt, {
-        ...(options?.threadId !== undefined && options?.resourceId !== undefined
-          ? { memory: { thread: options.threadId, resource: options.resourceId } }
-          : {}),
-        ...(options?.outputSchema !== undefined
-          ? {
-              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-              structuredOutput: options.outputSchema as never,
-            }
-          : {}),
-      });
+      const mem = this.buildMemory(options);
+      const result = options?.outputSchema !== undefined
+        ? await this.agent.generate(prompt, { ...mem, structuredOutput: { schema: options.outputSchema } })
+        : await this.agent.generate(prompt, mem);
       return {
         text: result.text,
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        object: result.object as unknown,
-        // FullOutput does not expose threadId; return the requested threadId if known
+        object: result.object,
         threadId: options?.threadId ?? '',
       };
     } catch (error) {
@@ -49,23 +40,22 @@ export class MastraAgentAdapter implements IMastraAgent {
 
   async *stream(prompt: string, options?: GenerateOptions): AsyncIterable<StreamChunk> {
     try {
-      const result = await this.agent.stream(prompt, {
-        ...(options?.threadId !== undefined && options?.resourceId !== undefined
-          ? { memory: { thread: options.threadId, resource: options.resourceId } }
-          : {}),
-        ...(options?.outputSchema !== undefined
-          ? {
-              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-              structuredOutput: options.outputSchema as never,
-            }
-          : {}),
-      });
-      // textStream is a WHATWG ReadableStream<string>, which supports for-await-of in Node 18+
+      const mem = this.buildMemory(options);
+      const result = options?.outputSchema !== undefined
+        ? await this.agent.stream(prompt, { ...mem, structuredOutput: { schema: options.outputSchema } })
+        : await this.agent.stream(prompt, mem);
       for await (const chunk of result.textStream) {
         yield { type: 'text-delta', content: chunk };
       }
     } catch (error) {
       throw new MastraAdapterError('stream', error);
     }
+  }
+
+  private buildMemory(options?: GenerateOptions) {
+    if (options?.threadId !== undefined && options?.resourceId !== undefined) {
+      return { memory: { thread: options.threadId, resource: options.resourceId } };
+    }
+    return {};
   }
 }
