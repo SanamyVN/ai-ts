@@ -1,3 +1,9 @@
+## [1.4.0](https://github.com/SanamyVN/ai-ts/compare/v1.3.0...v1.4.0) (2026-03-17)
+
+### Features
+
+* **config:** extract shared provider schema and add modelProvider field ([cf8b13f](https://github.com/SanamyVN/ai-ts/commit/cf8b13f46ae3bada8130bc7be1863893834719de))
+
 ## [1.3.0](https://github.com/SanamyVN/ai-ts/compare/v1.2.0...v1.3.0) (2026-03-17)
 
 ### Features
