@@ -139,7 +139,7 @@ Remove `outputSchema` from the entire persistence chain:
 | `session/client/queries.ts` | Remove from `CreateSessionCommand` payload |
 | `session/client/schemas.ts` | Remove from `sessionClientModelSchema` |
 | `session.business.ts` | Remove from `start()` persistence call |
-| `session-local.mediator.ts` | Remove any outputSchema references |
+| `session-local.mediator.ts` | Remove `outputSchema` conditional spread from `create()` |
 | `session-remote.mediator.ts` | Remove `outputSchema` from HTTP POST body in `create()` |
 
 ### Database Migration
@@ -150,10 +150,13 @@ ai-ts only removes the column from the Drizzle schema definition. The downstream
 
 - `repository/domain/session/session.model.ts` — `SessionRecord` and `NewSessionRecord` types are inferred from the Drizzle schema via `InferSelectModel`/`InferInsertModel`, so they update automatically when the column is removed.
 - `mastra.interface.ts` and `mastra.agent.ts` — **unchanged**. `GenerateOptions.outputSchema?: ZodType` remains as-is; the adapter already handles optional schema correctly.
+- `app/domain/session/session.mapper.ts` — `toSessionResponseDtoFromClient()` already omits `outputSchema` from the DTO. No changes needed.
+- `app/domain/session/session.dto.ts` — `SessionResponseDto` already omits `outputSchema`. No changes needed.
 
 ### Documentation
 
-- `docs/conversation/usage.md` — update examples to show `outputSchema` on `send()`/`stream()` instead of `create()`.
+- `docs/conversation/usage.md` — remove `outputSchema` from `ConversationConfig` table, add `outputSchema` parameter to `send()`/`stream()` examples, update the structured output comment.
+- `conversation.interface.ts` — update JSDoc `@example` on `create()` to remove `outputSchema`, add examples on `send()`/`stream()` showing the parameter.
 
 ## Test Changes
 
@@ -162,6 +165,7 @@ Rewrite integration tests in `conversation-flow.spec.ts`:
 Update unit tests in `session.business.spec.ts`:
 - Remove `outputSchema: null` from mock `SessionRecord` fixtures
 
+- **Rewrite**: Existing test "passes outputSchema as structuredOutput to the Mastra agent" — change from passing schema on `create()` to passing on `send()`
 - **Remove**: Tests for outputSchema persistence in session and reconstruction from DB
 - **Add**: Test passing `outputSchema` as third param to `send()` — verify it reaches `mastraAgent.generate()` with correct schema
 - **Add**: Test passing `outputSchema` as third param to `stream()` — verify it reaches `mastraAgent.stream()` with correct schema
