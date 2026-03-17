@@ -33,7 +33,6 @@ const conversation = await engine.create({
 | `tenantId`     | `string`                  | No       | Tenant for multi-tenant deployments         |
 | `purpose`      | `string`                  | Yes      | Label describing the conversation's intent  |
 | `model`        | `string`                  | No       | Override the default model from `AiConfig`  |
-| `outputSchema` | `unknown`                 | No       | Schema for structured output from the agent |
 
 ### Orchestration Flow
 
@@ -68,7 +67,13 @@ sequenceDiagram
 ```typescript
 const response = await engine.send(conversation.id, 'Help me with Part 2');
 // response.text   -> the agent's reply
-// response.object -> structured output (present when outputSchema was set)
+// response.object -> undefined (no schema provided)
+
+// With structured output:
+import { z } from 'zod';
+const schema = z.object({ feedback: z.string(), score: z.number() });
+const structured = await engine.send(conversation.id, 'Evaluate my answer', schema);
+// structured.object -> { feedback: '...', score: 8.5 }
 ```
 
 `send()` delegates to the Mastra agent's `generate()` method, passing the session's `mastraThreadId` so the agent maintains conversation history.
@@ -79,6 +84,11 @@ const response = await engine.send(conversation.id, 'Help me with Part 2');
 for await (const chunk of engine.stream(conversation.id, 'Begin the test')) {
   // chunk.type:    'text-delta' | 'tool-call' | 'finish'
   // chunk.content: the chunk payload
+}
+
+// With structured output:
+for await (const chunk of engine.stream(conversation.id, 'Evaluate', schema)) {
+  // Same streaming interface, schema passed as third param
 }
 ```
 
