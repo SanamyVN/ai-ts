@@ -31,14 +31,6 @@ export interface IConversationEngine {
    * Sends a message and returns the complete response.
    * @param conversationId - Target conversation ID.
    * @param message - User message text.
-   * @returns The AI response containing text and optional structured object.
-   * @throws {ConversationNotFoundError} If the conversation does not exist.
-   * @throws {ConversationSendError} If the AI backend fails to produce a response.
-   */
-  /**
-   * Sends a message and returns the complete response.
-   * @param conversationId - Target conversation ID.
-   * @param message - User message text.
    * @param outputSchema - Optional Zod schema for structured output.
    * @returns The AI response containing text and optional structured object.
    * @throws {ConversationNotFoundError} If the conversation does not exist.
@@ -52,14 +44,6 @@ export interface IConversationEngine {
    */
   send(conversationId: string, message: string, outputSchema?: ZodType): Promise<ConversationResponse>;
 
-  /**
-   * Sends a message and returns a streaming response.
-   * @param conversationId - Target conversation ID.
-   * @param message - User message text.
-   * @returns An async iterable of streamed chunks.
-   * @throws {ConversationNotFoundError} If the conversation does not exist.
-   * @throws {ConversationSendError} If the AI backend fails to produce a response.
-   */
   /**
    * Sends a message and returns a streaming response.
    * @param conversationId - Target conversation ID.
