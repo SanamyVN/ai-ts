@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/SanamyVN/ai-ts/compare/v1.4.0...v1.5.0) (2026-03-17)
+
+### Features
+
+* **session:** add outputSchema jsonb column across all layers ([9c6b6d1](https://github.com/SanamyVN/ai-ts/commit/9c6b6d1d7fbae196af36bcb56aa8a3e46a127e50))
+
 ## [1.4.0](https://github.com/SanamyVN/ai-ts/compare/v1.3.0...v1.4.0) (2026-03-17)
 
 ### Features
