@@ -40,7 +40,7 @@ export class RagBusiness implements IRagBusiness {
         ? {
             // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
             id: this.config.embeddingModel as `${string}/${string}`,
-            ...(this.config.embeddingProvider.url !== undefined && { url: this.config.embeddingProvider.url }),
+            url: this.config.embeddingProvider.url,
             ...(this.config.embeddingProvider.apiKey !== undefined && { apiKey: this.config.embeddingProvider.apiKey }),
             ...(this.config.embeddingProvider.headers !== undefined && { headers: this.config.embeddingProvider.headers }),
           }
