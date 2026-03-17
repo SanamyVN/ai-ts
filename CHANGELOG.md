@@ -1,3 +1,27 @@
+## [1.3.0](https://github.com/SanamyVN/ai-ts/compare/v1.2.0...v1.3.0) (2026-03-17)
+
+### Features
+
+* **config:** add optional embeddingProvider for OpenAI-compatible providers ([c320064](https://github.com/SanamyVN/ai-ts/commit/c3200645ffcab102cc05904b5c997fe8c0e21bb0))
+* **rag:** use OpenAICompatibleConfig when embeddingProvider is set ([761db33](https://github.com/SanamyVN/ai-ts/commit/761db3335148f97e0139b3b1aef75cb53f2e0067))
+* **voice:** add app layer DTOs, errors, tokens, and mapper ([2395c31](https://github.com/SanamyVN/ai-ts/commit/2395c31a1f4cea5ae8b2a28a8dc36847f162a982))
+* **voice:** add app layer service, router, providers, and module ([d472a4a](https://github.com/SanamyVN/ai-ts/commit/d472a4a90e308b3fec87fcc21b8d384c32d62661))
+* **voice:** add IMastraVoiceTts, IMastraVoiceStt, IMastraVoiceRealtime interfaces and DI tokens ([512b3cf](https://github.com/SanamyVN/ai-ts/commit/512b3cff3a4c44ad62680a5be2d4ed3a2af8f107))
+* **voice:** add MastraVoiceRealtimeAdapter with tests ([ff96fb4](https://github.com/SanamyVN/ai-ts/commit/ff96fb4ea5330c2a7f144299052c6aa448f07dd3))
+* **voice:** add MastraVoiceSttAdapter with tests ([49c292f](https://github.com/SanamyVN/ai-ts/commit/49c292fbd6913fa764b95aac686996dbb497cd4b))
+* **voice:** add MastraVoiceTtsAdapter with tests ([4d8a051](https://github.com/SanamyVN/ai-ts/commit/4d8a051c7858da85ff20a9854c6240cd5bf88e51))
+* **voice:** add voice business providers, testing utilities, and client contracts ([64d4327](https://github.com/SanamyVN/ai-ts/commit/64d43279fa43be98aeb662051af25799de4f8e0a))
+* **voice:** add voice domain models and error classes ([bf71141](https://github.com/SanamyVN/ai-ts/commit/bf711417025435eea13b66d3677d7da4a2a8635c))
+* **voice:** add voice mediator clients (local and remote) ([cb3124c](https://github.com/SanamyVN/ai-ts/commit/cb3124c222f73b0f4468cae72e5efe7cfb71a3e9))
+* **voice:** add VoiceBusiness with tests ([71f2199](https://github.com/SanamyVN/ai-ts/commit/71f21994d9bec35220b109d29708445f07291aae))
+* **voice:** register voice adapters in providers and add mock factories ([b09f736](https://github.com/SanamyVN/ai-ts/commit/b09f736734906cce0251773c103a038b5801ae3a))
+
+### Bug Fixes
+
+* **config:** use z.url() instead of deprecated z.string().url() ([e3f4f55](https://github.com/SanamyVN/ai-ts/commit/e3f4f55f95c94fb1dcbca7c6b5bdca697b2c7ca2))
+* **voice:** resolve lint errors in voice interfaces and TTS adapter ([0cd77d6](https://github.com/SanamyVN/ai-ts/commit/0cd77d640c7897606b1052d5c5c5fe45e767a9de))
+* **voice:** restore voice package exports from main ([4f90340](https://github.com/SanamyVN/ai-ts/commit/4f90340cc544018bac173b580b18aeec90b37300))
+
 ## [1.2.0](https://github.com/SanamyVN/ai-ts/compare/v1.1.0...v1.2.0) (2026-03-16)
 
 ### Features
