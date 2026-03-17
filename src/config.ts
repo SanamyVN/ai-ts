@@ -9,7 +9,7 @@ const sessionConfigSchema = z.object({
   transcriptPageSize: z.number().int().positive().default(100),
 });
 
-const embeddingProviderSchema = z.object({
+const openaiCompatibleProviderSchema = z.object({
   url: z.url(),
   apiKey: z.string().optional(),
   headers: z.record(z.string(), z.string()).optional(),
@@ -22,7 +22,8 @@ export const aiConfigSchema = z.object({
   session: sessionConfigSchema.default({ transcriptPageSize: 100 }),
   embeddingModel: z.string().default('openai/text-embedding-3-small'),
   embeddingDimension: z.number().int().positive().default(1536),
-  embeddingProvider: embeddingProviderSchema.optional(),
+  embeddingProvider: openaiCompatibleProviderSchema.optional(),
+  modelProvider: openaiCompatibleProviderSchema.optional(),
 });
 
 export type AiConfig = z.infer<typeof aiConfigSchema>;
