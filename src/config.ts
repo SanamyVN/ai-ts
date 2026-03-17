@@ -10,7 +10,7 @@ const sessionConfigSchema = z.object({
 });
 
 const embeddingProviderSchema = z.object({
-  url: z.string().url(),
+  url: z.url(),
   apiKey: z.string().optional(),
   headers: z.record(z.string(), z.string()).optional(),
 });
