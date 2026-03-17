@@ -5,6 +5,7 @@ import {
   MASTRA_AGENT,
   type IMastraAgent,
   type StreamChunk,
+  type GenerateOptions,
 } from '@/business/sdk/mastra/mastra.interface.js';
 import { AI_CONFIG, type AiConfig } from '@/config.js';
 import { isMastraAdapterError } from '@/business/sdk/mastra/mastra.error.js';
@@ -21,6 +22,10 @@ import type {
 } from './conversation.model.js';
 import { ConversationNotFoundError, ConversationSendError } from './conversation.error.js';
 
+function isOutputSchema(value: unknown): value is NonNullable<GenerateOptions['outputSchema']> {
+  return value != null && typeof value === 'object' && '~standard' in value;
+}
+
 interface ConversationState {
   readonly sessionId: string;
   readonly mastraThreadId: string;
@@ -28,7 +33,7 @@ interface ConversationState {
   readonly resolvedPrompt: string;
   readonly model: string;
   readonly userId: string;
-  readonly outputSchema: unknown;
+  readonly outputSchema?: unknown;
 }
 
 /**
@@ -93,11 +98,7 @@ export class ConversationEngine implements IConversationEngine {
   async send(conversationId: string, message: string): Promise<ConversationResponse> {
     const state = await this.getOrReconstructState(conversationId);
     try {
-      const response = await this.mastraAgent.generate(message, {
-        threadId: state.mastraThreadId,
-        resourceId: state.userId,
-        outputSchema: state.outputSchema
-      });
+      const response = await this.mastraAgent.generate(message, this.buildGenerateOptions(state));
       return { text: response.text, object: response.object };
     } catch (error) {
       if (isMastraAdapterError(error)) {
@@ -110,11 +111,7 @@ export class ConversationEngine implements IConversationEngine {
   async *stream(conversationId: string, message: string): AsyncIterable<StreamChunk> {
     const state = await this.getOrReconstructState(conversationId);
     try {
-      yield* this.mastraAgent.stream(message, {
-        threadId: state.mastraThreadId,
-        resourceId: state.userId,
-        outputSchema: state.outputSchema
-      });
+      yield* this.mastraAgent.stream(message, this.buildGenerateOptions(state));
     } catch (error) {
       if (isMastraAdapterError(error)) {
         throw new ConversationSendError(conversationId, error);
@@ -128,6 +125,13 @@ export class ConversationEngine implements IConversationEngine {
    * Reconstruction enables multi-instance deployments where a different
    * instance may have created the conversation.
    */
+  private buildGenerateOptions(state: ConversationState): GenerateOptions {
+    if (isOutputSchema(state.outputSchema)) {
+      return { threadId: state.mastraThreadId, resourceId: state.userId, outputSchema: state.outputSchema };
+    }
+    return { threadId: state.mastraThreadId, resourceId: state.userId };
+  }
+
   private async getOrReconstructState(conversationId: string): Promise<ConversationState> {
     const cached = this.conversations.get(conversationId);
     if (cached) {

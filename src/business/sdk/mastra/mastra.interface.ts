@@ -3,6 +3,7 @@ import type { Agent } from '@mastra/core/agent';
 import type { MastraMemory } from '@mastra/core/memory';
 import type { PgVector } from '@mastra/pg';
 import type { MastraVoice } from '@mastra/core/voice';
+import type { StandardSchemaWithJSON } from '@mastra/core/schema';
 
 /** Result returned by an agent after generating a response. */
 export interface AgentResponse {
@@ -17,11 +18,12 @@ export interface StreamChunk {
   readonly content: string;
 }
 
+
 /** Options passed to agent generate/stream calls. */
 export interface GenerateOptions {
   readonly threadId?: string;
   readonly resourceId?: string;
-  readonly outputSchema?: unknown;
+  readonly outputSchema?: StandardSchemaWithJSON ;
 }
 
 /** A conversation thread managed by Mastra memory. */
