@@ -9,6 +9,12 @@ const sessionConfigSchema = z.object({
   transcriptPageSize: z.number().int().positive().default(100),
 });
 
+const embeddingProviderSchema = z.object({
+  url: z.url(),
+  apiKey: z.string().optional(),
+  headers: z.record(z.string(), z.string()).optional(),
+});
+
 /** Zod schema that validates and provides defaults for the AI module configuration. */
 export const aiConfigSchema = z.object({
   defaultModel: z.string().default('anthropic/claude-sonnet-4-20250514'),
@@ -16,6 +22,7 @@ export const aiConfigSchema = z.object({
   session: sessionConfigSchema.default({ transcriptPageSize: 100 }),
   embeddingModel: z.string().default('openai/text-embedding-3-small'),
   embeddingDimension: z.number().int().positive().default(1536),
+  embeddingProvider: embeddingProviderSchema.optional(),
 });
 
 export type AiConfig = z.infer<typeof aiConfigSchema>;

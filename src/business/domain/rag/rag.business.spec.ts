@@ -34,10 +34,15 @@ vi.mock('ai', () => ({
   }),
 }));
 
+let capturedEmbeddingConfigs: unknown[] = [];
+
 // Mock @mastra/core/llm
 vi.mock('@mastra/core/llm', () => ({
   ModelRouterEmbeddingModel: class MockModelRouterEmbeddingModel {
     readonly specificationVersion = 'v1' as const;
+    constructor(config: unknown) {
+      capturedEmbeddingConfigs.push(config);
+    }
   },
 }));
 
@@ -57,6 +62,7 @@ describe('RagBusiness', () => {
   let business: RagBusiness;
 
   beforeEach(() => {
+    capturedEmbeddingConfigs = [];
     vi.clearAllMocks();
     mastraRag = createMockMastraRag();
     mastraRag.createIndex.mockResolvedValue(undefined);
@@ -158,6 +164,59 @@ describe('RagBusiness', () => {
       expect(mastraRag.delete).toHaveBeenCalledWith(SCOPE_ID, { documentId: DOC_ID });
       expect(mastraRag.upsert).toHaveBeenCalled();
       expect(result).toEqual({ chunksDeleted: 0, chunksStored: 2 });
+    });
+  });
+
+  describe('embedding model configuration', () => {
+    it('passes string to ModelRouterEmbeddingModel when embeddingProvider is absent', () => {
+      // beforeEach already created a RagBusiness with default config (no embeddingProvider)
+      expect(capturedEmbeddingConfigs).toHaveLength(1);
+      expect(capturedEmbeddingConfigs[0]).toBe('openai/text-embedding-3-small');
+    });
+
+    it('passes OpenAICompatibleConfig when embeddingProvider is set', () => {
+      const configWithProvider: AiConfig = {
+        ...config,
+        embeddingModel: 'ollama/nomic-embed-text',
+        embeddingDimension: 768,
+        embeddingProvider: {
+          url: 'http://localhost:11434/v1',
+        },
+      };
+
+      new RagBusiness(createMockMastraRag(), configWithProvider);
+
+      // capturedEmbeddingConfigs[0] is from beforeEach (string), [1] is from this test (object)
+      expect(capturedEmbeddingConfigs[1]).toEqual(
+        expect.objectContaining({
+          id: 'ollama/nomic-embed-text',
+          url: 'http://localhost:11434/v1',
+        }),
+      );
+    });
+
+    it('passes apiKey and headers when provided in embeddingProvider', () => {
+      const configWithAuth: AiConfig = {
+        ...config,
+        embeddingModel: 'custom/my-model',
+        embeddingDimension: 1024,
+        embeddingProvider: {
+          url: 'https://embeddings.example.com/v1',
+          apiKey: 'sk-test',
+          headers: { 'X-Custom': 'value' },
+        },
+      };
+
+      new RagBusiness(createMockMastraRag(), configWithAuth);
+
+      expect(capturedEmbeddingConfigs[1]).toEqual(
+        expect.objectContaining({
+          id: 'custom/my-model',
+          url: 'https://embeddings.example.com/v1',
+          apiKey: 'sk-test',
+          headers: { 'X-Custom': 'value' },
+        }),
+      );
     });
   });
 });
