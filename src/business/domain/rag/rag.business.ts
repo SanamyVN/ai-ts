@@ -38,6 +38,7 @@ export class RagBusiness implements IRagBusiness {
     this.embeddingModel = new ModelRouterEmbeddingModel(
       this.config.embeddingProvider
         ? {
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
             id: this.config.embeddingModel as `${string}/${string}`,
             ...(this.config.embeddingProvider.url !== undefined && { url: this.config.embeddingProvider.url }),
             ...(this.config.embeddingProvider.apiKey !== undefined && { apiKey: this.config.embeddingProvider.apiKey }),
