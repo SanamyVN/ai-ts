@@ -35,7 +35,16 @@ export class RagBusiness implements IRagBusiness {
     @Inject(MASTRA_RAG) private readonly mastraRag: IMastraRag,
     @Inject(AI_CONFIG) private readonly config: AiConfig,
   ) {
-    this.embeddingModel = new ModelRouterEmbeddingModel(this.config.embeddingModel);
+    this.embeddingModel = new ModelRouterEmbeddingModel(
+      this.config.embeddingProvider
+        ? {
+            id: this.config.embeddingModel as `${string}/${string}`,
+            ...(this.config.embeddingProvider.url !== undefined && { url: this.config.embeddingProvider.url }),
+            ...(this.config.embeddingProvider.apiKey !== undefined && { apiKey: this.config.embeddingProvider.apiKey }),
+            ...(this.config.embeddingProvider.headers !== undefined && { headers: this.config.embeddingProvider.headers }),
+          }
+        : this.config.embeddingModel,
+    );
   }
 
   async ingest(input: IngestInput): Promise<IngestResult> {
