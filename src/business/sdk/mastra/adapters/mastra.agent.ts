@@ -53,12 +53,22 @@ export class MastraAgentAdapter implements IMastraAgent {
   }
 
   private buildBaseOptions(options?: GenerateOptions) {
-    const base: { memory?: { thread: string; resource: string }; instructions?: string } = {};
+    const base: {
+      memory?: { thread: string; resource: string };
+      instructions?: string;
+      // Toolsets are typed loosely in GenerateOptions (Mastra-agnostic interface).
+      // Cast to any here so the Mastra overloads accept the value at call sites.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      toolsets?: any;
+    } = {};
     if (options?.threadId !== undefined && options?.resourceId !== undefined) {
       base.memory = { thread: options.threadId, resource: options.resourceId };
     }
     if (options?.instructions !== undefined) {
       base.instructions = options.instructions;
+    }
+    if (options?.toolsets !== undefined) {
+      base.toolsets = options.toolsets;
     }
     return base;
   }
