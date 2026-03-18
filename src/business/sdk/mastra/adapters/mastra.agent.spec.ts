@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { ZodType } from 'zod';
 import { MastraAgentAdapter } from './mastra.agent.js';
 import type { Agent } from '@mastra/core/agent';
 
 function createMockAgent() {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return {
     generate: vi.fn().mockResolvedValue({ text: 'response', object: undefined }),
     stream: vi.fn().mockResolvedValue({
@@ -48,12 +50,13 @@ describe('MastraAgentAdapter', () => {
     });
 
     it('passes both instructions and structuredOutput when both provided', async () => {
-      const schema = { parse: vi.fn() };
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const schema = { parse: vi.fn() } as unknown as ZodType;
       await adapter.generate('Hello', {
         threadId: 'thread-1',
         resourceId: 'user-1',
         instructions: 'Be concise.',
-        outputSchema: schema as any,
+        outputSchema: schema,
       });
 
       expect(mockAgent.generate).toHaveBeenCalledWith('Hello', {
