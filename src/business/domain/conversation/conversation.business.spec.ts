@@ -9,6 +9,7 @@ import { ResolvePromptQuery } from '@/business/domain/prompt/client/queries.js';
 import {
   CreateSessionCommand,
   FindSessionByIdQuery,
+  UpdateSessionCommand,
 } from '@/business/domain/session/client/queries.js';
 import type { AiConfig } from '@/config.js';
 
@@ -133,6 +134,7 @@ describe('ConversationEngine', () => {
       expect(agent.generate).toHaveBeenCalledWith('Hello', {
         threadId: 'thread-1',
         resourceId: 'user-1',
+        instructions: 'Hello {{name}}',
       });
       expect(response).toEqual({ text: 'Hi there!', object: undefined });
     });
@@ -152,6 +154,7 @@ describe('ConversationEngine', () => {
       expect(agent.generate).toHaveBeenCalledWith('Hello', {
         threadId: 'thread-1',
         resourceId: 'user-1',
+        instructions: 'Hello {{name}}',
       });
       expect(response.text).toBe('Reconstructed!');
     });
@@ -192,6 +195,67 @@ describe('ConversationEngine', () => {
 
       await expect(engine.send('session-1', 'Hello')).rejects.toThrow(networkError);
     });
+
+    it('passes resolvedPrompt as instructions to agent', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'Hi there!',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: { name: 'World' },
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      await engine.send(convo.id, 'Hello');
+
+      expect(agent.generate).toHaveBeenCalledWith('Hello', {
+        threadId: 'thread-1',
+        resourceId: 'user-1',
+        instructions: 'Hello {{name}}',
+      });
+    });
+
+    it('re-resolves prompt when promptParams provided and passes new instructions', async () => {
+      // Create conversation
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'Updated!',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: { name: 'World' },
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      // send() with new promptParams triggers re-resolution
+      const newResolvedPrompt = { slug: 'greet', version: 2, text: 'Updated prompt' };
+      send.mockResolvedValueOnce(newResolvedPrompt) // ResolvePromptQuery
+        .mockResolvedValueOnce(undefined); // UpdateSessionCommand
+
+      await engine.send(convo.id, 'Hello', undefined, { name: 'Updated' });
+
+      // Should have called ResolvePromptQuery with new params
+      expect(send).toHaveBeenCalledWith(expect.any(ResolvePromptQuery));
+      // Should have persisted updated resolvedPrompt
+      expect(send).toHaveBeenCalledWith(expect.any(UpdateSessionCommand));
+      // Should pass new resolved prompt as instructions
+      expect(agent.generate).toHaveBeenCalledWith('Hello', {
+        threadId: 'thread-1',
+        resourceId: 'user-1',
+        instructions: 'Updated prompt',
+      });
+    });
   });
 
   describe('stream', () => {
@@ -227,6 +291,7 @@ describe('ConversationEngine', () => {
       expect(agent.stream).toHaveBeenCalledWith('Hello', {
         threadId: 'thread-1',
         resourceId: 'user-1',
+        instructions: 'Hello {{name}}',
       });
       expect(collected).toEqual(chunks);
     });
@@ -247,6 +312,39 @@ describe('ConversationEngine', () => {
 
       expect(send).toHaveBeenCalledWith(expect.any(FindSessionByIdQuery));
       expect(collected).toHaveLength(1);
+    });
+
+    it('re-resolves prompt when promptParams provided in stream', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      const chunks = [{ type: 'text-delta' as const, content: 'Hi' }];
+      agent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) yield chunk;
+        })(),
+      );
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: { name: 'World' },
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      const newResolvedPrompt = { slug: 'greet', version: 2, text: 'Updated stream prompt' };
+      send.mockResolvedValueOnce(newResolvedPrompt).mockResolvedValueOnce(undefined);
+
+      const collected = [];
+      for await (const chunk of engine.stream(convo.id, 'Hello', undefined, { name: 'Updated' })) {
+        collected.push(chunk);
+      }
+
+      expect(send).toHaveBeenCalledWith(expect.any(ResolvePromptQuery));
+      expect(agent.stream).toHaveBeenCalledWith('Hello', {
+        threadId: 'thread-1',
+        resourceId: 'user-1',
+        instructions: 'Updated stream prompt',
+      });
     });
   });
 });

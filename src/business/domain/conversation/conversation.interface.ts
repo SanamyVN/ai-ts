@@ -42,7 +42,12 @@ export interface IConversationEngine {
    * const structured = await engine.send(conversation.id, 'Evaluate', myZodSchema);
    * ```
    */
-  send(conversationId: string, message: string, outputSchema?: ZodType): Promise<ConversationResponse>;
+  send(
+    conversationId: string,
+    message: string,
+    outputSchema?: ZodType,
+    promptParams?: Record<string, unknown>,
+  ): Promise<ConversationResponse>;
 
   /**
    * Sends a message and returns a streaming response.
@@ -60,7 +65,12 @@ export interface IConversationEngine {
    * }
    * ```
    */
-  stream(conversationId: string, message: string, outputSchema?: ZodType): AsyncIterable<StreamChunk>;
+  stream(
+    conversationId: string,
+    message: string,
+    outputSchema?: ZodType,
+    promptParams?: Record<string, unknown>,
+  ): AsyncIterable<StreamChunk>;
 }
 
 /** Dependency-injection token for {@link IConversationEngine}. */

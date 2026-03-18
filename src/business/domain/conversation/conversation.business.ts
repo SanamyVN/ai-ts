@@ -13,6 +13,7 @@ import { ResolvePromptQuery } from '@/business/domain/prompt/client/queries.js';
 import {
   CreateSessionCommand,
   FindSessionByIdQuery,
+  UpdateSessionCommand,
 } from '@/business/domain/session/client/queries.js';
 import type { IConversationEngine } from './conversation.interface.js';
 import type {
@@ -91,11 +92,19 @@ export class ConversationEngine implements IConversationEngine {
     };
   }
 
-  async send(conversationId: string, message: string, outputSchema?: ZodType): Promise<ConversationResponse> {
+  async send(
+    conversationId: string,
+    message: string,
+    outputSchema?: ZodType,
+    promptParams?: Record<string, unknown>,
+  ): Promise<ConversationResponse> {
     const state = await this.getOrReconstructState(conversationId);
-    const options: GenerateOptions = outputSchema
-      ? { ...state.baseOptions, outputSchema }
-      : state.baseOptions;
+    const instructions = await this.resolveInstructions(state, promptParams);
+    const options: GenerateOptions = {
+      ...state.baseOptions,
+      instructions,
+      ...(outputSchema !== undefined && { outputSchema }),
+    };
     try {
       const response = await this.mastraAgent.generate(message, options);
       return { text: response.text, object: response.object };
@@ -107,11 +116,19 @@ export class ConversationEngine implements IConversationEngine {
     }
   }
 
-  async *stream(conversationId: string, message: string, outputSchema?: ZodType): AsyncIterable<StreamChunk> {
+  async *stream(
+    conversationId: string,
+    message: string,
+    outputSchema?: ZodType,
+    promptParams?: Record<string, unknown>,
+  ): AsyncIterable<StreamChunk> {
     const state = await this.getOrReconstructState(conversationId);
-    const options: GenerateOptions = outputSchema
-      ? { ...state.baseOptions, outputSchema }
-      : state.baseOptions;
+    const instructions = await this.resolveInstructions(state, promptParams);
+    const options: GenerateOptions = {
+      ...state.baseOptions,
+      instructions,
+      ...(outputSchema !== undefined && { outputSchema }),
+    };
     try {
       yield* this.mastraAgent.stream(message, options);
     } catch (error) {
@@ -151,5 +168,30 @@ export class ConversationEngine implements IConversationEngine {
     };
     this.conversations.set(session.id, state);
     return state;
+  }
+
+  /**
+   * Resolves instructions for the current call.
+   * If promptParams are provided, re-resolves the prompt template and persists the update.
+   * Otherwise, uses the cached resolvedPrompt from state.
+   */
+  private async resolveInstructions(
+    state: ConversationState,
+    promptParams?: Record<string, unknown>,
+  ): Promise<string> {
+    if (!promptParams) {
+      return state.resolvedPrompt;
+    }
+    const prompt = await this.mediator.send(
+      new ResolvePromptQuery({ slug: state.promptSlug, params: promptParams }),
+    );
+    // Update in-memory state
+    const updatedState: ConversationState = { ...state, resolvedPrompt: prompt.text };
+    this.conversations.set(state.sessionId, updatedState);
+    // Persist to DB
+    await this.mediator.send(
+      new UpdateSessionCommand({ sessionId: state.sessionId, resolvedPrompt: prompt.text }),
+    );
+    return prompt.text;
   }
 }
