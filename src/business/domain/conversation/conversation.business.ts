@@ -97,6 +97,7 @@ export class ConversationEngine implements IConversationEngine {
     message: string,
     outputSchema?: ZodType,
     promptParams?: Record<string, unknown>,
+    toolsets?: Record<string, Record<string, unknown>>,
   ): Promise<ConversationResponse> {
     const state = await this.getOrReconstructState(conversationId);
     const instructions = await this.resolveInstructions(state, promptParams);
@@ -104,6 +105,7 @@ export class ConversationEngine implements IConversationEngine {
       ...state.baseOptions,
       instructions,
       ...(outputSchema !== undefined && { outputSchema }),
+      ...(toolsets !== undefined && { toolsets }),
     };
     try {
       const response = await this.mastraAgent.generate(message, options);
@@ -121,6 +123,7 @@ export class ConversationEngine implements IConversationEngine {
     message: string,
     outputSchema?: ZodType,
     promptParams?: Record<string, unknown>,
+    toolsets?: Record<string, Record<string, unknown>>,
   ): AsyncIterable<StreamChunk> {
     const state = await this.getOrReconstructState(conversationId);
     const instructions = await this.resolveInstructions(state, promptParams);
@@ -128,6 +131,7 @@ export class ConversationEngine implements IConversationEngine {
       ...state.baseOptions,
       instructions,
       ...(outputSchema !== undefined && { outputSchema }),
+      ...(toolsets !== undefined && { toolsets }),
     };
     try {
       yield* this.mastraAgent.stream(message, options);

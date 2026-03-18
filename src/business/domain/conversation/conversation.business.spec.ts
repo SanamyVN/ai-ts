@@ -256,6 +256,58 @@ describe('ConversationEngine', () => {
         instructions: 'Updated prompt',
       });
     });
+
+    it('passes toolsets to agent.generate when provided', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'Tool response!',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      const toolsets = { myTools: { search: {} } };
+      await engine.send(convo.id, 'Hello', undefined, undefined, toolsets);
+
+      expect(agent.generate).toHaveBeenCalledWith('Hello', {
+        threadId: 'thread-1',
+        resourceId: 'user-1',
+        instructions: 'Hello {{name}}',
+        toolsets,
+      });
+    });
+
+    it('does not include toolsets in options when not provided (backwards compat)', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'Hi there!',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      await engine.send(convo.id, 'Hello');
+
+      expect(agent.generate).toHaveBeenCalledWith('Hello', {
+        threadId: 'thread-1',
+        resourceId: 'user-1',
+        instructions: 'Hello {{name}}',
+      });
+    });
   });
 
   describe('stream', () => {
@@ -344,6 +396,66 @@ describe('ConversationEngine', () => {
         threadId: 'thread-1',
         resourceId: 'user-1',
         instructions: 'Updated stream prompt',
+      });
+    });
+
+    it('passes toolsets to agent.stream when provided', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      const chunks = [{ type: 'text-delta' as const, content: 'Tool stream!' }];
+      agent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) yield chunk;
+        })(),
+      );
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      const toolsets = { myTools: { search: {} } };
+      const collected = [];
+      for await (const chunk of engine.stream(convo.id, 'Hello', undefined, undefined, toolsets)) {
+        collected.push(chunk);
+      }
+
+      expect(agent.stream).toHaveBeenCalledWith('Hello', {
+        threadId: 'thread-1',
+        resourceId: 'user-1',
+        instructions: 'Hello {{name}}',
+        toolsets,
+      });
+      expect(collected).toEqual(chunks);
+    });
+
+    it('does not include toolsets in stream options when not provided (backwards compat)', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      const chunks = [{ type: 'finish' as const, content: '' }];
+      agent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) yield chunk;
+        })(),
+      );
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      for await (const _ of engine.stream(convo.id, 'Hello')) {
+        // consume
+      }
+
+      expect(agent.stream).toHaveBeenCalledWith('Hello', {
+        threadId: 'thread-1',
+        resourceId: 'user-1',
+        instructions: 'Hello {{name}}',
       });
     });
   });
