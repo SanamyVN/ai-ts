@@ -47,6 +47,7 @@ export interface IConversationEngine {
     message: string,
     outputSchema?: ZodType,
     promptParams?: Record<string, unknown>,
+    toolsets?: Record<string, Record<string, unknown>>,
   ): Promise<ConversationResponse>;
 
   /**
@@ -70,6 +71,7 @@ export interface IConversationEngine {
     message: string,
     outputSchema?: ZodType,
     promptParams?: Record<string, unknown>,
+    toolsets?: Record<string, Record<string, unknown>>,
   ): AsyncIterable<StreamChunk>;
 }
 
