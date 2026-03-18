@@ -1,3 +1,15 @@
+## [1.7.0](https://github.com/SanamyVN/ai-ts/compare/v1.6.1...v1.7.0) (2026-03-18)
+
+### Features
+
+* **conversation:** re-resolve prompt on send() and pass resolvedPrompt as instructions ([f2d8798](https://github.com/SanamyVN/ai-ts/commit/f2d8798a2d6f3cbc7e92c612c28f48c8ee53b14a))
+* **mastra:** add instructions passthrough to GenerateOptions and MastraAgentAdapter ([5fc4e42](https://github.com/SanamyVN/ai-ts/commit/5fc4e4213507889ab5cdf1cb4f26a6a7cc901101))
+* **session:** add UpdateSessionCommand for persisting re-resolved prompts ([84844e7](https://github.com/SanamyVN/ai-ts/commit/84844e721a3fdcd950af20b88143eafa30f12922))
+
+### Bug Fixes
+
+* **lint:** resolve type assertion lint errors in mastra agent spec ([c0ce0ae](https://github.com/SanamyVN/ai-ts/commit/c0ce0aecd9649002ad248a965d04af0cea23c2cd))
+
 ## [1.6.1](https://github.com/SanamyVN/ai-ts/compare/v1.6.0...v1.6.1) (2026-03-18)
 
 ### Bug Fixes
