@@ -24,6 +24,7 @@ export interface GenerateOptions {
   readonly threadId?: string;
   readonly resourceId?: string;
   readonly outputSchema?: ZodType;
+  readonly instructions?: string;
 }
 
 /** A conversation thread managed by Mastra memory. */

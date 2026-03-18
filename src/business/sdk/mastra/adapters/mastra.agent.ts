@@ -24,10 +24,10 @@ export class MastraAgentAdapter implements IMastraAgent {
 
   async generate(prompt: string, options?: GenerateOptions): Promise<AgentResponse> {
     try {
-      const mem = this.buildMemory(options);
+      const base = this.buildBaseOptions(options);
       const result = options?.outputSchema !== undefined
-        ? await this.agent.generate(prompt, { ...mem, structuredOutput: { schema: options.outputSchema } })
-        : await this.agent.generate(prompt, mem);
+        ? await this.agent.generate(prompt, { ...base, structuredOutput: { schema: options.outputSchema } })
+        : await this.agent.generate(prompt, base);
       return {
         text: result.text,
         object: result.object,
@@ -40,10 +40,10 @@ export class MastraAgentAdapter implements IMastraAgent {
 
   async *stream(prompt: string, options?: GenerateOptions): AsyncIterable<StreamChunk> {
     try {
-      const mem = this.buildMemory(options);
+      const base = this.buildBaseOptions(options);
       const result = options?.outputSchema !== undefined
-        ? await this.agent.stream(prompt, { ...mem, structuredOutput: { schema: options.outputSchema } })
-        : await this.agent.stream(prompt, mem);
+        ? await this.agent.stream(prompt, { ...base, structuredOutput: { schema: options.outputSchema } })
+        : await this.agent.stream(prompt, base);
       for await (const chunk of result.textStream) {
         yield { type: 'text-delta', content: chunk };
       }
@@ -52,10 +52,14 @@ export class MastraAgentAdapter implements IMastraAgent {
     }
   }
 
-  private buildMemory(options?: GenerateOptions) {
+  private buildBaseOptions(options?: GenerateOptions) {
+    const base: { memory?: { thread: string; resource: string }; instructions?: string } = {};
     if (options?.threadId !== undefined && options?.resourceId !== undefined) {
-      return { memory: { thread: options.threadId, resource: options.resourceId } };
+      base.memory = { thread: options.threadId, resource: options.resourceId };
     }
-    return {};
+    if (options?.instructions !== undefined) {
+      base.instructions = options.instructions;
+    }
+    return base;
   }
 }
