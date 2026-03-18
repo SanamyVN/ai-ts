@@ -1,3 +1,13 @@
+## [1.8.0](https://github.com/SanamyVN/ai-ts/compare/v1.7.0...v1.8.0) (2026-03-18)
+
+### Features
+
+* add toolsets parameter to IConversationEngine send/stream ([acfc10b](https://github.com/SanamyVN/ai-ts/commit/acfc10bcae726f59ce5a10e49acd3b1b9493f94f))
+* add toolsets to GenerateOptions interface ([0818ed3](https://github.com/SanamyVN/ai-ts/commit/0818ed36a243668db6b0e7c2eb72e4a079b50017))
+* pass toolsets through ConversationBusiness to MastraAgent ([20f45d8](https://github.com/SanamyVN/ai-ts/commit/20f45d806a4a9f5e0d5b4040d334b8e521bc3a71))
+* pass toolsets through MastraAgent adapter to Mastra core ([e730ef6](https://github.com/SanamyVN/ai-ts/commit/e730ef650d04d05234e7e78d13f8160e6105f159))
+* update conversation engine mock to support toolsets parameter ([950936e](https://github.com/SanamyVN/ai-ts/commit/950936e3362536f37b54b5dc2efc7750b5176533))
+
 ## [1.7.0](https://github.com/SanamyVN/ai-ts/compare/v1.6.1...v1.7.0) (2026-03-18)
 
 ### Features
