@@ -14,6 +14,7 @@ import type {
   ListSessionsQuery,
   CreateSessionCommand,
   EndSessionCommand,
+  UpdateSessionCommand,
 } from '@/business/domain/session/client/queries.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import { z } from 'zod';
@@ -25,6 +26,11 @@ export interface HttpClient {
     options?: { responseSchema?: unknown },
   ): Promise<{ ok: boolean; status?: number; body?: { data?: unknown } }>;
   post(
+    url: string,
+    body: unknown,
+    options?: { responseSchema?: unknown },
+  ): Promise<{ ok: boolean; status?: number; body?: { data?: unknown } }>;
+  patch(
     url: string,
     body: unknown,
     options?: { responseSchema?: unknown },
@@ -99,6 +105,17 @@ export class SessionRemoteMediator implements ISessionMediator {
     if (!response.ok) {
       if (response.status === 404) throw new SessionNotFoundClientError(command.sessionId);
       throw new Error(`Failed to end session: ${response.status}`);
+    }
+  }
+
+  async update(command: InstanceType<typeof UpdateSessionCommand>): Promise<void> {
+    const response = await this.http.patch(
+      `${this.config.baseUrl}/ai/sessions/${command.sessionId}`,
+      { resolvedPrompt: command.resolvedPrompt },
+    );
+    if (!response.ok) {
+      if (response.status === 404) throw new SessionNotFoundClientError(command.sessionId);
+      throw new Error(`Failed to update session: ${response.status}`);
     }
   }
 }

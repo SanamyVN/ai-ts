@@ -37,3 +37,12 @@ export const EndSessionCommand = createCommand({
   payload: z.object({ sessionId: z.string() }),
   response: z.void(),
 });
+
+export const UpdateSessionCommand = createCommand({
+  type: 'ai.session.update',
+  payload: z.object({
+    sessionId: z.string(),
+    resolvedPrompt: z.string(),
+  }),
+  response: z.void(),
+});

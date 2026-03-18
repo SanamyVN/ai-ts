@@ -5,6 +5,7 @@ import {
   ListSessionsQuery,
   CreateSessionCommand,
   EndSessionCommand,
+  UpdateSessionCommand,
 } from './queries.js';
 
 export interface ISessionMediator {
@@ -12,6 +13,7 @@ export interface ISessionMediator {
   list(query: InstanceType<typeof ListSessionsQuery>): Promise<SessionSummaryClient[]>;
   create(command: InstanceType<typeof CreateSessionCommand>): Promise<SessionClientModel>;
   end(command: InstanceType<typeof EndSessionCommand>): Promise<void>;
+  update(command: InstanceType<typeof UpdateSessionCommand>): Promise<void>;
 }
 
 export const SESSION_MEDIATOR = createMediatorToken<ISessionMediator>('SESSION_MEDIATOR', {
@@ -19,4 +21,5 @@ export const SESSION_MEDIATOR = createMediatorToken<ISessionMediator>('SESSION_M
   list: ListSessionsQuery,
   create: CreateSessionCommand,
   end: EndSessionCommand,
+  update: UpdateSessionCommand,
 });

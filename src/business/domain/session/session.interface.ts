@@ -74,6 +74,14 @@ export interface ISessionService {
    * @throws {SessionNotFoundError} If the session does not exist.
    */
   exportTranscript(sessionId: string, format: 'json' | 'text'): Promise<Transcript>;
+
+  /**
+   * Updates the resolved prompt for a session.
+   * @param sessionId - Session to update.
+   * @param resolvedPrompt - The new resolved prompt text.
+   * @throws {SessionNotFoundError} If the session does not exist.
+   */
+  updateResolvedPrompt(sessionId: string, resolvedPrompt: string): Promise<void>;
 }
 
 /** Dependency-injection token for {@link ISessionService}. */

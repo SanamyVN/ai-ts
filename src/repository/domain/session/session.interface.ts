@@ -41,6 +41,15 @@ export interface ISessionRepository {
    * @throws {SessionNotFoundRepoError} When no session exists with the given ID.
    */
   updateStatus(id: string, status: string, endedAt?: Date): Promise<SessionRecord>;
+
+  /**
+   * Update the resolved prompt for a session.
+   * @param id - Session ID.
+   * @param resolvedPrompt - The new resolved prompt text.
+   * @returns The updated session record.
+   * @throws {SessionNotFoundRepoError} When no session exists with the given ID.
+   */
+  updateResolvedPrompt(id: string, resolvedPrompt: string): Promise<SessionRecord>;
 }
 
 /** Dependency-injection token for {@link ISessionRepository}. */

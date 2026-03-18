@@ -50,4 +50,16 @@ export class SessionDrizzleRepository implements ISessionRepository {
     }
     return record;
   }
+
+  async updateResolvedPrompt(id: string, resolvedPrompt: string): Promise<SessionRecord> {
+    const [record] = await this.db.db
+      .update(aiSessions)
+      .set({ resolvedPrompt })
+      .where(eq(aiSessions.id, id))
+      .returning();
+    if (!record) {
+      throw new SessionNotFoundRepoError(id);
+    }
+    return record;
+  }
 }

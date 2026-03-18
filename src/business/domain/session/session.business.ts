@@ -74,6 +74,10 @@ export class SessionService implements ISessionService {
     return this.mastraMemory.getMessages(session.mastraThreadId, pagination);
   }
 
+  async updateResolvedPrompt(sessionId: string, resolvedPrompt: string): Promise<void> {
+    await this.sessionRepo.updateResolvedPrompt(sessionId, resolvedPrompt);
+  }
+
   async exportTranscript(sessionId: string, format: 'json' | 'text'): Promise<Transcript> {
     const session = await this.getSessionOrThrow(sessionId);
     const { messages } = await this.mastraMemory.getMessages(session.mastraThreadId, {

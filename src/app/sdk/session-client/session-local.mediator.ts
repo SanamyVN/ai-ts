@@ -13,6 +13,7 @@ import type {
   ListSessionsQuery,
   CreateSessionCommand,
   EndSessionCommand,
+  UpdateSessionCommand,
 } from '@/business/domain/session/client/queries.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import { isSessionNotFoundError } from '@/business/domain/session/session.error.js';
@@ -66,5 +67,9 @@ export class SessionLocalMediator implements ISessionMediator {
 
   async end(command: InstanceType<typeof EndSessionCommand>): Promise<void> {
     await this.sessionService.end(command.sessionId);
+  }
+
+  async update(command: InstanceType<typeof UpdateSessionCommand>): Promise<void> {
+    await this.sessionService.updateResolvedPrompt(command.sessionId, command.resolvedPrompt);
   }
 }
