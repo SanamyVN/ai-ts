@@ -1,3 +1,9 @@
+## [1.6.1](https://github.com/SanamyVN/ai-ts/compare/v1.6.0...v1.6.1) (2026-03-18)
+
+### Bug Fixes
+
+* **conversation:** remove duplicate JSDoc blocks from send() and stream() ([6816301](https://github.com/SanamyVN/ai-ts/commit/68163019e683de626057048ae0e239716bd6fbcb))
+
 ## [1.6.0](https://github.com/SanamyVN/ai-ts/compare/v1.5.0...v1.6.0) (2026-03-17)
 
 ### Features
