@@ -5,14 +5,17 @@ import type {
   IngestClientResult,
   DeleteClientResult,
   ReplaceClientResult,
+  SearchClientResult,
 } from '@/business/domain/rag/client/schemas.js';
 import type {
   RagIngestCommand,
   RagDeleteCommand,
   RagReplaceCommand,
+  RagSearchQuery,
 } from '@/business/domain/rag/client/queries.js';
 import type { ChunkOptions } from '@/business/domain/rag/rag.model.js';
 import { toIngestClientResult, toDeleteClientResult, toReplaceClientResult } from './rag.mapper.js';
+import { RagSearchClientError } from '@/business/domain/rag/client/errors.js';
 
 function toChunkOptions(
   raw:
@@ -65,5 +68,9 @@ export class RagLocalMediator implements IRagMediator {
       ...(chunkOptions !== undefined ? { chunkOptions } : {}),
     });
     return toReplaceClientResult(result);
+  }
+
+  async search(_query: InstanceType<typeof RagSearchQuery>): Promise<SearchClientResult> {
+    throw new RagSearchClientError(new Error('RAG search is not supported in local mode'));
   }
 }

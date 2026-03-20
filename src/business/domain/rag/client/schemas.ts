@@ -73,3 +73,23 @@ export const replaceResultSchema = z.object({
 });
 
 export type ReplaceClientResult = z.infer<typeof replaceResultSchema>;
+
+export const searchClientSchema = z.object({
+  indexName: z.string().min(1),
+  scopeId: z.string(),
+  queryText: z.string().min(1),
+  topK: z.number().int().positive(),
+});
+
+export type SearchClientInput = z.infer<typeof searchClientSchema>;
+
+export const searchResultItemSchema = z.object({
+  text: z.string(),
+  score: z.number(),
+});
+
+export const searchResultSchema = z.object({
+  results: z.array(searchResultItemSchema),
+});
+
+export type SearchClientResult = z.infer<typeof searchResultSchema>;

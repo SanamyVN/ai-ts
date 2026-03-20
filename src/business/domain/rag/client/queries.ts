@@ -1,4 +1,4 @@
-import { createCommand } from '@sanamyvn/foundation/mediator/request';
+import { createCommand, createQuery } from '@sanamyvn/foundation/mediator/request';
 import {
   ingestClientSchema,
   deleteClientSchema,
@@ -6,6 +6,8 @@ import {
   ingestResultSchema,
   deleteResultSchema,
   replaceResultSchema,
+  searchClientSchema,
+  searchResultSchema,
 } from './schemas.js';
 
 export const RagIngestCommand = createCommand({
@@ -24,4 +26,10 @@ export const RagReplaceCommand = createCommand({
   type: 'ai.rag.replace',
   payload: replaceClientSchema,
   response: replaceResultSchema,
+});
+
+export const RagSearchQuery = createQuery({
+  type: 'ai.rag.search',
+  payload: searchClientSchema,
+  response: searchResultSchema,
 });

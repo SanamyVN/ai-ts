@@ -38,3 +38,14 @@ export function isRagDeleteClientError(error: unknown): error is RagDeleteClient
 export function isRagReplaceClientError(error: unknown): error is RagReplaceClientError {
   return error instanceof RagReplaceClientError;
 }
+
+/** Thrown when a RAG search operation fails through the mediator. */
+export class RagSearchClientError extends RagClientError {
+  constructor(cause?: unknown) {
+    super('RAG search failed', { cause });
+  }
+}
+
+export function isRagSearchClientError(error: unknown): error is RagSearchClientError {
+  return error instanceof RagSearchClientError;
+}

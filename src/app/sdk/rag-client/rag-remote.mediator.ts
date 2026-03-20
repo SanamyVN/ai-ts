@@ -5,21 +5,25 @@ import type {
   IngestClientResult,
   DeleteClientResult,
   ReplaceClientResult,
+  SearchClientResult,
 } from '@/business/domain/rag/client/schemas.js';
 import {
   ingestResultSchema,
   deleteResultSchema,
   replaceResultSchema,
+  searchResultSchema,
 } from '@/business/domain/rag/client/schemas.js';
 import type {
   RagIngestCommand,
   RagDeleteCommand,
   RagReplaceCommand,
+  RagSearchQuery,
 } from '@/business/domain/rag/client/queries.js';
 import {
   RagIngestClientError,
   RagDeleteClientError,
   RagReplaceClientError,
+  RagSearchClientError,
 } from '@/business/domain/rag/client/errors.js';
 
 export interface HttpClient {
@@ -89,5 +93,18 @@ export class RagRemoteMediator implements IRagMediator {
       throw new RagReplaceClientError(new Error(`RAG replace failed: ${response.status}`));
     }
     return replaceResultSchema.parse(response.body?.data);
+  }
+
+  async search(query: InstanceType<typeof RagSearchQuery>): Promise<SearchClientResult> {
+    const response = await this.http.post(`${this.config.baseUrl}/ai/rag/search`, {
+      indexName: query.indexName,
+      scopeId: query.scopeId,
+      queryText: query.queryText,
+      topK: query.topK,
+    });
+    if (!response.ok) {
+      throw new RagSearchClientError(new Error(`RAG search failed: ${response.status}`));
+    }
+    return searchResultSchema.parse(response.body?.data);
   }
 }

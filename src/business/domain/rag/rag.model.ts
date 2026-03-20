@@ -65,3 +65,22 @@ export interface ReplaceResult {
   readonly chunksDeleted: number;
   readonly chunksStored: number;
 }
+
+/** Input for semantic search within a scope. */
+export interface SearchInput {
+  readonly indexName: string;
+  readonly scopeId: string;
+  readonly queryText: string;
+  readonly topK: number;
+}
+
+/** A single search result chunk. */
+export interface SearchResultItem {
+  readonly text: string;
+  readonly score: number;
+}
+
+/** Result of a semantic search. */
+export interface SearchResult {
+  readonly results: SearchResultItem[];
+}
