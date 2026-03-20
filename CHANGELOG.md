@@ -1,3 +1,21 @@
+## [1.10.0](https://github.com/SanamyVN/ai-ts/compare/v1.9.0...v1.10.0) (2026-03-20)
+
+### Features
+
+* **rag:** add search to IMastraRag interface, MastraRagAdapter, and mock ([78be7c1](https://github.com/SanamyVN/ai-ts/commit/78be7c1a87561625e3fbed9d0635cf650604dfd5))
+* **rag:** add search to IRagBusiness with embedding pipeline and tests ([b234f02](https://github.com/SanamyVN/ai-ts/commit/b234f025210836219b8d4ce6fa74b61e47f44de9))
+* **rag:** add search types, schemas, RagSearchQuery, and mediator interface ([ae61841](https://github.com/SanamyVN/ai-ts/commit/ae61841b539b1666e45c18f5458f72107fedf1b2))
+* **rag:** wire search through app layer — service, router, DTOs, mediators ([e1fbc5f](https://github.com/SanamyVN/ai-ts/commit/e1fbc5f807caa12d148de6c888f3787e40de1541))
+
+### Bug Fixes
+
+* **rag:** align search filter cast pattern with delete method ([07f4f63](https://github.com/SanamyVN/ai-ts/commit/07f4f637d3923b7ca353578ade8c9adef79dd547))
+* **rag:** remove redundant QueryResult import and annotation in MastraRagAdapter ([20fd998](https://github.com/SanamyVN/ai-ts/commit/20fd9980e8306b1e0a4d2bc1534733f5f0ebf4c0))
+* **rag:** remove unnecessary type cast in MastraRagAdapter.search ([440848f](https://github.com/SanamyVN/ai-ts/commit/440848fa95302cd148f9898f68c525269fe84dbe))
+* **rag:** replace non-null assertion with guard in RagBusiness.search ([cfdc807](https://github.com/SanamyVN/ai-ts/commit/cfdc807814c73808de70ef9474d0932e32dedb6e))
+* **rag:** replace type assertion with typeof guard in MastraRagAdapter.search ([3f3caf7](https://github.com/SanamyVN/ai-ts/commit/3f3caf7296a8cc460d91a9979276843ca048d0fe))
+* **rag:** use T[] array syntax instead of Array<T> in IMastraRag and adapter ([509bb66](https://github.com/SanamyVN/ai-ts/commit/509bb6672d36b291c3594bd96ee3900e5b9288ac))
+
 ## [1.9.0](https://github.com/SanamyVN/ai-ts/compare/v1.8.0...v1.9.0) (2026-03-20)
 
 ### Features
