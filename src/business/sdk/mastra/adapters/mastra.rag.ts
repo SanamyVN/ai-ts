@@ -54,7 +54,7 @@ export class MastraRagAdapter implements IMastraRag {
         filter: { scopeId },
       });
       return results.map((r) => ({
-        text: (r.metadata?.['text'] as string | undefined) ?? '',
+        text: typeof r.metadata?.['text'] === 'string' ? r.metadata['text'] : '',
         score: r.score,
       }));
     } catch (error) {
