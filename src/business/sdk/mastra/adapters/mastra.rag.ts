@@ -1,5 +1,4 @@
 import type { PgVector } from '@mastra/pg';
-import type { QueryResult } from '@mastra/core/vector';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import { MASTRA_CORE_RAG } from '../mastra.interface.js';
 import type { IMastraRag } from '../mastra.interface.js';
@@ -49,7 +48,7 @@ export class MastraRagAdapter implements IMastraRag {
   ): Promise<Array<{ text: string; score: number }>> {
     try {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const results: QueryResult[] = await this.pgVector.query({
+      const results = await this.pgVector.query({
         indexName,
         queryVector,
         topK,
