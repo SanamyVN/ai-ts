@@ -5,6 +5,7 @@ import { RagIngestError, RagDeleteError } from '@/business/domain/rag/rag.error.
 
 const SCOPE_ID = '11111111-1111-4111-a111-111111111111';
 const DOC_ID = '22222222-2222-4222-a222-222222222222';
+const INDEX_NAME = 'knowledge';
 
 describe('RagAppService', () => {
   let mediator: { send: ReturnType<typeof vi.fn> };
@@ -21,6 +22,7 @@ describe('RagAppService', () => {
       mediator.send.mockResolvedValueOnce({ chunksStored: 5 });
 
       const result = await service.ingest({
+        indexName: INDEX_NAME,
         scopeId: SCOPE_ID,
         documents: [{ documentId: DOC_ID, content: { type: 'text', data: 'hello' } }],
       });
@@ -33,6 +35,7 @@ describe('RagAppService', () => {
 
       await expect(
         service.ingest({
+          indexName: INDEX_NAME,
           scopeId: SCOPE_ID,
           documents: [{ documentId: DOC_ID, content: { type: 'text', data: 'hello' } }],
         }),
@@ -44,7 +47,7 @@ describe('RagAppService', () => {
     it('returns chunksDeleted on success', async () => {
       mediator.send.mockResolvedValueOnce({ chunksDeleted: 3 });
 
-      const result = await service.delete({ scopeId: SCOPE_ID, filter: { documentId: DOC_ID } });
+      const result = await service.delete({ indexName: INDEX_NAME, scopeId: SCOPE_ID, filter: { documentId: DOC_ID } });
 
       expect(result).toEqual({ chunksDeleted: 3 });
     });
@@ -53,7 +56,7 @@ describe('RagAppService', () => {
       mediator.send.mockRejectedValueOnce(new RagDeleteError(SCOPE_ID));
 
       await expect(
-        service.delete({ scopeId: SCOPE_ID, filter: { documentId: DOC_ID } }),
+        service.delete({ indexName: INDEX_NAME, scopeId: SCOPE_ID, filter: { documentId: DOC_ID } }),
       ).rejects.toThrow(RagHttpDeleteError);
     });
   });
@@ -63,6 +66,7 @@ describe('RagAppService', () => {
       mediator.send.mockResolvedValueOnce({ chunksDeleted: 3, chunksStored: 7 });
 
       const result = await service.replace(DOC_ID, {
+        indexName: INDEX_NAME,
         scopeId: SCOPE_ID,
         content: { type: 'text', data: 'updated' },
       });

@@ -48,6 +48,7 @@ vi.mock('@mastra/core/llm', () => ({
 
 const SCOPE_ID = '11111111-1111-4111-a111-111111111111';
 const DOC_ID = '22222222-2222-4222-a222-222222222222';
+const INDEX_NAME = 'knowledge';
 
 const config: AiConfig = {
   defaultModel: 'anthropic/claude-sonnet-4-20250514',
@@ -65,7 +66,6 @@ describe('RagBusiness', () => {
     capturedEmbeddingConfigs = [];
     vi.clearAllMocks();
     mastraRag = createMockMastraRag();
-    mastraRag.createIndex.mockResolvedValue(undefined);
     mastraRag.upsert.mockResolvedValue(2);
     mastraRag.delete.mockResolvedValue(0);
     business = new RagBusiness(mastraRag, config);
@@ -73,16 +73,16 @@ describe('RagBusiness', () => {
 
   describe('ingest', () => {
     const input: IngestInput = {
+      indexName: INDEX_NAME,
       scopeId: SCOPE_ID,
       documents: [{ documentId: DOC_ID, content: { type: 'text', data: 'hello world' } }],
     };
 
-    it('creates index, chunks, embeds, and upserts', async () => {
+    it('chunks, embeds, and upserts', async () => {
       const result = await business.ingest(input);
 
-      expect(mastraRag.createIndex).toHaveBeenCalledWith(SCOPE_ID, 1536);
       expect(mastraRag.upsert).toHaveBeenCalledWith(
-        SCOPE_ID,
+        INDEX_NAME,
         [
           [0.1, 0.2],
           [0.3, 0.4],
@@ -92,14 +92,6 @@ describe('RagBusiness', () => {
         ]),
       );
       expect(result).toEqual({ chunksStored: 2 });
-    });
-
-    it('wraps MastraAdapterError during createIndex as RagIngestError', async () => {
-      mastraRag.createIndex.mockRejectedValueOnce(
-        new MastraAdapterError('createIndex', new Error('pg error')),
-      );
-
-      await expect(business.ingest(input)).rejects.toThrow(RagIngestError);
     });
 
     it('wraps MastraAdapterError during upsert as RagIngestError', async () => {
@@ -119,6 +111,7 @@ describe('RagBusiness', () => {
 
     it('supports html content type', async () => {
       const htmlInput: IngestInput = {
+        indexName: INDEX_NAME,
         scopeId: SCOPE_ID,
         documents: [{ documentId: DOC_ID, content: { type: 'html', data: '<p>hi</p>' } }],
       };
@@ -131,6 +124,7 @@ describe('RagBusiness', () => {
 
   describe('delete', () => {
     const input: DeleteInput = {
+      indexName: INDEX_NAME,
       scopeId: SCOPE_ID,
       filter: { documentId: DOC_ID },
     };
@@ -138,7 +132,7 @@ describe('RagBusiness', () => {
     it('deletes vectors by filter and returns count', async () => {
       const result = await business.delete(input);
 
-      expect(mastraRag.delete).toHaveBeenCalledWith(SCOPE_ID, { documentId: DOC_ID });
+      expect(mastraRag.delete).toHaveBeenCalledWith(INDEX_NAME, { documentId: DOC_ID });
       expect(result).toEqual({ chunksDeleted: 0 });
     });
 
@@ -153,6 +147,7 @@ describe('RagBusiness', () => {
 
   describe('replace', () => {
     const input: ReplaceInput = {
+      indexName: INDEX_NAME,
       scopeId: SCOPE_ID,
       documentId: DOC_ID,
       content: { type: 'text', data: 'updated content' },
@@ -161,7 +156,7 @@ describe('RagBusiness', () => {
     it('deletes then ingests and returns both counts', async () => {
       const result = await business.replace(input);
 
-      expect(mastraRag.delete).toHaveBeenCalledWith(SCOPE_ID, { documentId: DOC_ID });
+      expect(mastraRag.delete).toHaveBeenCalledWith(INDEX_NAME, { documentId: DOC_ID });
       expect(mastraRag.upsert).toHaveBeenCalled();
       expect(result).toEqual({ chunksDeleted: 0, chunksStored: 2 });
     });
