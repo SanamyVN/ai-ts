@@ -13,14 +13,6 @@ import { MastraAdapterError } from '../mastra.error.js';
 export class MastraRagAdapter implements IMastraRag {
   constructor(@Inject(MASTRA_CORE_RAG) private readonly pgVector: PgVector) {}
 
-  async createIndex(indexName: string, dimension: number): Promise<void> {
-    try {
-      await this.pgVector.createIndex({ indexName, dimension });
-    } catch (error) {
-      throw new MastraAdapterError('createIndex', error);
-    }
-  }
-
   async upsert(
     indexName: string,
     vectors: number[][],

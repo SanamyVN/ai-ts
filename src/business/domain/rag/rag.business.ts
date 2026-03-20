@@ -49,15 +49,6 @@ export class RagBusiness implements IRagBusiness {
   }
 
   async ingest(input: IngestInput): Promise<IngestResult> {
-    try {
-      await this.mastraRag.createIndex(input.scopeId, this.config.embeddingDimension);
-    } catch (error) {
-      if (isMastraAdapterError(error)) {
-        throw new RagIngestError(input.documents[0]?.documentId ?? 'unknown', error);
-      }
-      throw error;
-    }
-
     let totalChunks = 0;
 
     for (const doc of input.documents) {
@@ -79,7 +70,7 @@ export class RagBusiness implements IRagBusiness {
         const embeddings = await this.embedBatched(texts);
 
         const stored = await this.mastraRag.upsert(
-          input.scopeId,
+          input.indexName,
           embeddings,
           chunks.map((c) => ({ text: c.text, documentId: doc.documentId, scopeId: input.scopeId })),
         );
@@ -101,7 +92,7 @@ export class RagBusiness implements IRagBusiness {
 
   async delete(input: DeleteInput): Promise<DeleteResult> {
     try {
-      const chunksDeleted = await this.mastraRag.delete(input.scopeId, input.filter);
+      const chunksDeleted = await this.mastraRag.delete(input.indexName, input.filter);
       return { chunksDeleted };
     } catch (error) {
       if (isMastraAdapterError(error)) {
@@ -113,11 +104,13 @@ export class RagBusiness implements IRagBusiness {
 
   async replace(input: ReplaceInput): Promise<ReplaceResult> {
     const { chunksDeleted } = await this.delete({
+      indexName: input.indexName,
       scopeId: input.scopeId,
       filter: { documentId: input.documentId },
     });
 
     const { chunksStored } = await this.ingest({
+      indexName: input.indexName,
       scopeId: input.scopeId,
       documents: [{ documentId: input.documentId, content: input.content }],
       ...(input.chunkOptions !== undefined ? { chunkOptions: input.chunkOptions } : {}),

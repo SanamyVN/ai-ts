@@ -126,14 +126,6 @@ export const MASTRA_CORE_MEMORY = createToken<MastraMemory>('MASTRA_CORE_MEMORY'
 /** Abstraction over a Mastra vector store for RAG write-path operations. */
 export interface IMastraRag {
   /**
-   * Create a vector index if it does not already exist (idempotent).
-   * @param indexName - The name of the vector index (typically a scope ID).
-   * @param dimension - The embedding dimension (e.g. 1536 for text-embedding-3-small).
-   * @throws {MastraAdapterError} When the underlying PgVector call fails.
-   */
-  createIndex(indexName: string, dimension: number): Promise<void>;
-
-  /**
    * Upsert vectors with metadata into the specified index.
    * @param indexName - The target index name.
    * @param vectors - The embedding vectors to store.

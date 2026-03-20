@@ -28,6 +28,7 @@ export interface ChunkOptions {
 
 /** Input for batch document ingestion into a scope. */
 export interface IngestInput {
+  readonly indexName: string;
   readonly scopeId: string;
   readonly documents: DocumentInput[];
   readonly chunkOptions?: ChunkOptions;
@@ -40,6 +41,7 @@ export interface IngestResult {
 
 /** Input for deleting vectors by metadata filter within a scope. */
 export interface DeleteInput {
+  readonly indexName: string;
   readonly scopeId: string;
   readonly filter: Record<string, unknown>;
 }
@@ -51,6 +53,7 @@ export interface DeleteResult {
 
 /** Input for replacing a document's vectors with new content. */
 export interface ReplaceInput {
+  readonly indexName: string;
   readonly scopeId: string;
   readonly documentId: string;
   readonly content: RagContent;

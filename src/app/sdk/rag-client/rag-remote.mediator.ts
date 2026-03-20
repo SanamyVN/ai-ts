@@ -52,6 +52,7 @@ export class RagRemoteMediator implements IRagMediator {
 
   async ingest(command: InstanceType<typeof RagIngestCommand>): Promise<IngestClientResult> {
     const response = await this.http.post(`${this.config.baseUrl}/ai/rag/ingest`, {
+      indexName: command.indexName,
       scopeId: command.scopeId,
       documents: command.documents,
       chunkOptions: command.chunkOptions,
@@ -64,6 +65,7 @@ export class RagRemoteMediator implements IRagMediator {
 
   async delete(command: InstanceType<typeof RagDeleteCommand>): Promise<DeleteClientResult> {
     const response = await this.http.delete(`${this.config.baseUrl}/ai/rag/documents`, {
+      indexName: command.indexName,
       scopeId: command.scopeId,
       filter: command.filter,
     });
@@ -76,7 +78,7 @@ export class RagRemoteMediator implements IRagMediator {
   async replace(command: InstanceType<typeof RagReplaceCommand>): Promise<ReplaceClientResult> {
     const response = await this.http.put(
       `${this.config.baseUrl}/ai/rag/documents/${command.documentId}`,
-      { scopeId: command.scopeId, content: command.content, chunkOptions: command.chunkOptions },
+      { indexName: command.indexName, scopeId: command.scopeId, content: command.content, chunkOptions: command.chunkOptions },
     );
     if (!response.ok) {
       throw new RagReplaceClientError(new Error(`RAG replace failed: ${response.status}`));

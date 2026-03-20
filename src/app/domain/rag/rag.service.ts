@@ -44,6 +44,7 @@ export class RagAppService {
     try {
       const result = await this.mediator.send(
         new RagReplaceCommand({
+          indexName: input.indexName,
           scopeId: input.scopeId,
           documentId,
           content: input.content,

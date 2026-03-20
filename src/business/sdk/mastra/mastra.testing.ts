@@ -49,7 +49,6 @@ export function createMockMastraMemory() {
  */
 export function createMockMastraRag() {
   return {
-    createIndex: vi.fn<IMastraRag['createIndex']>(),
     upsert: vi.fn<IMastraRag['upsert']>(),
     delete: vi.fn<IMastraRag['delete']>(),
   };

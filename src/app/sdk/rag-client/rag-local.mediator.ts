@@ -38,6 +38,7 @@ export class RagLocalMediator implements IRagMediator {
   async ingest(command: InstanceType<typeof RagIngestCommand>): Promise<IngestClientResult> {
     const chunkOptions = toChunkOptions(command.chunkOptions);
     const result = await this.ragBusiness.ingest({
+      indexName: command.indexName,
       scopeId: command.scopeId,
       documents: command.documents,
       ...(chunkOptions !== undefined ? { chunkOptions } : {}),
@@ -47,6 +48,7 @@ export class RagLocalMediator implements IRagMediator {
 
   async delete(command: InstanceType<typeof RagDeleteCommand>): Promise<DeleteClientResult> {
     const result = await this.ragBusiness.delete({
+      indexName: command.indexName,
       scopeId: command.scopeId,
       filter: command.filter,
     });
@@ -56,6 +58,7 @@ export class RagLocalMediator implements IRagMediator {
   async replace(command: InstanceType<typeof RagReplaceCommand>): Promise<ReplaceClientResult> {
     const chunkOptions = toChunkOptions(command.chunkOptions);
     const result = await this.ragBusiness.replace({
+      indexName: command.indexName,
       scopeId: command.scopeId,
       documentId: command.documentId,
       content: command.content,

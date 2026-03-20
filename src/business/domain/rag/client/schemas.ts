@@ -29,6 +29,7 @@ const documentInputSchema = z.object({
 });
 
 export const ingestClientSchema = z.object({
+  indexName: z.string(),
   scopeId: z.string(),
   documents: z.array(documentInputSchema).min(1),
   chunkOptions: chunkOptionsSchema.optional(),
@@ -37,6 +38,7 @@ export const ingestClientSchema = z.object({
 export type IngestClientInput = z.infer<typeof ingestClientSchema>;
 
 export const deleteClientSchema = z.object({
+  indexName: z.string(),
   scopeId: z.string(),
   filter: z.record(z.string(), z.unknown()),
 });
@@ -44,6 +46,7 @@ export const deleteClientSchema = z.object({
 export type DeleteClientInput = z.infer<typeof deleteClientSchema>;
 
 export const replaceClientSchema = z.object({
+  indexName: z.string(),
   scopeId: z.string(),
   documentId: z.string(),
   content: ragContentSchema,
