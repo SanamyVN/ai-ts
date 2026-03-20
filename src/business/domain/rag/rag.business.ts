@@ -44,8 +44,12 @@ export class RagBusiness implements IRagBusiness {
             // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
             id: this.config.embeddingModel as `${string}/${string}`,
             url: this.config.embeddingProvider.url,
-            ...(this.config.embeddingProvider.apiKey !== undefined && { apiKey: this.config.embeddingProvider.apiKey }),
-            ...(this.config.embeddingProvider.headers !== undefined && { headers: this.config.embeddingProvider.headers }),
+            ...(this.config.embeddingProvider.apiKey !== undefined && {
+              apiKey: this.config.embeddingProvider.apiKey,
+            }),
+            ...(this.config.embeddingProvider.headers !== undefined && {
+              headers: this.config.embeddingProvider.headers,
+            }),
           }
         : this.config.embeddingModel,
     );
@@ -125,8 +129,16 @@ export class RagBusiness implements IRagBusiness {
   async search(input: SearchInput): Promise<SearchResult> {
     try {
       const embeddings = await this.embedBatched([input.queryText]);
-      const queryVector = embeddings[0]!;
-      const items = await this.mastraRag.search(input.indexName, queryVector, input.topK, input.scopeId);
+      const [queryVector] = embeddings;
+      if (!queryVector) {
+        throw new RagEmbeddingError(new Error('No embedding generated for query text'));
+      }
+      const items = await this.mastraRag.search(
+        input.indexName,
+        queryVector,
+        input.topK,
+        input.scopeId,
+      );
       return { results: items };
     } catch (error) {
       if (error instanceof RagEmbeddingError) {
