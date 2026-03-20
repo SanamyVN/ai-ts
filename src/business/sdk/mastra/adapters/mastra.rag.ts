@@ -47,16 +47,12 @@ export class MastraRagAdapter implements IMastraRag {
     scopeId: string,
   ): Promise<Array<{ text: string; score: number }>> {
     try {
-      // PGVectorFilter is an internal type not exported from @mastra/pg.
-      // Cast through the derived QueryParams type to satisfy the filter field.
-      type QueryParams = Parameters<PgVector['query']>[0];
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const results = await this.pgVector.query({
         indexName,
         queryVector,
         topK,
         filter: { scopeId },
-      } as QueryParams);
+      });
       return results.map((r) => ({
         text: (r.metadata?.['text'] as string | undefined) ?? '',
         score: r.score,
