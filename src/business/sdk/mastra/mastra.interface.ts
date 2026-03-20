@@ -18,7 +18,6 @@ export interface StreamChunk {
   readonly content: string;
 }
 
-
 /** Options passed to agent generate/stream calls. */
 export interface GenerateOptions {
   readonly threadId?: string;
@@ -163,7 +162,7 @@ export interface IMastraRag {
     queryVector: number[],
     topK: number,
     scopeId: string,
-  ): Promise<Array<{ text: string; score: number }>>;
+  ): Promise<{ text: string; score: number }[]>;
 }
 
 /** DI token for the application-level Mastra RAG adapter — bound by the Mastra SDK module. */

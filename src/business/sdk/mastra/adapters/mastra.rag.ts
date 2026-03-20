@@ -45,7 +45,7 @@ export class MastraRagAdapter implements IMastraRag {
     queryVector: number[],
     topK: number,
     scopeId: string,
-  ): Promise<Array<{ text: string; score: number }>> {
+  ): Promise<{ text: string; score: number }[]> {
     try {
       const results = await this.pgVector.query({
         indexName,
