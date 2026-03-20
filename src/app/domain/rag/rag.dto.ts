@@ -24,7 +24,7 @@ const chunkOptionsDto = z.object({
 });
 
 export const ingestRequestDto = z.object({
-  indexName: z.string(),
+  indexName: z.string().min(1),
   scopeId: z.string().check(z.uuid()),
   documents: z
     .array(
@@ -44,7 +44,7 @@ export const ingestResponseDto = z.object({
 export type IngestResponseDto = z.infer<typeof ingestResponseDto>;
 
 export const deleteRequestDto = z.object({
-  indexName: z.string(),
+  indexName: z.string().min(1),
   scopeId: z.string().check(z.uuid()),
   filter: z.record(z.string(), z.unknown()),
 });
@@ -60,7 +60,7 @@ export const replaceParamsDto = z.object({
 });
 
 export const replaceRequestDto = z.object({
-  indexName: z.string(),
+  indexName: z.string().min(1),
   scopeId: z.string().check(z.uuid()),
   content: ragContentDto,
   chunkOptions: chunkOptionsDto.optional(),

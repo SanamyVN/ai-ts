@@ -78,7 +78,12 @@ export class RagRemoteMediator implements IRagMediator {
   async replace(command: InstanceType<typeof RagReplaceCommand>): Promise<ReplaceClientResult> {
     const response = await this.http.put(
       `${this.config.baseUrl}/ai/rag/documents/${command.documentId}`,
-      { indexName: command.indexName, scopeId: command.scopeId, content: command.content, chunkOptions: command.chunkOptions },
+      {
+        indexName: command.indexName,
+        scopeId: command.scopeId,
+        content: command.content,
+        chunkOptions: command.chunkOptions,
+      },
     );
     if (!response.ok) {
       throw new RagReplaceClientError(new Error(`RAG replace failed: ${response.status}`));
