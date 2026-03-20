@@ -1,3 +1,13 @@
+## [1.9.0](https://github.com/SanamyVN/ai-ts/compare/v1.8.0...v1.9.0) (2026-03-20)
+
+### Features
+
+* add indexName to RAG types/schemas/DTOs and remove createIndex ([fa823be](https://github.com/SanamyVN/ai-ts/commit/fa823bee18165feb0fa9c7e19fd67aa861eef297))
+
+### Bug Fixes
+
+* add min(1) validation to indexName in DTOs and fix formatting ([d63072a](https://github.com/SanamyVN/ai-ts/commit/d63072a9f2fa054ddddc9ab6df05f9ff149f544e))
+
 ## [1.8.0](https://github.com/SanamyVN/ai-ts/compare/v1.7.0...v1.8.0) (2026-03-18)
 
 ### Features
