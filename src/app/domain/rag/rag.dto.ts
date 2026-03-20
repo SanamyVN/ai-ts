@@ -72,3 +72,21 @@ export const replaceResponseDto = z.object({
   chunksStored: z.number().nonnegative(),
 });
 export type ReplaceResponseDto = z.infer<typeof replaceResponseDto>;
+
+export const searchRequestDto = z.object({
+  indexName: z.string().min(1),
+  scopeId: z.string().check(z.uuid()),
+  queryText: z.string().min(1),
+  topK: z.number().int().positive().default(5),
+});
+export type SearchRequestDto = z.infer<typeof searchRequestDto>;
+
+const searchResultItemDto = z.object({
+  text: z.string(),
+  score: z.number(),
+});
+
+export const searchResponseDto = z.object({
+  results: z.array(searchResultItemDto),
+});
+export type SearchResponseDto = z.infer<typeof searchResponseDto>;

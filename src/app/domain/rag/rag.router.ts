@@ -9,6 +9,8 @@ import {
   replaceParamsDto,
   replaceRequestDto,
   replaceResponseDto,
+  searchRequestDto,
+  searchResponseDto,
 } from './rag.dto.js';
 import { RAG_APP_SERVICE, type RagAppService } from './rag.service.js';
 import { RAG_MIDDLEWARE_CONFIG, type RagMiddlewareConfig } from './rag.tokens.js';
@@ -40,5 +42,11 @@ export class RagRouter implements IRouter {
       .middleware(...(this.middlewareConfig.replace ?? []))
       .schema({ params: replaceParamsDto, body: replaceRequestDto, response: replaceResponseDto })
       .handle(async ({ params, body }) => this.service.replace(params.documentId, body));
+
+    app
+      .post('/search')
+      .middleware(...(this.middlewareConfig.search ?? []))
+      .schema({ body: searchRequestDto, response: searchResponseDto })
+      .handle(async ({ body }) => this.service.search(body));
   }
 }

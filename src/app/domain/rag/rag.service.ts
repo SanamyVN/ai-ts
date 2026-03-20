@@ -6,9 +6,10 @@ import {
   RagIngestCommand,
   RagDeleteCommand,
   RagReplaceCommand,
+  RagSearchQuery,
 } from '@/business/domain/rag/client/queries.js';
 import { mapRagError } from './rag.error.js';
-import { toIngestResponseDto, toDeleteResponseDto, toReplaceResponseDto } from './rag.mapper.js';
+import { toIngestResponseDto, toDeleteResponseDto, toReplaceResponseDto, toSearchResponseDto } from './rag.mapper.js';
 import type {
   IngestRequestDto,
   IngestResponseDto,
@@ -16,6 +17,8 @@ import type {
   DeleteResponseDto,
   ReplaceRequestDto,
   ReplaceResponseDto,
+  SearchRequestDto,
+  SearchResponseDto,
 } from './rag.dto.js';
 
 @Injectable()
@@ -52,6 +55,15 @@ export class RagAppService {
         }),
       );
       return toReplaceResponseDto(result);
+    } catch (error) {
+      mapRagError(error);
+    }
+  }
+
+  async search(input: SearchRequestDto): Promise<SearchResponseDto> {
+    try {
+      const result = await this.mediator.send(new RagSearchQuery(input));
+      return toSearchResponseDto(result);
     } catch (error) {
       mapRagError(error);
     }

@@ -5,6 +5,7 @@ export interface RagMiddlewareConfig {
   readonly ingest?: MiddlewareInput[];
   readonly delete?: MiddlewareInput[];
   readonly replace?: MiddlewareInput[];
+  readonly search?: MiddlewareInput[];
 }
 
 export const RAG_MIDDLEWARE_CONFIG = createToken<RagMiddlewareConfig>('RAG_MIDDLEWARE_CONFIG');
