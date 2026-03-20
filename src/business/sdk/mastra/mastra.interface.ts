@@ -148,6 +148,22 @@ export interface IMastraRag {
    * @throws {MastraAdapterError} When the underlying PgVector call fails.
    */
   delete(indexName: string, filter: Record<string, unknown>): Promise<number>;
+
+  /**
+   * Query the index for vectors similar to the given query vector, filtered by scope.
+   * @param indexName - The target index name.
+   * @param queryVector - The embedding vector to search with.
+   * @param topK - Maximum number of results to return.
+   * @param scopeId - Filter results to this scope.
+   * @returns Matching chunks ordered by similarity score descending.
+   * @throws {MastraAdapterError} When the underlying PgVector call fails.
+   */
+  search(
+    indexName: string,
+    queryVector: number[],
+    topK: number,
+    scopeId: string,
+  ): Promise<Array<{ text: string; score: number }>>;
 }
 
 /** DI token for the application-level Mastra RAG adapter — bound by the Mastra SDK module. */

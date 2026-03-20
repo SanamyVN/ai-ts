@@ -1,4 +1,5 @@
 import type { PgVector } from '@mastra/pg';
+import type { QueryResult } from '@mastra/core/vector';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import { MASTRA_CORE_RAG } from '../mastra.interface.js';
 import type { IMastraRag } from '../mastra.interface.js';
@@ -37,6 +38,29 @@ export class MastraRagAdapter implements IMastraRag {
       return 0;
     } catch (error) {
       throw new MastraAdapterError('delete', error);
+    }
+  }
+
+  async search(
+    indexName: string,
+    queryVector: number[],
+    topK: number,
+    scopeId: string,
+  ): Promise<Array<{ text: string; score: number }>> {
+    try {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const results: QueryResult[] = await this.pgVector.query({
+        indexName,
+        queryVector,
+        topK,
+        filter: { scopeId } as Parameters<PgVector['query']>[0]['filter'],
+      });
+      return results.map((r) => ({
+        text: (r.metadata?.['text'] as string | undefined) ?? '',
+        score: r.score,
+      }));
+    } catch (error) {
+      throw new MastraAdapterError('search', error);
     }
   }
 }

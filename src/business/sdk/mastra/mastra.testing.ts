@@ -51,6 +51,7 @@ export function createMockMastraRag() {
   return {
     upsert: vi.fn<IMastraRag['upsert']>(),
     delete: vi.fn<IMastraRag['delete']>(),
+    search: vi.fn<IMastraRag['search']>(),
   };
 }
 
