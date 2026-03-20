@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RagBusiness } from './rag.business.js';
-import { RagIngestError, RagDeleteError } from './rag.error.js';
+import { RagIngestError, RagDeleteError, RagSearchError } from './rag.error.js';
 import { MastraAdapterError } from '@/business/sdk/mastra/mastra.error.js';
 import { createMockMastraRag } from '@/business/sdk/mastra/mastra.testing.js';
 import type { AiConfig } from '@/config.js';
@@ -159,6 +159,39 @@ describe('RagBusiness', () => {
       expect(mastraRag.delete).toHaveBeenCalledWith(INDEX_NAME, { documentId: DOC_ID });
       expect(mastraRag.upsert).toHaveBeenCalled();
       expect(result).toEqual({ chunksDeleted: 0, chunksStored: 2 });
+    });
+  });
+
+  describe('search', () => {
+    it('embeds query text, calls mastraRag.search, and returns results', async () => {
+      mastraRag.search.mockResolvedValue([{ text: 'chunk', score: 0.9 }]);
+
+      const result = await business.search({
+        indexName: INDEX_NAME,
+        scopeId: SCOPE_ID,
+        queryText: 'hello',
+        topK: 3,
+      });
+
+      expect(mastraRag.search).toHaveBeenCalledWith(INDEX_NAME, [0.1, 0.2], 3, SCOPE_ID);
+      expect(result).toEqual({ results: [{ text: 'chunk', score: 0.9 }] });
+    });
+
+    it('wraps MastraAdapterError as RagSearchError', async () => {
+      mastraRag.search.mockRejectedValueOnce(new MastraAdapterError('search', new Error('pg error')));
+
+      await expect(
+        business.search({ indexName: INDEX_NAME, scopeId: SCOPE_ID, queryText: 'hello', topK: 3 }),
+      ).rejects.toThrow(RagSearchError);
+    });
+
+    it('wraps embedding failure as RagSearchError', async () => {
+      const { embedMany } = await import('ai');
+      vi.mocked(embedMany).mockRejectedValueOnce(new Error('rate limit'));
+
+      await expect(
+        business.search({ indexName: INDEX_NAME, scopeId: SCOPE_ID, queryText: 'hello', topK: 3 }),
+      ).rejects.toThrow(RagSearchError);
     });
   });
 

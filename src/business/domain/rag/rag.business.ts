@@ -14,12 +14,15 @@ import type {
   ReplaceInput,
   ReplaceResult,
   RagContent,
+  SearchInput,
+  SearchResult,
 } from './rag.model.js';
 import {
   RagIngestError,
   RagDeleteError,
   RagEmbeddingError,
   RagContentProcessingError,
+  RagSearchError,
 } from './rag.error.js';
 
 const DEFAULT_CHUNK_STRATEGY = 'recursive' as const;
@@ -117,6 +120,23 @@ export class RagBusiness implements IRagBusiness {
     });
 
     return { chunksDeleted, chunksStored };
+  }
+
+  async search(input: SearchInput): Promise<SearchResult> {
+    try {
+      const embeddings = await this.embedBatched([input.queryText]);
+      const queryVector = embeddings[0]!;
+      const items = await this.mastraRag.search(input.indexName, queryVector, input.topK, input.scopeId);
+      return { results: items };
+    } catch (error) {
+      if (error instanceof RagEmbeddingError) {
+        throw new RagSearchError(input.scopeId, error);
+      }
+      if (isMastraAdapterError(error)) {
+        throw new RagSearchError(input.scopeId, error);
+      }
+      throw error;
+    }
   }
 
   private createDocument(content: RagContent, metadata: Record<string, unknown>): MDocument {

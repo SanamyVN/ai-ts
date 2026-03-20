@@ -6,6 +6,8 @@ import type {
   DeleteResult,
   ReplaceInput,
   ReplaceResult,
+  SearchInput,
+  SearchResult,
 } from './rag.model.js';
 
 /** Orchestrates RAG write-path operations: ingest, delete, and replace. */
@@ -36,6 +38,14 @@ export interface IRagBusiness {
    * @throws {RagDeleteError} When the delete portion fails.
    */
   replace(input: ReplaceInput): Promise<ReplaceResult>;
+
+  /**
+   * Semantic search over vectors within a scope.
+   * @param input - Index, scope, query text, and result count.
+   * @returns Matching chunks ranked by similarity.
+   * @throws {RagSearchError} When the search pipeline fails.
+   */
+  search(input: SearchInput): Promise<SearchResult>;
 }
 
 /** Dependency-injection token for {@link IRagBusiness}. */

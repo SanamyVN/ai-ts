@@ -58,3 +58,17 @@ export function isRagEmbeddingError(error: unknown): error is RagEmbeddingError 
 export function isRagContentProcessingError(error: unknown): error is RagContentProcessingError {
   return error instanceof RagContentProcessingError;
 }
+
+/** Thrown when the RAG search pipeline fails (embedding or vector query). */
+export class RagSearchError extends RagBusinessError {
+  constructor(
+    public readonly scopeId: string,
+    cause?: unknown,
+  ) {
+    super(`RAG search failed in scope: ${scopeId}`, { cause });
+  }
+}
+
+export function isRagSearchError(error: unknown): error is RagSearchError {
+  return error instanceof RagSearchError;
+}
