@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockMediator, type MockMediator } from '@sanamyvn/foundation/mediator/testing';
+import { createMockMediator } from '@sanamyvn/foundation/mediator/testing';
+import type { MockMediator } from '@sanamyvn/foundation/mediator/testing';
 import { RealtimeVoiceBusiness } from './realtime-voice.business.js';
 
 function makeSpeechAudio(): Int16Array {
@@ -27,19 +28,20 @@ describe('RealtimeVoiceBusiness', () => {
   });
 
   function mockVad(isSpeech: boolean, probability = 0.9) {
-    vi.mocked(mediator.send).mockResolvedValueOnce({ isSpeech, probability });
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    mediator.send.mockResolvedValueOnce({ isSpeech, probability } as never);
   }
 
   function mockFullChain() {
-    // STT
-    vi.mocked(mediator.send).mockResolvedValueOnce({ text: 'hello world' });
-    // LLM
-    vi.mocked(mediator.send).mockResolvedValueOnce({ text: 'Hi there!' });
-    // TTS
-    vi.mocked(mediator.send).mockResolvedValueOnce({
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    mediator.send.mockResolvedValueOnce({ text: 'hello world' } as never); // STT
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    mediator.send.mockResolvedValueOnce({ text: 'Hi there!' } as never); // LLM
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    mediator.send.mockResolvedValueOnce({
       audio: 'dHRzLWF1ZGlv',
       contentType: 'audio/wav',
-    });
+    } as never); // TTS
   }
 
   describe('processAudio', () => {
@@ -113,7 +115,8 @@ describe('RealtimeVoiceBusiness', () => {
       // Make STT hang so state stays in transcribing
       mockVad(false, 0.1);
       const sttDeferred = createDeferred<{ text: string }>();
-      vi.mocked(mediator.send).mockResolvedValueOnce(sttDeferred.promise); // STT hangs
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      mediator.send.mockReturnValueOnce(sttDeferred.promise as never); // STT hangs
 
       await business.processAudio({ conversationId: 'conv-1', audio: makeSilenceAudio() });
       await flushMicrotasks();

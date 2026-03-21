@@ -41,7 +41,8 @@ export class KokoroTtsAdapter implements IMastraVoiceTts {
       const voice = typeof options?.speaker === 'string' ? options.speaker : DEFAULT_VOICE;
 
       const tts = await this.getOrLoadTts();
-      const rawAudio = await tts.generate(text, { voice });
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
+      const rawAudio = await tts.generate(text, { voice: voice as any });
 
       // Convert the Float32Array audio data to a Buffer and wrap in a Readable stream.
       const buffer = float32ToBuffer(rawAudio.audio);
