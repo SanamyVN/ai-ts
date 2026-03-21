@@ -33,6 +33,9 @@ export class SileroVadAdapter implements IVad {
   /** Lazily initialized; undefined until first processFrame call. */
   private vad: RealTimeVAD | undefined;
 
+  /** Latest probability captured from the onFrameProcessed callback. */
+  private lastProbability = 0;
+
   // Hysteresis state
   private isSpeaking = false;
   private consecutiveSpeechFrames = 0;
@@ -52,7 +55,8 @@ export class SileroVadAdapter implements IVad {
   async processFrame(audio: Int16Array): Promise<VadFrame> {
     try {
       const vad = await this.getVad();
-      const probability = await this.extractProbability(vad, audio);
+      await this.feedAudio(vad, audio);
+      const probability = this.lastProbability;
       const isSpeech = this.applyHysteresis(probability);
       return { isSpeech, probability };
     } catch (error) {
@@ -68,6 +72,7 @@ export class SileroVadAdapter implements IVad {
     this.isSpeaking = false;
     this.consecutiveSpeechFrames = 0;
     this.silenceFrameCount = 0;
+    this.lastProbability = 0;
     if (this.vad) {
       try {
         this.vad.reset();
@@ -80,6 +85,8 @@ export class SileroVadAdapter implements IVad {
   /**
    * Lazily initializes the RealTimeVAD instance on first use.
    * avr-vad loads an ONNX model which requires async initialization.
+   * The `onFrameProcessed` callback captures the speech probability
+   * into `this.lastProbability` on every frame.
    */
   private async getVad(): Promise<RealTimeVAD> {
     if (!this.vad) {
@@ -87,49 +94,22 @@ export class SileroVadAdapter implements IVad {
         positiveSpeechThreshold: this.speechThreshold,
         negativeSpeechThreshold: this.silenceThreshold,
         minSpeechFrames: this.minSpeechFrames,
+        onFrameProcessed: (probs) => {
+          this.lastProbability = probs.isSpeech;
+        },
       });
       this.vad.start();
     }
     return this.vad;
   }
 
-  /**
-   * Feeds a single Int16Array frame into RealTimeVAD and captures the
-   * raw speech probability emitted via the `onFrameProcessed` callback.
-   */
-  private async extractProbability(vad: RealTimeVAD, audio: Int16Array): Promise<number> {
-    // Convert Int16 PCM → normalized Float32 [-1, 1]
+  /** Converts Int16 PCM to normalized Float32 and feeds it to the VAD. */
+  private async feedAudio(vad: RealTimeVAD, audio: Int16Array): Promise<void> {
     const float32 = new Float32Array(audio.length);
     for (let i = 0; i < audio.length; i++) {
       float32[i] = (audio[i] ?? 0) / 32768;
     }
-
-    let capturedProbability: number | undefined;
-
-    // RealTimeVAD stores options as a private field. We access it to
-    // temporarily patch onFrameProcessed and capture the speech probability.
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
-    const vadOptions = (vad as any).options as
-      | { onFrameProcessed?: ((p: { isSpeech: number; notSpeech: number }) => void) | undefined }
-      | undefined;
-
-    const originalCb = vadOptions?.onFrameProcessed;
-    if (vadOptions) {
-      vadOptions.onFrameProcessed = (probs) => {
-        capturedProbability = probs.isSpeech;
-        originalCb?.(probs);
-      };
-    }
-
-    try {
-      await vad.processAudio(float32);
-    } finally {
-      if (vadOptions) {
-        vadOptions.onFrameProcessed = originalCb;
-      }
-    }
-
-    return capturedProbability ?? 0;
+    await vad.processAudio(float32);
   }
 
   /**
