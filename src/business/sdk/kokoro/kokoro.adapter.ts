@@ -34,8 +34,7 @@ export class KokoroTtsAdapter implements IMastraVoiceTts {
   async textToSpeech(
     input: string | NodeJS.ReadableStream,
     options?: SpeakOptions,
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  ): Promise<NodeJS.ReadableStream | void> {
+  ): Promise<NodeJS.ReadableStream | undefined> {
     try {
       const text = typeof input === 'string' ? input : await collectStream(input);
       const voice = typeof options?.speaker === 'string' ? options.speaker : DEFAULT_VOICE;

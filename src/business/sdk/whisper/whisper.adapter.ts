@@ -21,8 +21,7 @@ export class WhisperSttAdapter implements IMastraVoiceStt {
   async speechToText(
     audioStream: NodeJS.ReadableStream,
     _options?: Record<string, unknown>,
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  ): Promise<string | NodeJS.ReadableStream | void> {
+  ): Promise<string | NodeJS.ReadableStream | undefined> {
     try {
       const buffer = await collectStream(audioStream);
       const pcm = bufferToFloat32(buffer);

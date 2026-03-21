@@ -196,8 +196,7 @@ export interface IMastraVoiceTts {
   textToSpeech(
     input: string | NodeJS.ReadableStream,
     options?: SpeakOptions,
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  ): Promise<NodeJS.ReadableStream | void>;
+  ): Promise<NodeJS.ReadableStream | undefined>;
 
   /**
    * List available voices from the provider.
@@ -221,8 +220,7 @@ export interface IMastraVoiceStt {
   speechToText(
     audioStream: NodeJS.ReadableStream,
     options?: Record<string, unknown>,
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  ): Promise<string | NodeJS.ReadableStream | void>;
+  ): Promise<string | NodeJS.ReadableStream | undefined>;
 
   /**
    * Check whether the voice provider supports listening (STT).

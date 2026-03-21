@@ -16,10 +16,9 @@ export class MastraVoiceTtsAdapter implements IMastraVoiceTts {
   async textToSpeech(
     input: string | NodeJS.ReadableStream,
     options?: SpeakOptions,
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  ): Promise<NodeJS.ReadableStream | void> {
+  ): Promise<NodeJS.ReadableStream | undefined> {
     try {
-      return await this.voice.speak(input, options);
+      return (await this.voice.speak(input, options)) ?? undefined;
     } catch (error) {
       throw new MastraAdapterError('textToSpeech', error);
     }

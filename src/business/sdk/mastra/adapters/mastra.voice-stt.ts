@@ -16,10 +16,9 @@ export class MastraVoiceSttAdapter implements IMastraVoiceStt {
   async speechToText(
     audioStream: NodeJS.ReadableStream,
     options?: Record<string, unknown>,
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  ): Promise<string | NodeJS.ReadableStream | void> {
+  ): Promise<string | NodeJS.ReadableStream | undefined> {
     try {
-      return await this.voice.listen(audioStream, options);
+      return (await this.voice.listen(audioStream, options)) ?? undefined;
     } catch (error) {
       throw new MastraAdapterError('speechToText', error);
     }
