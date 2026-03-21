@@ -384,7 +384,10 @@
     }
   },
   "dependencies": {
-    "mustache": "^4.0.0"
+    "avr-vad": "^1.0.9",
+    "kokoro-js": "^1.2.1",
+    "mustache": "^4.0.0",
+    "smart-whisper": "^0.8.1"
   },
   "peerDependencies": {
     "@mastra/core": "^1.0.0",
