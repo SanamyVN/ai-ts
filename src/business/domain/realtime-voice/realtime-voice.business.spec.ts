@@ -1,15 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { IMediator } from '@sanamyvn/foundation/mediator';
+import { createMockMediator, type MockMediator } from '@sanamyvn/foundation/mediator/testing';
 import { RealtimeVoiceBusiness } from './realtime-voice.business.js';
-
-function createMockMediator(): IMediator {
-  return {
-    send: vi.fn(),
-    publish: vi.fn(),
-    register: vi.fn(),
-    subscribe: vi.fn(),
-  } as unknown as IMediator;
-}
 
 function makeSpeechAudio(): Int16Array {
   return new Int16Array([100, 200, 300]);
@@ -26,7 +17,7 @@ function flushMicrotasks(): Promise<void> {
 }
 
 describe('RealtimeVoiceBusiness', () => {
-  let mediator: ReturnType<typeof createMockMediator>;
+  let mediator: MockMediator;
   let business: RealtimeVoiceBusiness;
 
   beforeEach(() => {

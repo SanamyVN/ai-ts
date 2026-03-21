@@ -6,18 +6,23 @@ import { SileroAdapterError } from './silero.error.js';
 // Mock avr-vad
 // ---------------------------------------------------------------------------
 
-const mockVadInstance = {
+const mockVadInstance: {
+  start: ReturnType<typeof vi.fn>;
+  reset: ReturnType<typeof vi.fn>;
+  processAudio: ReturnType<typeof vi.fn>;
+  options: Record<string, unknown>;
+} = {
   start: vi.fn(),
   reset: vi.fn(),
   processAudio: vi.fn(),
-  options: {} as Record<string, unknown>,
+  options: {},
 };
 
 vi.mock('avr-vad', () => ({
   RealTimeVAD: {
     new: vi.fn(async (opts: Record<string, unknown> = {}) => {
       mockVadInstance.options = {
-        onFrameProcessed: opts['onFrameProcessed'] ?? (() => {}),
+        onFrameProcessed: opts['onFrameProcessed'] ?? vi.fn(),
         ...opts,
       };
       return mockVadInstance;
@@ -46,10 +51,10 @@ const FRAME_DURATION_MS = 96;
  */
 function mockProbability(probability: number) {
   mockVadInstance.processAudio.mockImplementationOnce(async () => {
-    const cb = mockVadInstance.options['onFrameProcessed'] as
-      | ((probs: { isSpeech: number; notSpeech: number }) => void)
-      | undefined;
-    cb?.({ isSpeech: probability, notSpeech: 1 - probability });
+    const raw = mockVadInstance.options['onFrameProcessed'];
+    if (typeof raw === 'function') {
+      raw({ isSpeech: probability, notSpeech: 1 - probability });
+    }
   });
 }
 
@@ -244,7 +249,9 @@ describe('SileroVadAdapter', () => {
       }
 
       expect(caught).toBeInstanceOf(SileroAdapterError);
-      expect((caught as SileroAdapterError).cause).toBe(original);
+      if (caught instanceof SileroAdapterError) {
+        expect(caught.cause).toBe(original);
+      }
     });
 
     it('wraps vad.reset() errors as SileroAdapterError', async () => {

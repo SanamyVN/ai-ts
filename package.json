@@ -381,6 +381,110 @@
     "./app/voice-client/module": {
       "types": "./dist/app/sdk/voice-client/voice-client.module.d.ts",
       "default": "./dist/app/sdk/voice-client/voice-client.module.js"
+    },
+    "./business/sdk/silero/providers": {
+      "types": "./dist/business/sdk/silero/silero.providers.d.ts",
+      "default": "./dist/business/sdk/silero/silero.providers.js"
+    },
+    "./business/sdk/silero/error": {
+      "types": "./dist/business/sdk/silero/silero.error.d.ts",
+      "default": "./dist/business/sdk/silero/silero.error.js"
+    },
+    "./business/sdk/whisper/providers": {
+      "types": "./dist/business/sdk/whisper/whisper.providers.d.ts",
+      "default": "./dist/business/sdk/whisper/whisper.providers.js"
+    },
+    "./business/sdk/whisper/error": {
+      "types": "./dist/business/sdk/whisper/whisper.error.d.ts",
+      "default": "./dist/business/sdk/whisper/whisper.error.js"
+    },
+    "./business/sdk/kokoro/providers": {
+      "types": "./dist/business/sdk/kokoro/kokoro.providers.d.ts",
+      "default": "./dist/business/sdk/kokoro/kokoro.providers.js"
+    },
+    "./business/sdk/kokoro/error": {
+      "types": "./dist/business/sdk/kokoro/kokoro.error.d.ts",
+      "default": "./dist/business/sdk/kokoro/kokoro.error.js"
+    },
+    "./business/vad": {
+      "types": "./dist/business/domain/vad/vad.interface.d.ts",
+      "default": "./dist/business/domain/vad/vad.interface.js"
+    },
+    "./business/vad/model": {
+      "types": "./dist/business/domain/vad/vad.model.d.ts",
+      "default": "./dist/business/domain/vad/vad.model.js"
+    },
+    "./business/vad/error": {
+      "types": "./dist/business/domain/vad/vad.error.d.ts",
+      "default": "./dist/business/domain/vad/vad.error.js"
+    },
+    "./business/vad/providers": {
+      "types": "./dist/business/domain/vad/vad.providers.d.ts",
+      "default": "./dist/business/domain/vad/vad.providers.js"
+    },
+    "./business/vad/client/schemas": {
+      "types": "./dist/business/domain/vad/client/schemas.d.ts",
+      "default": "./dist/business/domain/vad/client/schemas.js"
+    },
+    "./business/vad/client/queries": {
+      "types": "./dist/business/domain/vad/client/queries.d.ts",
+      "default": "./dist/business/domain/vad/client/queries.js"
+    },
+    "./business/vad/client/errors": {
+      "types": "./dist/business/domain/vad/client/errors.d.ts",
+      "default": "./dist/business/domain/vad/client/errors.js"
+    },
+    "./business/vad/client/mediator": {
+      "types": "./dist/business/domain/vad/client/mediator.d.ts",
+      "default": "./dist/business/domain/vad/client/mediator.js"
+    },
+    "./business/realtime-voice": {
+      "types": "./dist/business/domain/realtime-voice/realtime-voice.interface.d.ts",
+      "default": "./dist/business/domain/realtime-voice/realtime-voice.interface.js"
+    },
+    "./business/realtime-voice/model": {
+      "types": "./dist/business/domain/realtime-voice/realtime-voice.model.d.ts",
+      "default": "./dist/business/domain/realtime-voice/realtime-voice.model.js"
+    },
+    "./business/realtime-voice/error": {
+      "types": "./dist/business/domain/realtime-voice/realtime-voice.error.d.ts",
+      "default": "./dist/business/domain/realtime-voice/realtime-voice.error.js"
+    },
+    "./business/realtime-voice/providers": {
+      "types": "./dist/business/domain/realtime-voice/realtime-voice.providers.d.ts",
+      "default": "./dist/business/domain/realtime-voice/realtime-voice.providers.js"
+    },
+    "./business/realtime-voice/client/schemas": {
+      "types": "./dist/business/domain/realtime-voice/client/schemas.d.ts",
+      "default": "./dist/business/domain/realtime-voice/client/schemas.js"
+    },
+    "./business/realtime-voice/client/queries": {
+      "types": "./dist/business/domain/realtime-voice/client/queries.d.ts",
+      "default": "./dist/business/domain/realtime-voice/client/queries.js"
+    },
+    "./business/realtime-voice/client/errors": {
+      "types": "./dist/business/domain/realtime-voice/client/errors.d.ts",
+      "default": "./dist/business/domain/realtime-voice/client/errors.js"
+    },
+    "./business/realtime-voice/client/mediator": {
+      "types": "./dist/business/domain/realtime-voice/client/mediator.d.ts",
+      "default": "./dist/business/domain/realtime-voice/client/mediator.js"
+    },
+    "./app/vad/module": {
+      "types": "./dist/app/domain/vad/vad.module.d.ts",
+      "default": "./dist/app/domain/vad/vad.module.js"
+    },
+    "./app/vad/providers": {
+      "types": "./dist/app/domain/vad/vad.providers.d.ts",
+      "default": "./dist/app/domain/vad/vad.providers.js"
+    },
+    "./app/realtime-voice/module": {
+      "types": "./dist/app/domain/realtime-voice/realtime-voice.module.d.ts",
+      "default": "./dist/app/domain/realtime-voice/realtime-voice.module.js"
+    },
+    "./app/realtime-voice/providers": {
+      "types": "./dist/app/domain/realtime-voice/realtime-voice.providers.d.ts",
+      "default": "./dist/app/domain/realtime-voice/realtime-voice.providers.js"
     }
   },
   "dependencies": {

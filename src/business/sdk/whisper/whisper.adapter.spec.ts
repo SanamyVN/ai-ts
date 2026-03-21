@@ -27,7 +27,11 @@ vi.mock('smart-whisper', () => ({
 
 /** Creates a ReadableStream that emits the given PCM buffer chunks. */
 function makeAudioStream(...chunks: Buffer[]): NodeJS.ReadableStream {
-  const readable = new Readable({ read() {} });
+  const readable = new Readable({
+    read() {
+      // no-op: data is pushed manually
+    },
+  });
   for (const chunk of chunks) {
     readable.push(chunk);
   }
@@ -95,11 +99,17 @@ describe('WhisperSttAdapter', () => {
       }
 
       expect(caught).toBeInstanceOf(WhisperAdapterError);
-      expect((caught as WhisperAdapterError).cause).toBe(original);
+      if (caught instanceof WhisperAdapterError) {
+        expect(caught.cause).toBe(original);
+      }
     });
 
     it('wraps stream errors as WhisperAdapterError', async () => {
-      const errStream = new Readable({ read() {} });
+      const errStream = new Readable({
+        read() {
+          // no-op: stream is immediately destroyed
+        },
+      });
       errStream.destroy(new Error('stream read error'));
 
       await expect(adapter.speechToText(errStream)).rejects.toThrow(WhisperAdapterError);

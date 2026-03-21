@@ -94,7 +94,7 @@ describe('KokoroTtsAdapter', () => {
 
       expect(result).toBeDefined();
       // Verify it is a ReadableStream (has the pipe method)
-      expect(typeof (result as NodeJS.ReadableStream).pipe).toBe('function');
+      expect(result !== null && typeof result === 'object' && 'pipe' in result).toBe(true);
       expect(mockGenerate).toHaveBeenCalledTimes(1);
       expect(mockGenerate).toHaveBeenCalledWith('Hello world', { voice: 'af_heart' });
     });
@@ -138,7 +138,9 @@ describe('KokoroTtsAdapter', () => {
       }
 
       expect(caught).toBeInstanceOf(KokoroAdapterError);
-      expect((caught as KokoroAdapterError).cause).toBe(original);
+      if (caught instanceof KokoroAdapterError) {
+        expect(caught.cause).toBe(original);
+      }
     });
 
     it('re-throws KokoroAdapterError without double-wrapping', async () => {
@@ -186,7 +188,9 @@ describe('KokoroTtsAdapter', () => {
       }
 
       expect(caught).toBeInstanceOf(KokoroAdapterError);
-      expect((caught as KokoroAdapterError).cause).toBe(original);
+      if (caught instanceof KokoroAdapterError) {
+        expect(caught.cause).toBe(original);
+      }
     });
   });
 });

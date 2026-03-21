@@ -101,17 +101,26 @@ export class SileroVadAdapter implements IVad {
     // Convert Int16 PCM → normalized Float32 [-1, 1]
     const float32 = new Float32Array(audio.length);
     for (let i = 0; i < audio.length; i++) {
-      float32[i] = audio[i]! / 32768;
+      float32[i] = (audio[i] ?? 0) / 32768;
     }
 
     let capturedProbability: number | undefined;
 
-    // Temporarily override onFrameProcessed to capture the probability
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const vadAny = vad as any;
-    const originalOnFrameProcessed = vadAny.options?.onFrameProcessed;
-    if (vadAny.options) {
-      vadAny.options.onFrameProcessed = (probs: { isSpeech: number; notSpeech: number }) => {
+    // Temporarily override onFrameProcessed to capture the probability.
+    // RealTimeVAD stores options as a private field; we use @ts-expect-error
+    // to access it without a type assertion — the field exists at runtime.
+    interface FrameProbs {
+      isSpeech: number;
+      notSpeech: number;
+    }
+    interface VadWithOptions {
+      options?: { onFrameProcessed?: (p: FrameProbs) => void };
+    }
+    // @ts-expect-error — accessing private RealTimeVAD.options to patch the callback
+    const vadWithOptions: VadWithOptions = vad;
+    const originalOnFrameProcessed = vadWithOptions.options?.onFrameProcessed;
+    if (vadWithOptions.options) {
+      vadWithOptions.options.onFrameProcessed = (probs: FrameProbs) => {
         capturedProbability = probs.isSpeech;
         originalOnFrameProcessed?.(probs);
       };
@@ -121,8 +130,8 @@ export class SileroVadAdapter implements IVad {
       await vad.processAudio(float32);
     } finally {
       // Restore original callback
-      if (vadAny.options) {
-        vadAny.options.onFrameProcessed = originalOnFrameProcessed;
+      if (vadWithOptions.options) {
+        vadWithOptions.options.onFrameProcessed = originalOnFrameProcessed;
       }
     }
 
