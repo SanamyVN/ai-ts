@@ -1,3 +1,24 @@
+## [1.11.0](https://github.com/SanamyVN/ai-ts/compare/v1.10.0...v1.11.0) (2026-03-21)
+
+### Features
+
+* add package.json exports for vad, realtime-voice, silero, whisper, kokoro ([976703f](https://github.com/SanamyVN/ai-ts/commit/976703fd467ab3f724ad176b9286d2a37e4f92c3))
+* **kokoro:** add KokoroTtsAdapter implementing IMastraVoiceTts ([6966aad](https://github.com/SanamyVN/ai-ts/commit/6966aad26a2134d32f35376a5e358d12f4ef30a7))
+* **realtime-voice:** add app layer (router, service, module, DTOs) ([74053b7](https://github.com/SanamyVN/ai-ts/commit/74053b739b9dc3939ad5622e6e44d80efcc06f5d))
+* **realtime-voice:** add mediator client (schemas, queries, errors, mediator) ([1598cad](https://github.com/SanamyVN/ai-ts/commit/1598cad96d701fe9785a56a8742af6622740eb4f))
+* **realtime-voice:** add pipeline interfaces, models, and errors ([e094b99](https://github.com/SanamyVN/ai-ts/commit/e094b995506682fac363d5d14c28fce198254c8d))
+* **realtime-voice:** implement pipeline orchestrator with state machine and tests ([9da69d8](https://github.com/SanamyVN/ai-ts/commit/9da69d8a4a08b49e3a0c945e17ae76b9cf392259))
+* **silero:** add SileroVadAdapter with hysteresis logic and tests ([dc55e2b](https://github.com/SanamyVN/ai-ts/commit/dc55e2b83054e5ce2c850adcb30aee0c28ea7b1e))
+* **vad:** add app layer (router, service, module, DTOs) ([05be6b7](https://github.com/SanamyVN/ai-ts/commit/05be6b792c208171dc26fc78ec5c3bbae3ecdff3))
+* **vad:** add business layer, mediator client, and tests ([dcdc947](https://github.com/SanamyVN/ai-ts/commit/dcdc9474d7f2020a2a27c41b0b33ee2972ea01fd))
+* **vad:** add IVad interface, models, and DI tokens ([f724e2d](https://github.com/SanamyVN/ai-ts/commit/f724e2ddd6dfe5414201f312e8ad2c8ca4580787))
+* **whisper:** add WhisperSttAdapter implementing IMastraVoiceStt ([59eabe3](https://github.com/SanamyVN/ai-ts/commit/59eabe3d8f00d1b05ab08185b6b47c758b6ac424))
+
+### Bug Fixes
+
+* replace void with undefined in voice interface return types ([3a16532](https://github.com/SanamyVN/ai-ts/commit/3a16532133a53970ffde3316e014c4d7c3863761))
+* resolve TypeScript strict mode errors in adapters and tests ([1a5cf2a](https://github.com/SanamyVN/ai-ts/commit/1a5cf2a97d77d279e5c8d71aafb295726b07e2d3))
+
 ## [1.10.0](https://github.com/SanamyVN/ai-ts/compare/v1.9.0...v1.10.0) (2026-03-20)
 
 ### Features
