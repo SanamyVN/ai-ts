@@ -1,35 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Readable } from 'node:stream';
 import { WhisperSttAdapter } from './whisper.adapter.js';
+import type { WhisperConfig } from './whisper.adapter.js';
 import { WhisperAdapterError } from './whisper.error.js';
-
-// ---------------------------------------------------------------------------
-// Mock smart-whisper
-// ---------------------------------------------------------------------------
-
-const mockTranscribeTask = {
-  result: Promise.resolve([{ from: 0, to: 1000, text: 'hello world' }]),
-};
-
-const mockWhisperInstance = {
-  transcribe: vi.fn(async () => mockTranscribeTask),
-};
-
-vi.mock('smart-whisper', () => ({
-  Whisper: class {
-    transcribe = mockWhisperInstance.transcribe;
-  },
-}));
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Creates a ReadableStream that emits the given PCM buffer chunks. */
+const BASE_URL = 'http://localhost:8000';
+const DEFAULT_CONFIG: WhisperConfig = { baseUrl: BASE_URL };
+
 function makeAudioStream(...chunks: Buffer[]): NodeJS.ReadableStream {
   const readable = new Readable({
     read() {
-      // no-op: data is pushed manually
+      // no-op
     },
   });
   for (const chunk of chunks) {
@@ -39,8 +24,29 @@ function makeAudioStream(...chunks: Buffer[]): NodeJS.ReadableStream {
   return readable;
 }
 
-/** A minimal 16-bit PCM buffer (2 bytes = 1 sample at 0). */
 const SILENT_PCM = Buffer.alloc(2);
+
+function mockFetchSuccess(text: string) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ text }),
+      text: async () => JSON.stringify({ text }),
+    })),
+  );
+}
+
+function mockFetchError(status: number, body: string) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => ({
+      ok: false,
+      status,
+      text: async () => body,
+    })),
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -51,44 +57,100 @@ describe('WhisperSttAdapter', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockTranscribeTask.result = Promise.resolve([{ from: 0, to: 1000, text: 'hello world' }]);
-    mockWhisperInstance.transcribe.mockResolvedValue(mockTranscribeTask);
-    adapter = new WhisperSttAdapter('/path/to/model.bin');
+    vi.restoreAllMocks();
+    mockFetchSuccess('hello world');
+    adapter = new WhisperSttAdapter(DEFAULT_CONFIG);
   });
 
   describe('speechToText', () => {
-    it('collects the audio stream and returns the transcript string', async () => {
+    it('sends audio to /v1/audio/transcriptions and returns transcript', async () => {
       const stream = makeAudioStream(SILENT_PCM);
 
       const result = await adapter.speechToText(stream);
 
       expect(result).toBe('hello world');
-      expect(mockWhisperInstance.transcribe).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const call = vi.mocked(fetch).mock.calls[0];
+      expect(call?.[0]).toBe(`${BASE_URL}/v1/audio/transcriptions`);
+      expect(call?.[1]?.method).toBe('POST');
     });
 
-    it('concatenates multiple result segments with a space', async () => {
-      mockTranscribeTask.result = Promise.resolve([
-        { from: 0, to: 500, text: 'hello' },
-        { from: 500, to: 1000, text: 'world' },
-      ]);
-      mockWhisperInstance.transcribe.mockResolvedValue(mockTranscribeTask);
+    it('sends the configured model in the form data', async () => {
+      const customAdapter = new WhisperSttAdapter({
+        baseUrl: BASE_URL,
+        model: 'openai/whisper-large-v3',
+      });
       const stream = makeAudioStream(SILENT_PCM);
 
-      const result = await adapter.speechToText(stream);
+      await customAdapter.speechToText(stream);
 
-      expect(result).toBe('hello world');
+      const call = vi.mocked(fetch).mock.calls[0];
+      const body = call?.[1]?.body;
+      expect(body).toBeInstanceOf(FormData);
+      if (body instanceof FormData) {
+        expect(body.get('model')).toBe('openai/whisper-large-v3');
+      }
     });
 
-    it('wraps smart-whisper transcribe errors as WhisperAdapterError', async () => {
-      mockWhisperInstance.transcribe.mockRejectedValueOnce(new Error('model load failed'));
+    it('uses default model when none configured', async () => {
+      const stream = makeAudioStream(SILENT_PCM);
+
+      await adapter.speechToText(stream);
+
+      const call = vi.mocked(fetch).mock.calls[0];
+      const body = call?.[1]?.body;
+      if (body instanceof FormData) {
+        expect(body.get('model')).toBe('Systran/faster-distil-whisper-small.en');
+      }
+    });
+
+    it('trims trailing slash from baseUrl', async () => {
+      const trailingSlash = new WhisperSttAdapter({ baseUrl: 'http://localhost:8000/' });
+      const stream = makeAudioStream(SILENT_PCM);
+
+      await trailingSlash.speechToText(stream);
+
+      const call = vi.mocked(fetch).mock.calls[0];
+      expect(call?.[0]).toBe('http://localhost:8000/v1/audio/transcriptions');
+    });
+
+    it('wraps HTTP error responses as WhisperAdapterError', async () => {
+      mockFetchError(500, 'Internal Server Error');
       const stream = makeAudioStream(SILENT_PCM);
 
       await expect(adapter.speechToText(stream)).rejects.toThrow(WhisperAdapterError);
     });
 
+    it('wraps network errors as WhisperAdapterError', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => {
+          throw new Error('ECONNREFUSED');
+        }),
+      );
+      const stream = makeAudioStream(SILENT_PCM);
+
+      await expect(adapter.speechToText(stream)).rejects.toThrow(WhisperAdapterError);
+    });
+
+    it('wraps stream errors as WhisperAdapterError', async () => {
+      const errStream = new Readable({
+        read() {
+          // no-op
+        },
+      });
+      errStream.destroy(new Error('stream read error'));
+
+      await expect(adapter.speechToText(errStream)).rejects.toThrow(WhisperAdapterError);
+    });
+
     it('includes the original error as the cause', async () => {
-      const original = new Error('model load failed');
-      mockWhisperInstance.transcribe.mockRejectedValueOnce(original);
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => {
+          throw new Error('connection refused');
+        }),
+      );
       const stream = makeAudioStream(SILENT_PCM);
 
       let caught: unknown;
@@ -100,26 +162,14 @@ describe('WhisperSttAdapter', () => {
 
       expect(caught).toBeInstanceOf(WhisperAdapterError);
       if (caught instanceof WhisperAdapterError) {
-        expect(caught.cause).toBe(original);
+        expect(caught.cause).toBeInstanceOf(Error);
       }
-    });
-
-    it('wraps stream errors as WhisperAdapterError', async () => {
-      const errStream = new Readable({
-        read() {
-          // no-op: stream is immediately destroyed
-        },
-      });
-      errStream.destroy(new Error('stream read error'));
-
-      await expect(adapter.speechToText(errStream)).rejects.toThrow(WhisperAdapterError);
     });
   });
 
   describe('getListener', () => {
     it('returns { enabled: true }', async () => {
       const result = await adapter.getListener();
-
       expect(result).toEqual({ enabled: true });
     });
   });

@@ -1,20 +1,22 @@
 import { bind } from '@sanamyvn/foundation/di/node/providers';
 import { MASTRA_VOICE_STT } from '@/business/sdk/mastra/mastra.interface.js';
-import { WhisperSttAdapter } from './whisper.adapter.js';
+import { WhisperSttAdapter, WHISPER_CONFIG } from './whisper.adapter.js';
 
 /**
  * Returns the DI provider bindings for the Whisper STT adapter.
- * Include this in your module's provider list to make `MASTRA_VOICE_STT`
- * injectable throughout the business layer.
+ * Downstream must also provide `WHISPER_CONFIG` via `factory()` or `value()`.
  *
  * @example
- * const module = createModule({
- *   ...whisperProviders(),
- * });
+ * ```ts
+ * factory(WHISPER_CONFIG, [APP_CONFIG], (config) => ({
+ *   baseUrl: config.whisper.baseUrl,
+ *   model: config.whisper.model,
+ * }))
+ * ```
  */
 export function whisperProviders() {
   return {
     providers: [bind(MASTRA_VOICE_STT, WhisperSttAdapter)],
-    exports: [MASTRA_VOICE_STT],
+    exports: [MASTRA_VOICE_STT, WHISPER_CONFIG],
   };
 }

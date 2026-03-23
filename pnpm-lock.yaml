@@ -17,9 +17,6 @@ importers:
       mustache:
         specifier: ^4.0.0
         version: 4.2.0
-      smart-whisper:
-        specifier: ^0.8.1
-        version: 0.8.1
     devDependencies:
       '@commitlint/cli':
         specifier: ^20.4.4
@@ -4464,9 +4461,6 @@ packages:
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==, tarball: https://registry.npmjs.org/node-abort-controller/-/node-abort-controller-3.1.1.tgz}
 
-  node-addon-api@7.1.1:
-    resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==, tarball: https://registry.npmjs.org/node-addon-api/-/node-addon-api-7.1.1.tgz}
-
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==, tarball: https://registry.npmjs.org/node-domexception/-/node-domexception-1.0.0.tgz}
     engines: {node: '>=10.5.0'}
@@ -5302,9 +5296,6 @@ packages:
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==, tarball: https://registry.npmjs.org/slash/-/slash-3.0.0.tgz}
     engines: {node: '>=8'}
-
-  smart-whisper@0.8.1:
-    resolution: {integrity: sha512-0DnhD6Hq7kTpWAJxv057o8rkcZ2Sv2/ZpJZJjj/DT+8Ll/zH5EHQM1lSwk+W15AvfDPD3K2ku+MD2KCXD51z5A==, tarball: https://registry.npmjs.org/smart-whisper/-/smart-whisper-0.8.1.tgz}
 
   sonic-boom@4.2.1:
     resolution: {integrity: sha512-w6AxtubXa2wTXAUsZMMWERrsIRAdrK0Sc+FUytWvYAhBJLyuI4llrMIC1DtlNSdI99EI86KZum2MMq3EAZlF9Q==, tarball: https://registry.npmjs.org/sonic-boom/-/sonic-boom-4.2.1.tgz}
@@ -10971,8 +10962,6 @@ snapshots:
 
   node-abort-controller@3.1.1: {}
 
-  node-addon-api@7.1.1: {}
-
   node-domexception@1.0.0: {}
 
   node-emoji@2.2.0:
@@ -11891,10 +11880,6 @@ snapshots:
       unicode-emoji-modifier-base: 1.0.0
 
   slash@3.0.0: {}
-
-  smart-whisper@0.8.1:
-    dependencies:
-      node-addon-api: 7.1.1
 
   sonic-boom@4.2.1:
     dependencies:
