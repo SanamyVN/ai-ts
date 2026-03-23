@@ -50,8 +50,12 @@ export class WhisperSttAdapter implements IMastraVoiceStt {
         throw new Error(`Whisper server returned ${String(response.status)}: ${body}`);
       }
 
-      const json = (await response.json()) as { text: string };
-      return json.text.trim();
+      const json: unknown = await response.json();
+      const text = isTranscriptionResult(json) ? json.text : undefined;
+      if (text === undefined) {
+        throw new Error('Whisper server returned unexpected response format');
+      }
+      return text.trim();
     } catch (error) {
       if (error instanceof WhisperAdapterError) {
         throw error;
@@ -63,6 +67,18 @@ export class WhisperSttAdapter implements IMastraVoiceStt {
   async getListener(): Promise<{ enabled: boolean }> {
     return { enabled: true };
   }
+}
+
+interface TranscriptionResult {
+  text: string;
+}
+
+function isTranscriptionResult(value: unknown): value is TranscriptionResult {
+  if (typeof value !== 'object' || value === null || !('text' in value)) {
+    return false;
+  }
+  // After the `in` check, TS narrows to `object & Record<'text', unknown>`
+  return typeof value.text === 'string';
 }
 
 /** Collects all chunks from a ReadableStream into a single Buffer. */
