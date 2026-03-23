@@ -37,8 +37,13 @@ export class WhisperSttAdapter implements IMastraVoiceStt {
     try {
       const buffer = await collectStream(audioStream);
 
+      // Wrap raw PCM in a WAV header so the STT server can decode it.
+      // The audio is assumed to be 16kHz mono Int16 PCM (the standard
+      // format used by the realtime voice pipeline).
+      const wav = wrapPcmInWav(buffer, 16000, 1, 16);
+
       const formData = new FormData();
-      formData.append('file', new Blob([buffer], { type: 'audio/wav' }), 'audio.wav');
+      formData.append('file', new Blob([wav], { type: 'audio/wav' }), 'audio.wav');
       formData.append('model', this.model);
       formData.append('response_format', 'json');
 
@@ -86,6 +91,37 @@ function isTranscriptionResult(value: unknown): value is TranscriptionResult {
     return false;
   }
   return typeof value.text === 'string';
+}
+
+/**
+ * Prepends a 44-byte RIFF/WAV header to raw PCM data so that STT servers
+ * (Whisper, Speaches, OpenAI) can decode the audio correctly.
+ */
+function wrapPcmInWav(
+  pcm: Buffer,
+  sampleRate: number,
+  channels: number,
+  bitsPerSample: number,
+): Buffer {
+  const byteRate = sampleRate * channels * (bitsPerSample / 8);
+  const blockAlign = channels * (bitsPerSample / 8);
+  const header = Buffer.alloc(44);
+
+  header.write('RIFF', 0); // ChunkID
+  header.writeUInt32LE(36 + pcm.length, 4); // ChunkSize
+  header.write('WAVE', 8); // Format
+  header.write('fmt ', 12); // Subchunk1ID
+  header.writeUInt32LE(16, 16); // Subchunk1Size (PCM)
+  header.writeUInt16LE(1, 20); // AudioFormat (1 = PCM)
+  header.writeUInt16LE(channels, 22); // NumChannels
+  header.writeUInt32LE(sampleRate, 24); // SampleRate
+  header.writeUInt32LE(byteRate, 28); // ByteRate
+  header.writeUInt16LE(blockAlign, 32); // BlockAlign
+  header.writeUInt16LE(bitsPerSample, 34); // BitsPerSample
+  header.write('data', 36); // Subchunk2ID
+  header.writeUInt32LE(pcm.length, 40); // Subchunk2Size
+
+  return Buffer.concat([header, pcm]);
 }
 
 /** Collects all chunks from a ReadableStream into a single Buffer. */
