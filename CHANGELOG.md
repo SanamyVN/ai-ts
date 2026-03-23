@@ -1,3 +1,11 @@
+## [1.15.0](https://github.com/SanamyVN/ai-ts/compare/v1.14.1...v1.15.0) (2026-03-23)
+
+### Features
+
+* **config:** add optional vad section to aiConfigSchema ([9e1bffb](https://github.com/SanamyVN/ai-ts/commit/9e1bffbf3aaa4308db186c5797c1ce2f15f634e8))
+* **realtime-voice:** add preBuffer and speaking to pipeline state model ([7e1ebed](https://github.com/SanamyVN/ai-ts/commit/7e1ebedb68c1ffdea5260299c134d839b9d4e9da))
+* **realtime-voice:** rewrite listening logic with pre-buffer and transition tracking ([d7a552c](https://github.com/SanamyVN/ai-ts/commit/d7a552c6d17c98a3ee5d538a13edb2e33d97f282))
+
 ## [1.14.1](https://github.com/SanamyVN/ai-ts/compare/v1.14.0...v1.14.1) (2026-03-23)
 
 ### Bug Fixes
