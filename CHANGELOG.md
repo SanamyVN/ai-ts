@@ -1,3 +1,9 @@
+## [1.12.0](https://github.com/SanamyVN/ai-ts/compare/v1.11.1...v1.12.0) (2026-03-23)
+
+### Features
+
+* **config:** add sttModel/sttProvider and ttsModel/ttsProvider to aiConfigSchema ([a2e5e18](https://github.com/SanamyVN/ai-ts/commit/a2e5e185103052e4ae86556bc1e8aa76c6acd68b))
+
 ## [1.11.1](https://github.com/SanamyVN/ai-ts/compare/v1.11.0...v1.11.1) (2026-03-23)
 
 ### Bug Fixes
