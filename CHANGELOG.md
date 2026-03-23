@@ -1,3 +1,11 @@
+## [1.11.1](https://github.com/SanamyVN/ai-ts/compare/v1.11.0...v1.11.1) (2026-03-23)
+
+### Bug Fixes
+
+* resolve lint errors in whisper and kokoro adapters ([0e1bc0b](https://github.com/SanamyVN/ai-ts/commit/0e1bc0b7bbd6b44b24b96ae98236c5a27f53d861))
+* **whisper:** re-export WHISPER_CONFIG and WhisperConfig from providers ([b3a6f04](https://github.com/SanamyVN/ai-ts/commit/b3a6f046386f7e9266aed047ae27d8e45bdfb38f))
+* **whisper:** use type guard instead of type assertion for JSON response ([d5ca7fb](https://github.com/SanamyVN/ai-ts/commit/d5ca7fbe73165abd13a32fad2816d38742c463d0))
+
 ## [1.11.0](https://github.com/SanamyVN/ai-ts/compare/v1.10.0...v1.11.0) (2026-03-21)
 
 ### Features
