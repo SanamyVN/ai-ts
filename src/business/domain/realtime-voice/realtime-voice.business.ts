@@ -13,6 +13,7 @@ import type {
   ProcessAudioResult,
   PipelineEvent,
 } from './realtime-voice.interface.js';
+import { PRE_BUFFER_DEPTH } from './realtime-voice.model.js';
 import type { ConversationPipelineState } from './realtime-voice.model.js';
 
 @Injectable()
@@ -29,7 +30,9 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
       state = {
         conversationId,
         state: 'listening',
+        preBuffer: [],
         audioBuffer: [],
+        speaking: false,
         eventQueue: [],
         lastFrameAt: Date.now(),
       };
@@ -46,11 +49,30 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
     state.eventQueue = [];
 
     if (state.state === 'listening') {
-      if (vad.isSpeech) {
+      if (vad.isSpeech && !state.speaking) {
+        // Speech onset: flush pre-buffer into audio buffer
+        state.audioBuffer = [...state.preBuffer, audio];
+        state.preBuffer = [];
+        state.speaking = true;
+      } else if (vad.isSpeech && state.speaking) {
+        // Continuing speech
         state.audioBuffer.push(audio);
-      } else if (state.audioBuffer.length > 0) {
-        // End of speech detected — fire-and-forget the processing chain
+      } else if (!vad.isSpeech && state.speaking) {
+        // Speech end: trigger pipeline
+        state.speaking = false;
         void this.runChain(conversationId);
+      } else {
+        // Silence, not speaking: fill rolling pre-buffer
+        state.preBuffer.push(audio);
+        if (state.preBuffer.length > PRE_BUFFER_DEPTH) {
+          state.preBuffer.shift();
+        }
+      }
+    } else {
+      // Pipeline is processing — keep filling pre-buffer for next onset
+      state.preBuffer.push(audio);
+      if (state.preBuffer.length > PRE_BUFFER_DEPTH) {
+        state.preBuffer.shift();
       }
     }
 
