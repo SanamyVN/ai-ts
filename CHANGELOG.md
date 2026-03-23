@@ -1,3 +1,9 @@
+## [1.14.0](https://github.com/SanamyVN/ai-ts/compare/v1.13.0...v1.14.0) (2026-03-23)
+
+### Features
+
+* **voice:** add Speaches TTS adapter for OpenAI-compatible TTS servers ([44e5e67](https://github.com/SanamyVN/ai-ts/commit/44e5e673775e5592f6be3610a9ff5f7db0ba6bd5))
+
 ## [1.13.0](https://github.com/SanamyVN/ai-ts/compare/v1.12.0...v1.13.0) (2026-03-23)
 
 ### Features
