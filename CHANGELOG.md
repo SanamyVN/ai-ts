@@ -1,3 +1,9 @@
+## [1.13.0](https://github.com/SanamyVN/ai-ts/compare/v1.12.0...v1.13.0) (2026-03-23)
+
+### Features
+
+* **vad:** add vad-client SDK with monolith and standalone mediator adapters ([1ef5f9b](https://github.com/SanamyVN/ai-ts/commit/1ef5f9bcc4edd90ea5ae2f7630602b82aa715e6c))
+
 ## [1.12.0](https://github.com/SanamyVN/ai-ts/compare/v1.11.1...v1.12.0) (2026-03-23)
 
 ### Features
