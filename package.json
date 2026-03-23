@@ -410,6 +410,14 @@
       "types": "./dist/business/sdk/kokoro/kokoro.error.d.ts",
       "default": "./dist/business/sdk/kokoro/kokoro.error.js"
     },
+    "./business/sdk/speaches/providers": {
+      "types": "./dist/business/sdk/speaches/speaches.providers.d.ts",
+      "default": "./dist/business/sdk/speaches/speaches.providers.js"
+    },
+    "./business/sdk/speaches/error": {
+      "types": "./dist/business/sdk/speaches/speaches.error.d.ts",
+      "default": "./dist/business/sdk/speaches/speaches.error.js"
+    },
     "./business/vad": {
       "types": "./dist/business/domain/vad/vad.interface.d.ts",
       "default": "./dist/business/domain/vad/vad.interface.js"
