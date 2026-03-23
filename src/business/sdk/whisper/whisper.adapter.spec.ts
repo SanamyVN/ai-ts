@@ -1,15 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Readable } from 'node:stream';
 import { WhisperSttAdapter } from './whisper.adapter.js';
-import type { WhisperConfig } from './whisper.adapter.js';
 import { WhisperAdapterError } from './whisper.error.js';
+import type { AiConfig } from '@/config.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 const BASE_URL = 'http://localhost:8000';
-const DEFAULT_CONFIG: WhisperConfig = { baseUrl: BASE_URL };
+
+function makeConfig(overrides?: Partial<Pick<AiConfig, 'sttModel' | 'sttProvider'>>): AiConfig {
+  return {
+    defaultModel: 'anthropic/claude-sonnet-4-20250514',
+    prompt: { maxVersions: 50 },
+    session: { transcriptPageSize: 100 },
+    embeddingModel: 'openai/text-embedding-3-small',
+    embeddingDimension: 1536,
+    sttProvider: { url: BASE_URL },
+    ...overrides,
+  };
+}
 
 function makeAudioStream(...chunks: Buffer[]): NodeJS.ReadableStream {
   const readable = new Readable({
@@ -59,7 +70,7 @@ describe('WhisperSttAdapter', () => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
     mockFetchSuccess('hello world');
-    adapter = new WhisperSttAdapter(DEFAULT_CONFIG);
+    adapter = new WhisperSttAdapter(makeConfig());
   });
 
   describe('speechToText', () => {
@@ -76,10 +87,9 @@ describe('WhisperSttAdapter', () => {
     });
 
     it('sends the configured model in the form data', async () => {
-      const customAdapter = new WhisperSttAdapter({
-        baseUrl: BASE_URL,
-        model: 'openai/whisper-large-v3',
-      });
+      const customAdapter = new WhisperSttAdapter(
+        makeConfig({ sttModel: 'openai/whisper-large-v3' }),
+      );
       const stream = makeAudioStream(SILENT_PCM);
 
       await customAdapter.speechToText(stream);
@@ -92,20 +102,46 @@ describe('WhisperSttAdapter', () => {
       }
     });
 
-    it('uses default model when none configured', async () => {
+    it('defaults to whisper-1 when no sttModel configured', async () => {
+      const defaultAdapter = new WhisperSttAdapter(makeConfig({ sttModel: undefined }));
       const stream = makeAudioStream(SILENT_PCM);
 
-      await adapter.speechToText(stream);
+      await defaultAdapter.speechToText(stream);
 
       const call = vi.mocked(fetch).mock.calls[0];
       const body = call?.[1]?.body;
       if (body instanceof FormData) {
-        expect(body.get('model')).toBe('Systran/faster-distil-whisper-small.en');
+        expect(body.get('model')).toBe('whisper-1');
       }
     });
 
+    it('defaults to OpenAI URL when no sttProvider configured', async () => {
+      const cloudAdapter = new WhisperSttAdapter(makeConfig({ sttProvider: undefined }));
+      const stream = makeAudioStream(SILENT_PCM);
+
+      await cloudAdapter.speechToText(stream);
+
+      const call = vi.mocked(fetch).mock.calls[0];
+      expect(call?.[0]).toBe('https://api.openai.com/v1/audio/transcriptions');
+    });
+
+    it('sends Authorization header when apiKey is configured', async () => {
+      const authAdapter = new WhisperSttAdapter(
+        makeConfig({ sttProvider: { url: BASE_URL, apiKey: 'sk-test-123' } }),
+      );
+      const stream = makeAudioStream(SILENT_PCM);
+
+      await authAdapter.speechToText(stream);
+
+      const call = vi.mocked(fetch).mock.calls[0];
+      const headers = call?.[1]?.headers;
+      expect(headers).toMatchObject({ Authorization: 'Bearer sk-test-123' });
+    });
+
     it('trims trailing slash from baseUrl', async () => {
-      const trailingSlash = new WhisperSttAdapter({ baseUrl: 'http://localhost:8000/' });
+      const trailingSlash = new WhisperSttAdapter(
+        makeConfig({ sttProvider: { url: 'http://localhost:8000/' } }),
+      );
       const stream = makeAudioStream(SILENT_PCM);
 
       await trailingSlash.speechToText(stream);

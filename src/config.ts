@@ -24,6 +24,10 @@ export const aiConfigSchema = z.object({
   embeddingDimension: z.number().int().positive().default(1536),
   embeddingProvider: openaiCompatibleProviderSchema.optional(),
   modelProvider: openaiCompatibleProviderSchema.optional(),
+  sttModel: z.string().optional(),
+  sttProvider: openaiCompatibleProviderSchema.optional(),
+  ttsModel: z.string().optional(),
+  ttsProvider: openaiCompatibleProviderSchema.optional(),
 });
 
 export type AiConfig = z.infer<typeof aiConfigSchema>;

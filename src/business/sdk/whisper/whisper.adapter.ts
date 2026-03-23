@@ -1,31 +1,33 @@
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { IMastraVoiceStt } from '@/business/sdk/mastra/mastra.interface.js';
+import { AI_CONFIG, type AiConfig } from '@/config.js';
 import { WhisperAdapterError } from './whisper.error.js';
 
-const DEFAULT_MODEL = 'Systran/faster-distil-whisper-small.en';
-
-export interface WhisperConfig {
-  readonly baseUrl: string;
-  readonly model?: string;
-}
-
-export const WHISPER_CONFIG = createToken<WhisperConfig>('WHISPER_CONFIG');
-
 /**
- * Wraps an OpenAI-compatible Whisper HTTP server (e.g. Speaches) behind
- * the stable `IMastraVoiceStt` interface. Sends audio to
+ * Wraps an OpenAI-compatible STT HTTP server (e.g. Speaches, OpenAI)
+ * behind the stable `IMastraVoiceStt` interface. Sends audio to
  * `POST /v1/audio/transcriptions` as multipart/form-data.
+ *
+ * Configuration is read from `AI_CONFIG`:
+ * - `sttProvider.url` — base URL of the STT server (required for local models)
+ * - `sttProvider.apiKey` — API key (required for cloud providers like OpenAI)
+ * - `sttModel` — model name (e.g. 'whisper-1' for OpenAI, 'Systran/faster-distil-whisper-small.en' for Speaches)
+ *
  * All errors are caught and re-thrown as `WhisperAdapterError`.
  */
 @Injectable()
 export class WhisperSttAdapter implements IMastraVoiceStt {
   private readonly baseUrl: string;
   private readonly model: string;
+  private readonly apiKey: string | undefined;
+  private readonly headers: Record<string, string> | undefined;
 
-  constructor(@Inject(WHISPER_CONFIG) config: WhisperConfig) {
-    this.baseUrl = config.baseUrl.endsWith('/') ? config.baseUrl.slice(0, -1) : config.baseUrl;
-    this.model = config.model ?? DEFAULT_MODEL;
+  constructor(@Inject(AI_CONFIG) config: AiConfig) {
+    const url = config.sttProvider?.url ?? 'https://api.openai.com';
+    this.baseUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+    this.model = config.sttModel ?? 'whisper-1';
+    this.apiKey = config.sttProvider?.apiKey;
+    this.headers = config.sttProvider?.headers;
   }
 
   async speechToText(
@@ -40,20 +42,26 @@ export class WhisperSttAdapter implements IMastraVoiceStt {
       formData.append('model', this.model);
       formData.append('response_format', 'json');
 
+      const fetchHeaders: Record<string, string> = { ...this.headers };
+      if (this.apiKey) {
+        fetchHeaders['Authorization'] = `Bearer ${this.apiKey}`;
+      }
+
       const response = await fetch(`${this.baseUrl}/v1/audio/transcriptions`, {
         method: 'POST',
         body: formData,
+        headers: fetchHeaders,
       });
 
       if (!response.ok) {
         const body = await response.text();
-        throw new Error(`Whisper server returned ${String(response.status)}: ${body}`);
+        throw new Error(`STT server returned ${String(response.status)}: ${body}`);
       }
 
       const json: unknown = await response.json();
       const text = isTranscriptionResult(json) ? json.text : undefined;
       if (text === undefined) {
-        throw new Error('Whisper server returned unexpected response format');
+        throw new Error('STT server returned unexpected response format');
       }
       return text.trim();
     } catch (error) {
@@ -77,7 +85,6 @@ function isTranscriptionResult(value: unknown): value is TranscriptionResult {
   if (typeof value !== 'object' || value === null || !('text' in value)) {
     return false;
   }
-  // After the `in` check, TS narrows to `object & Record<'text', unknown>`
   return typeof value.text === 'string';
 }
 
