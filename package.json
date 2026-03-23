@@ -382,6 +382,10 @@
       "types": "./dist/app/sdk/voice-client/voice-client.module.d.ts",
       "default": "./dist/app/sdk/voice-client/voice-client.module.js"
     },
+    "./app/vad-client/module": {
+      "types": "./dist/app/sdk/vad-client/vad-client.module.d.ts",
+      "default": "./dist/app/sdk/vad-client/vad-client.module.js"
+    },
     "./business/sdk/silero/providers": {
       "types": "./dist/business/sdk/silero/silero.providers.d.ts",
       "default": "./dist/business/sdk/silero/silero.providers.js"
