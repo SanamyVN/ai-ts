@@ -1,3 +1,9 @@
+## [1.14.1](https://github.com/SanamyVN/ai-ts/compare/v1.14.0...v1.14.1) (2026-03-23)
+
+### Bug Fixes
+
+* **whisper:** wrap raw PCM in WAV header before sending to STT server ([04cbbbd](https://github.com/SanamyVN/ai-ts/commit/04cbbbd52c8add97617647e03ffce8d61d6c3076))
+
 ## [1.14.0](https://github.com/SanamyVN/ai-ts/compare/v1.13.0...v1.14.0) (2026-03-23)
 
 ### Features
