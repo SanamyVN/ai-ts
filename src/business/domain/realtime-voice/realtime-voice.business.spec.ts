@@ -256,6 +256,150 @@ describe('RealtimeVoiceBusiness', () => {
       expect(result.vad.isSpeech).toBe(true);
       expect(result.events).toEqual([]);
     });
+
+    it('includes pre-buffer frames in STT audio on speech onset', async () => {
+      const preFrame1 = new Int16Array([1, 2]);
+      const preFrame2 = new Int16Array([3, 4]);
+      const speechFrame = new Int16Array([50, 60]);
+      const combined = new Int16Array([1, 2, 3, 4, 50, 60]);
+      const expectedBase64 = Buffer.from(
+        combined.buffer,
+        combined.byteOffset,
+        combined.byteLength,
+      ).toString('base64');
+
+      // Frame 1-2: silence → fills pre-buffer
+      mockVad(false, 0.1);
+      await business.processAudio({ conversationId: 'conv-1', audio: preFrame1 });
+      mockVad(false, 0.1);
+      await business.processAudio({ conversationId: 'conv-1', audio: preFrame2 });
+
+      // Frame 3: speech onset → flushes pre-buffer + current frame
+      mockVad(true);
+      await business.processAudio({ conversationId: 'conv-1', audio: speechFrame });
+
+      // Frame 4: silence → triggers chain
+      mockVad(false, 0.1);
+      mockFullChain();
+      await business.processAudio({ conversationId: 'conv-1', audio: makeSilenceAudio() });
+      await flushMicrotasks();
+
+      // Find the STT call
+      const calls = vi.mocked(mediator.send).mock.calls;
+      const sttCall = calls.find(
+        (c) => c[0] && typeof c[0] === 'object' && 'contentType' in c[0],
+      );
+      expect(sttCall).toBeDefined();
+      expect(sttCall?.[0]).toEqual(
+        expect.objectContaining({
+          audio: expectedBase64,
+          contentType: 'audio/pcm;rate=16000',
+        }),
+      );
+    });
+
+    it('pre-buffer trims to PRE_BUFFER_DEPTH oldest frames', async () => {
+      // Send 7 silence frames — pre-buffer should keep only last 5
+      for (let i = 0; i < 7; i++) {
+        mockVad(false, 0.1);
+        await business.processAudio({
+          conversationId: 'conv-1',
+          audio: new Int16Array([i * 10]),
+        });
+      }
+
+      // Speech onset — pre-buffer should have frames 2-6 (indices 2,3,4,5,6)
+      mockVad(true);
+      await business.processAudio({
+        conversationId: 'conv-1',
+        audio: new Int16Array([70]),
+      });
+
+      // Silence → trigger chain
+      mockVad(false, 0.1);
+      mockFullChain();
+      await business.processAudio({
+        conversationId: 'conv-1',
+        audio: makeSilenceAudio(),
+      });
+      await flushMicrotasks();
+
+      // STT audio should be: pre-buffer(5 frames) + speech(1) = [20,30,40,50,60,70]
+      const calls = vi.mocked(mediator.send).mock.calls;
+      const sttCall = calls.find(
+        (c) => c[0] && typeof c[0] === 'object' && 'contentType' in c[0],
+      );
+      expect(sttCall).toBeDefined();
+
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const sttBase64 = (sttCall?.[0] as unknown as { audio: string }).audio;
+      const sttBuffer = Buffer.from(sttBase64, 'base64');
+      const sttInt16 = new Int16Array(
+        sttBuffer.buffer,
+        sttBuffer.byteOffset,
+        sttBuffer.byteLength / 2,
+      );
+      // First value should be 20 (frame index 2), not 0 (frame index 0)
+      expect(sttInt16[0]).toBe(20);
+    });
+
+    it('fills pre-buffer during pipeline processing for next onset capture', async () => {
+      // Speech → silence → triggers chain
+      mockVad(true);
+      await business.processAudio({ conversationId: 'conv-1', audio: makeSpeechAudio() });
+
+      mockVad(false, 0.1);
+      const sttDeferred = createDeferred<{ text: string }>();
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      mediator.send.mockReturnValueOnce(sttDeferred.promise as never);
+      await business.processAudio({ conversationId: 'conv-1', audio: makeSilenceAudio() });
+      await flushMicrotasks();
+
+      // Send frames while pipeline is processing — should go to pre-buffer
+      const midFrame = new Int16Array([99, 88]);
+      mockVad(false, 0.05);
+      await business.processAudio({ conversationId: 'conv-1', audio: midFrame });
+
+      // Resolve chain to get back to listening
+      sttDeferred.resolve({ text: 'test' });
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      mediator.send.mockResolvedValueOnce({ text: 'response' } as never);
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      mediator.send.mockResolvedValueOnce({ audio: 'YQ==', contentType: 'audio/wav' } as never);
+      await flushMicrotasks();
+
+      // Drain events
+      mockVad(false, 0.1);
+      await business.processAudio({ conversationId: 'conv-1', audio: makeSilenceAudio() });
+
+      // Now speech onset — should include midFrame from pre-buffer
+      mockVad(true);
+      await business.processAudio({ conversationId: 'conv-1', audio: new Int16Array([77]) });
+
+      mockVad(false, 0.1);
+      mockFullChain();
+      await business.processAudio({ conversationId: 'conv-1', audio: makeSilenceAudio() });
+      await flushMicrotasks();
+
+      // The STT audio should contain the pre-buffer frame [99,88] captured during processing
+      const calls = vi.mocked(mediator.send).mock.calls;
+      const sttCalls = calls.filter(
+        (c) => c[0] && typeof c[0] === 'object' && 'contentType' in c[0],
+      );
+      const lastStt = sttCalls[sttCalls.length - 1];
+      expect(lastStt).toBeDefined();
+
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const sttBase64 = (lastStt?.[0] as unknown as { audio: string }).audio;
+      const sttBuffer = Buffer.from(sttBase64, 'base64');
+      const sttInt16 = new Int16Array(
+        sttBuffer.buffer,
+        sttBuffer.byteOffset,
+        sttBuffer.byteLength / 2,
+      );
+      // Should contain 99 from the mid-processing frame
+      expect(Array.from(sttInt16)).toContain(99);
+    });
   });
 });
 
