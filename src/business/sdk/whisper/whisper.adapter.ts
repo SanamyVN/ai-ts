@@ -24,7 +24,7 @@ export class WhisperSttAdapter implements IMastraVoiceStt {
   private readonly model: string;
 
   constructor(@Inject(WHISPER_CONFIG) config: WhisperConfig) {
-    this.baseUrl = config.baseUrl.replace(/\/+$/, '');
+    this.baseUrl = config.baseUrl.endsWith('/') ? config.baseUrl.slice(0, -1) : config.baseUrl;
     this.model = config.model ?? DEFAULT_MODEL;
   }
 
