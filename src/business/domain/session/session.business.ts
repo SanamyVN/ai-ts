@@ -81,7 +81,7 @@ export class SessionService implements ISessionService {
   async exportTranscript(sessionId: string, format: 'json' | 'text'): Promise<Transcript> {
     const session = await this.getSessionOrThrow(sessionId);
     const { messages } = await this.mastraMemory.getMessages(session.mastraThreadId, {
-      page: 1,
+      page: 0,
       perPage: 10000,
     });
 
