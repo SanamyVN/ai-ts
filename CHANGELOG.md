@@ -1,3 +1,9 @@
+## [1.15.1](https://github.com/SanamyVN/ai-ts/compare/v1.15.0...v1.15.1) (2026-03-24)
+
+### Bug Fixes
+
+* **session:** use 0-based page in exportTranscript for Mastra recall ([25a890d](https://github.com/SanamyVN/ai-ts/commit/25a890d7dd86632a715813b393c550f0859f508a))
+
 ## [1.15.0](https://github.com/SanamyVN/ai-ts/compare/v1.14.1...v1.15.0) (2026-03-23)
 
 ### Features
