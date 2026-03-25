@@ -79,6 +79,7 @@ export const searchClientSchema = z.object({
   scopeId: z.string(),
   queryText: z.string().min(1),
   topK: z.number().int().positive(),
+  documentIds: z.array(z.string()).optional(),
 });
 
 export type SearchClientInput = z.infer<typeof searchClientSchema>;
