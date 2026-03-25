@@ -1,3 +1,12 @@
+## [1.16.0](https://github.com/SanamyVN/ai-ts/compare/v1.15.1...v1.16.0) (2026-03-25)
+
+### Features
+
+* **rag:** add documentIds to SearchInput model ([a69ded7](https://github.com/SanamyVN/ai-ts/commit/a69ded74c24c6fc035a76cfb02d599333e8883fa))
+* **rag:** add optional documentIds to search schema ([f9d89ba](https://github.com/SanamyVN/ai-ts/commit/f9d89ba2fe6f057583a7e999f2b7eb2a32f6cd3a))
+* **rag:** pass documentIds through RagBusiness.search() ([26879dd](https://github.com/SanamyVN/ai-ts/commit/26879dd334f21e01cf8db0eca5a345d8bdc82563))
+* **rag:** support documentIds filter in MastraRagAdapter.search() ([c67b271](https://github.com/SanamyVN/ai-ts/commit/c67b271fb83c8fa1cc47cc08a4e0b8d293522527))
+
 ## [1.15.1](https://github.com/SanamyVN/ai-ts/compare/v1.15.0...v1.15.1) (2026-03-24)
 
 ### Bug Fixes
