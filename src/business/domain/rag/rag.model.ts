@@ -72,6 +72,7 @@ export interface SearchInput {
   readonly scopeId: string;
   readonly queryText: string;
   readonly topK: number;
+  readonly documentIds?: string[];
 }
 
 /** A single search result chunk. */
