@@ -162,6 +162,7 @@ export interface IMastraRag {
     queryVector: number[],
     topK: number,
     scopeId: string,
+    documentIds?: string[],
   ): Promise<{ text: string; score: number }[]>;
 }
 

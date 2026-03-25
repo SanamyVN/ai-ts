@@ -45,13 +45,17 @@ export class MastraRagAdapter implements IMastraRag {
     queryVector: number[],
     topK: number,
     scopeId: string,
+    documentIds?: string[],
   ): Promise<{ text: string; score: number }[]> {
     try {
       const results = await this.pgVector.query({
         indexName,
         queryVector,
         topK,
-        filter: { scopeId },
+        filter: {
+          scopeId,
+          ...(documentIds?.length && { documentId: { $in: documentIds } }),
+        },
       });
       return results.map((r) => ({
         text: typeof r.metadata?.['text'] === 'string' ? r.metadata['text'] : '',
