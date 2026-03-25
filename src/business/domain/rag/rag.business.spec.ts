@@ -173,7 +173,7 @@ describe('RagBusiness', () => {
         topK: 3,
       });
 
-      expect(mastraRag.search).toHaveBeenCalledWith(INDEX_NAME, [0.1, 0.2], 3, SCOPE_ID);
+      expect(mastraRag.search).toHaveBeenCalledWith(INDEX_NAME, [0.1, 0.2], 3, SCOPE_ID, undefined);
       expect(result).toEqual({ results: [{ text: 'chunk', score: 0.9 }] });
     });
 
@@ -192,6 +192,21 @@ describe('RagBusiness', () => {
       await expect(
         business.search({ indexName: INDEX_NAME, scopeId: SCOPE_ID, queryText: 'hello', topK: 3 }),
       ).rejects.toThrow(RagSearchError);
+    });
+
+    it('passes documentIds to mastraRag.search when provided', async () => {
+      mastraRag.search.mockResolvedValue([{ text: 'filtered', score: 0.95 }]);
+
+      const result = await business.search({
+        indexName: INDEX_NAME,
+        scopeId: SCOPE_ID,
+        queryText: 'hello',
+        topK: 3,
+        documentIds: ['doc-1', 'doc-2'],
+      });
+
+      expect(mastraRag.search).toHaveBeenCalledWith(INDEX_NAME, [0.1, 0.2], 3, SCOPE_ID, ['doc-1', 'doc-2']);
+      expect(result).toEqual({ results: [{ text: 'filtered', score: 0.95 }] });
     });
   });
 

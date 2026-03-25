@@ -138,6 +138,7 @@ export class RagBusiness implements IRagBusiness {
         queryVector,
         input.topK,
         input.scopeId,
+        input.documentIds,
       );
       return { results: items };
     } catch (error) {
