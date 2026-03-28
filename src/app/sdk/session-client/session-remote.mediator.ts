@@ -15,6 +15,7 @@ import type {
   CreateSessionCommand,
   EndSessionCommand,
   UpdateSessionCommand,
+  UpdateSessionLastMessageCommand,
 } from '@/business/domain/session/client/queries.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import { z } from 'zod';
@@ -116,6 +117,19 @@ export class SessionRemoteMediator implements ISessionMediator {
     if (!response.ok) {
       if (response.status === 404) throw new SessionNotFoundClientError(command.sessionId);
       throw new Error(`Failed to update session: ${response.status}`);
+    }
+  }
+
+  async updateLastMessage(
+    command: InstanceType<typeof UpdateSessionLastMessageCommand>,
+  ): Promise<void> {
+    const response = await this.http.patch(
+      `${this.config.baseUrl}/ai/sessions/${command.sessionId}/last-message`,
+      { lastMessage: command.lastMessage },
+    );
+    if (!response.ok) {
+      if (response.status === 404) throw new SessionNotFoundClientError(command.sessionId);
+      throw new Error(`Failed to update session last message: ${response.status}`);
     }
   }
 }
