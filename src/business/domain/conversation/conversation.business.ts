@@ -135,8 +135,17 @@ export class ConversationEngine implements IConversationEngine {
       ...(outputSchema !== undefined && { outputSchema }),
       ...(toolsets !== undefined && { toolsets }),
     };
+    let accumulated = '';
     try {
-      yield* this.mastraAgent.stream(message, options);
+      for await (const chunk of this.mastraAgent.stream(message, options)) {
+        if (chunk.type === 'text-delta') {
+          accumulated += chunk.content;
+        }
+        if (chunk.type === 'finish' && accumulated.length > 0) {
+          await this.updateLastMessageBestEffort(state.sessionId, accumulated);
+        }
+        yield chunk;
+      }
     } catch (error) {
       if (isMastraAdapterError(error)) {
         throw new ConversationSendError(conversationId, error);
