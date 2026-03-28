@@ -19,5 +19,6 @@ export function createMockSessionService() {
     list: vi.fn<ISessionService['list']>(),
     getMessages: vi.fn<ISessionService['getMessages']>(),
     exportTranscript: vi.fn<ISessionService['exportTranscript']>(),
+    updateLastMessage: vi.fn<ISessionService['updateLastMessage']>(),
   };
 }

@@ -82,6 +82,14 @@ export interface ISessionService {
    * @throws {SessionNotFoundError} If the session does not exist.
    */
   updateResolvedPrompt(sessionId: string, resolvedPrompt: string): Promise<void>;
+
+  /**
+   * Updates the last message and its timestamp for a session.
+   * @param sessionId - Session to update.
+   * @param lastMessage - The most recent message text.
+   * @throws {SessionNotFoundError} If the session does not exist.
+   */
+  updateLastMessage(sessionId: string, lastMessage: string): Promise<void>;
 }
 
 /** Dependency-injection token for {@link ISessionService}. */

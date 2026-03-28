@@ -18,6 +18,7 @@ import type {
   Transcript,
 } from './session.model.js';
 import { SessionNotFoundError, SessionAlreadyEndedError } from './session.error.js';
+import { isSessionNotFoundRepoError } from '@/repository/domain/session/session.error.js';
 import { toSessionFromRecord, toSessionSummaryFromRecord } from './session.mapper.js';
 
 @Injectable()
@@ -76,6 +77,17 @@ export class SessionService implements ISessionService {
 
   async updateResolvedPrompt(sessionId: string, resolvedPrompt: string): Promise<void> {
     await this.sessionRepo.updateResolvedPrompt(sessionId, resolvedPrompt);
+  }
+
+  async updateLastMessage(sessionId: string, lastMessage: string): Promise<void> {
+    try {
+      await this.sessionRepo.updateLastMessage(sessionId, lastMessage, new Date());
+    } catch (error) {
+      if (isSessionNotFoundRepoError(error)) {
+        throw new SessionNotFoundError(sessionId, { cause: error });
+      }
+      throw error;
+    }
   }
 
   async exportTranscript(sessionId: string, format: 'json' | 'text'): Promise<Transcript> {

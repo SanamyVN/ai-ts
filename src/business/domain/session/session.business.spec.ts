@@ -3,6 +3,7 @@ import { SessionService } from './session.business.js';
 import { createMockSessionRepository } from '@/repository/domain/session/session.testing.js';
 import { createMockMastraMemory } from '@/business/sdk/mastra/mastra.testing.js';
 import { SessionNotFoundError, SessionAlreadyEndedError } from './session.error.js';
+import { SessionNotFoundRepoError } from '@/repository/domain/session/session.error.js';
 
 describe('SessionService', () => {
   let service: SessionService;
@@ -33,6 +34,8 @@ describe('SessionService', () => {
         metadata: null,
         startedAt: new Date(),
         endedAt: null,
+        lastMessage: null,
+        lastMessageAt: null,
       });
 
       const result = await service.start({
@@ -69,6 +72,8 @@ describe('SessionService', () => {
         metadata: null,
         startedAt: new Date(),
         endedAt: null,
+        lastMessage: null,
+        lastMessageAt: null,
       });
       sessionRepo.updateStatus.mockResolvedValue({
         id: 'session-1',
@@ -82,6 +87,8 @@ describe('SessionService', () => {
         metadata: null,
         startedAt: new Date(),
         endedAt: new Date(),
+        lastMessage: null,
+        lastMessageAt: null,
       });
 
       await service.end('session-1');
@@ -101,6 +108,8 @@ describe('SessionService', () => {
         metadata: null,
         startedAt: new Date(),
         endedAt: new Date(),
+        lastMessage: null,
+        lastMessageAt: null,
       });
 
       await expect(service.end('session-1')).rejects.toThrow(SessionAlreadyEndedError);
@@ -128,6 +137,8 @@ describe('SessionService', () => {
         metadata: null,
         startedAt: new Date(),
         endedAt: null,
+        lastMessage: null,
+        lastMessageAt: null,
       });
       mastraMemory.getMessages.mockResolvedValue({
         messages: [{ id: 'm1', role: 'user', content: 'hello', createdAt: new Date() }],
@@ -138,6 +149,51 @@ describe('SessionService', () => {
       const result = await service.getMessages('session-1', { page: 1, perPage: 10 });
       expect(mastraMemory.getMessages).toHaveBeenCalledWith('thread-1', { page: 1, perPage: 10 });
       expect(result.messages).toHaveLength(1);
+    });
+  });
+
+  describe('updateLastMessage', () => {
+    it('calls repo updateLastMessage with sessionId, message, and current date', async () => {
+      sessionRepo.updateLastMessage.mockResolvedValue({
+        id: 'session-1',
+        mastraThreadId: 'thread-1',
+        userId: 'user-1',
+        tenantId: null,
+        promptSlug: 'test',
+        resolvedPrompt: 'You are a test assistant.',
+        purpose: 'test',
+        status: 'active',
+        metadata: null,
+        startedAt: new Date(),
+        endedAt: null,
+        lastMessage: 'Hello world',
+        lastMessageAt: new Date(),
+      });
+
+      await service.updateLastMessage('session-1', 'Hello world');
+
+      expect(sessionRepo.updateLastMessage).toHaveBeenCalledWith(
+        'session-1',
+        'Hello world',
+        expect.any(Date),
+      );
+    });
+
+    it('throws SessionNotFoundError when session does not exist', async () => {
+      sessionRepo.updateLastMessage.mockRejectedValue(new SessionNotFoundRepoError('session-99'));
+
+      await expect(service.updateLastMessage('session-99', 'Hello')).rejects.toThrow(
+        SessionNotFoundError,
+      );
+    });
+
+    it('re-throws unknown errors', async () => {
+      const unknownError = new Error('database connection lost');
+      sessionRepo.updateLastMessage.mockRejectedValue(unknownError);
+
+      await expect(service.updateLastMessage('session-1', 'Hello')).rejects.toThrow(
+        'database connection lost',
+      );
     });
   });
 });
