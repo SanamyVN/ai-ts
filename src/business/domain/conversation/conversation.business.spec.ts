@@ -10,6 +10,7 @@ import {
   CreateSessionCommand,
   FindSessionByIdQuery,
   UpdateSessionCommand,
+  UpdateSessionLastMessageCommand,
 } from '@/business/domain/session/client/queries.js';
 import type { AiConfig } from '@/config.js';
 
@@ -240,7 +241,8 @@ describe('ConversationEngine', () => {
 
       // send() with new promptParams triggers re-resolution
       const newResolvedPrompt = { slug: 'greet', version: 2, text: 'Updated prompt' };
-      send.mockResolvedValueOnce(newResolvedPrompt) // ResolvePromptQuery
+      send
+        .mockResolvedValueOnce(newResolvedPrompt) // ResolvePromptQuery
         .mockResolvedValueOnce(undefined); // UpdateSessionCommand
 
       await engine.send(convo.id, 'Hello', undefined, { name: 'Updated' });
@@ -307,6 +309,62 @@ describe('ConversationEngine', () => {
         resourceId: 'user-1',
         instructions: 'Hello {{name}}',
       });
+    });
+
+    it('dispatches UpdateSessionLastMessageCommand after successful generate', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'AI response text',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      // Allow the UpdateSessionLastMessageCommand call to succeed
+      send.mockResolvedValueOnce(undefined);
+
+      await engine.send(convo.id, 'Hello');
+
+      expect(send).toHaveBeenCalledWith(expect.any(UpdateSessionLastMessageCommand));
+      const lastMessageCall = send.mock.calls.find(
+        (call) => call[0] instanceof UpdateSessionLastMessageCommand,
+      );
+      expect(lastMessageCall).toBeDefined();
+      const command = lastMessageCall![0] as InstanceType<typeof UpdateSessionLastMessageCommand>;
+      expect(command).toHaveProperty('sessionId', 'session-1');
+      expect(command).toHaveProperty('lastMessage', 'AI response text');
+    });
+
+    it('does not throw when UpdateSessionLastMessageCommand fails after send', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'AI response text',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      // Make the UpdateSessionLastMessageCommand call fail
+      send.mockRejectedValueOnce(new Error('DB write failed'));
+
+      // send() should still return successfully — lastMessage update is best-effort
+      const response = await engine.send(convo.id, 'Hello');
+
+      expect(response).toEqual({ text: 'AI response text', object: undefined });
     });
   });
 
