@@ -15,6 +15,8 @@ export interface Session {
   readonly metadata: Record<string, unknown> | null;
   readonly startedAt: Date;
   readonly endedAt: Date | null;
+  readonly lastMessage: string | null;
+  readonly lastMessageAt: Date | null;
 }
 
 /** Lightweight projection of a session used in list results. */
@@ -25,6 +27,8 @@ export interface SessionSummary {
   readonly purpose: string;
   readonly status: string;
   readonly startedAt: Date;
+  readonly lastMessage: string | null;
+  readonly lastMessageAt: Date | null;
 }
 
 /** Input for starting a new session. The `resolvedPrompt` field is required. */
