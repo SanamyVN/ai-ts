@@ -4,10 +4,12 @@ import type { ISessionMediator } from '@/business/domain/session/client/mediator
 import type {
   SessionClientModel,
   SessionSummaryClient,
+  MessageListClient,
 } from '@/business/domain/session/client/schemas.js';
 import {
   sessionClientModelSchema,
   sessionSummaryClientSchema,
+  messageListClientSchema,
 } from '@/business/domain/session/client/schemas.js';
 import type {
   FindSessionByIdQuery,
@@ -16,6 +18,7 @@ import type {
   EndSessionCommand,
   UpdateSessionCommand,
   UpdateSessionLastMessageCommand,
+  GetSessionMessagesQuery,
 } from '@/business/domain/session/client/queries.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import { z } from 'zod';
@@ -131,5 +134,21 @@ export class SessionRemoteMediator implements ISessionMediator {
       if (response.status === 404) throw new SessionNotFoundClientError(command.sessionId);
       throw new Error(`Failed to update session last message: ${response.status}`);
     }
+  }
+
+  async getMessages(
+    query: InstanceType<typeof GetSessionMessagesQuery>,
+  ): Promise<MessageListClient> {
+    const params = new URLSearchParams();
+    params.set('page', String(query.page));
+    params.set('perPage', String(query.perPage));
+    const response = await this.http.get(
+      `${this.config.baseUrl}/ai/sessions/${query.sessionId}/messages?${params.toString()}`,
+    );
+    if (!response.ok) {
+      if (response.status === 404) throw new SessionNotFoundClientError(query.sessionId);
+      throw new Error(`Failed to fetch session messages: ${response.status}`);
+    }
+    return messageListClientSchema.parse(response.body?.data);
   }
 }

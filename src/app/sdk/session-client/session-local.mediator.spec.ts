@@ -3,6 +3,7 @@ import { SessionLocalMediator } from './session-local.mediator.js';
 import { createMockSessionService } from '@/business/domain/session/session.testing.js';
 import { SessionNotFoundError } from '@/business/domain/session/session.error.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
+import { GetSessionMessagesQuery } from '@/business/domain/session/client/queries.js';
 
 describe('SessionLocalMediator', () => {
   let mediator: SessionLocalMediator;
@@ -34,8 +35,8 @@ describe('SessionLocalMediator', () => {
         perPage: 20,
       });
 
-      const query = { sessionId: 'session-1', page: 1, perPage: 20 };
-      const result = await mediator.getMessages(query as never);
+      const query = new GetSessionMessagesQuery({ sessionId: 'session-1', page: 1, perPage: 20 });
+      const result = await mediator.getMessages(query);
 
       expect(sessionService.getMessages).toHaveBeenCalledWith('session-1', {
         page: 1,
@@ -55,22 +56,22 @@ describe('SessionLocalMediator', () => {
     it('throws SessionNotFoundClientError when service throws SessionNotFoundError', async () => {
       sessionService.getMessages.mockRejectedValue(new SessionNotFoundError('session-missing'));
 
-      const query = { sessionId: 'session-missing', page: 1, perPage: 10 };
+      const query = new GetSessionMessagesQuery({
+        sessionId: 'session-missing',
+        page: 1,
+        perPage: 10,
+      });
 
-      await expect(mediator.getMessages(query as never)).rejects.toThrow(
-        SessionNotFoundClientError,
-      );
+      await expect(mediator.getMessages(query)).rejects.toThrow(SessionNotFoundClientError);
     });
 
     it('re-throws unknown errors', async () => {
       const unknownError = new Error('database connection failed');
       sessionService.getMessages.mockRejectedValue(unknownError);
 
-      const query = { sessionId: 'session-1', page: 1, perPage: 10 };
+      const query = new GetSessionMessagesQuery({ sessionId: 'session-1', page: 1, perPage: 10 });
 
-      await expect(mediator.getMessages(query as never)).rejects.toThrow(
-        'database connection failed',
-      );
+      await expect(mediator.getMessages(query)).rejects.toThrow('database connection failed');
     });
   });
 });
