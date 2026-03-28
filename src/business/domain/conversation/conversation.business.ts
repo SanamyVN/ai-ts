@@ -14,6 +14,7 @@ import {
   CreateSessionCommand,
   FindSessionByIdQuery,
   UpdateSessionCommand,
+  UpdateSessionLastMessageCommand,
 } from '@/business/domain/session/client/queries.js';
 import type { IConversationEngine } from './conversation.interface.js';
 import type {
@@ -109,6 +110,7 @@ export class ConversationEngine implements IConversationEngine {
     };
     try {
       const response = await this.mastraAgent.generate(message, options);
+      await this.updateLastMessageBestEffort(state.sessionId, response.text);
       return { text: response.text, object: response.object };
     } catch (error) {
       if (isMastraAdapterError(error)) {
@@ -172,6 +174,21 @@ export class ConversationEngine implements IConversationEngine {
     };
     this.conversations.set(session.id, state);
     return state;
+  }
+
+  /**
+   * Best-effort update of the session's denormalized lastMessage.
+   * Failures are silently ignored — the primary response must not be
+   * blocked by a metadata write failure.
+   */
+  private async updateLastMessageBestEffort(sessionId: string, text: string): Promise<void> {
+    try {
+      await this.mediator.send(
+        new UpdateSessionLastMessageCommand({ sessionId, lastMessage: text }),
+      );
+    } catch {
+      // Best-effort: do not let a metadata update failure break the conversation flow.
+    }
   }
 
   /**

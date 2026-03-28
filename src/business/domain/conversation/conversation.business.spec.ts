@@ -337,9 +337,10 @@ describe('ConversationEngine', () => {
         (call) => call[0] instanceof UpdateSessionLastMessageCommand,
       );
       expect(lastMessageCall).toBeDefined();
-      const command = lastMessageCall![0] as InstanceType<typeof UpdateSessionLastMessageCommand>;
-      expect(command).toHaveProperty('sessionId', 'session-1');
-      expect(command).toHaveProperty('lastMessage', 'AI response text');
+      if (lastMessageCall) {
+        expect(lastMessageCall[0]).toHaveProperty('sessionId', 'session-1');
+        expect(lastMessageCall[0]).toHaveProperty('lastMessage', 'AI response text');
+      }
     });
 
     it('does not throw when UpdateSessionLastMessageCommand fails after send', async () => {
