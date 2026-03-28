@@ -12,4 +12,6 @@ export const aiSessions = pgTable('ai_sessions', {
   metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
   endedAt: timestamp('ended_at', { withTimezone: true }),
+  lastMessage: text('last_message'),
+  lastMessageAt: timestamp('last_message_at', { withTimezone: true }),
 });
