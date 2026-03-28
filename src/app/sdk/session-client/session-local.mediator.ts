@@ -7,6 +7,7 @@ import type { ISessionMediator } from '@/business/domain/session/client/mediator
 import type {
   SessionClientModel,
   SessionSummaryClient,
+  MessageListClient,
 } from '@/business/domain/session/client/schemas.js';
 import type {
   FindSessionByIdQuery,
@@ -15,12 +16,14 @@ import type {
   EndSessionCommand,
   UpdateSessionCommand,
   UpdateSessionLastMessageCommand,
+  GetSessionMessagesQuery,
 } from '@/business/domain/session/client/queries.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import { isSessionNotFoundError } from '@/business/domain/session/session.error.js';
 import {
   toSessionClientModelFromBusiness,
   toSessionSummaryClientFromBusiness,
+  toMessageListClient,
 } from './session.mapper.js';
 
 /**
@@ -82,6 +85,23 @@ export class SessionLocalMediator implements ISessionMediator {
     } catch (error) {
       if (isSessionNotFoundError(error)) {
         throw new SessionNotFoundClientError(command.sessionId, error);
+      }
+      throw error;
+    }
+  }
+
+  async getMessages(
+    query: InstanceType<typeof GetSessionMessagesQuery>,
+  ): Promise<MessageListClient> {
+    try {
+      const result = await this.sessionService.getMessages(query.sessionId, {
+        page: query.page,
+        perPage: query.perPage,
+      });
+      return toMessageListClient(result);
+    } catch (error) {
+      if (isSessionNotFoundError(error)) {
+        throw new SessionNotFoundClientError(query.sessionId, error);
       }
       throw error;
     }
