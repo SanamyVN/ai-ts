@@ -50,6 +50,16 @@ export interface ISessionRepository {
    * @throws {SessionNotFoundRepoError} When no session exists with the given ID.
    */
   updateResolvedPrompt(id: string, resolvedPrompt: string): Promise<SessionRecord>;
+
+  /**
+   * Update the last message and its timestamp for a session.
+   * @param id - Session ID.
+   * @param lastMessage - The most recent message text.
+   * @param lastMessageAt - The timestamp of the most recent message.
+   * @returns The updated session record.
+   * @throws {SessionNotFoundRepoError} When no session exists with the given ID.
+   */
+  updateLastMessage(id: string, lastMessage: string, lastMessageAt: Date): Promise<SessionRecord>;
 }
 
 /** Dependency-injection token for {@link ISessionRepository}. */

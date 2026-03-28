@@ -62,4 +62,20 @@ export class SessionDrizzleRepository implements ISessionRepository {
     }
     return record;
   }
+
+  async updateLastMessage(
+    id: string,
+    lastMessage: string,
+    lastMessageAt: Date,
+  ): Promise<SessionRecord> {
+    const [record] = await this.db.db
+      .update(aiSessions)
+      .set({ lastMessage, lastMessageAt })
+      .where(eq(aiSessions.id, id))
+      .returning();
+    if (!record) {
+      throw new SessionNotFoundRepoError(id);
+    }
+    return record;
+  }
 }

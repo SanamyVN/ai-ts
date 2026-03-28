@@ -8,5 +8,6 @@ describe('SessionDrizzleRepository', () => {
     expect(mock.findById).toBeDefined();
     expect(mock.list).toBeDefined();
     expect(mock.updateStatus).toBeDefined();
+    expect(mock.updateLastMessage).toBeDefined();
   });
 });
