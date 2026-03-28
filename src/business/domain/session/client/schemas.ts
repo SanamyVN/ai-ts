@@ -12,6 +12,8 @@ export const sessionClientModelSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).nullable(),
   startedAt: z.date(),
   endedAt: z.date().nullable(),
+  lastMessage: z.string().nullable(),
+  lastMessageAt: z.date().nullable(),
 });
 
 export type SessionClientModel = z.infer<typeof sessionClientModelSchema>;
@@ -23,6 +25,8 @@ export const sessionSummaryClientSchema = z.object({
   purpose: z.string(),
   status: z.string(),
   startedAt: z.date(),
+  lastMessage: z.string().nullable(),
+  lastMessageAt: z.date().nullable(),
 });
 
 export type SessionSummaryClient = z.infer<typeof sessionSummaryClientSchema>;

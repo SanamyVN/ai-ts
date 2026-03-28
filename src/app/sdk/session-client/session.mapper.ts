@@ -21,6 +21,8 @@ export function toSessionClientModelFromBusiness(session: Session): SessionClien
     metadata: session.metadata,
     startedAt: session.startedAt,
     endedAt: session.endedAt,
+    lastMessage: session.lastMessage,
+    lastMessageAt: session.lastMessageAt,
   };
 }
 
@@ -36,5 +38,7 @@ export function toSessionSummaryClientFromBusiness(summary: SessionSummary): Ses
     purpose: summary.purpose,
     status: summary.status,
     startedAt: summary.startedAt,
+    lastMessage: summary.lastMessage,
+    lastMessageAt: summary.lastMessageAt,
   };
 }
