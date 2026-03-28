@@ -46,3 +46,12 @@ export const UpdateSessionCommand = createCommand({
   }),
   response: z.void(),
 });
+
+export const UpdateSessionLastMessageCommand = createCommand({
+  type: 'ai.session.updateLastMessage',
+  payload: z.object({
+    sessionId: z.string(),
+    lastMessage: z.string(),
+  }),
+  response: z.void(),
+});
