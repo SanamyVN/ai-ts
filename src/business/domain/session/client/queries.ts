@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { createQuery, createCommand } from '@sanamyvn/foundation/mediator/request';
-import { sessionClientModelSchema, sessionSummaryClientSchema } from './schemas.js';
+import {
+  sessionClientModelSchema,
+  sessionSummaryClientSchema,
+  messageListClientSchema,
+} from './schemas.js';
 
 export const FindSessionByIdQuery = createQuery({
   type: 'ai.session.findById',
@@ -54,4 +58,14 @@ export const UpdateSessionLastMessageCommand = createCommand({
     lastMessage: z.string(),
   }),
   response: z.void(),
+});
+
+export const GetSessionMessagesQuery = createQuery({
+  type: 'ai.session.getMessages',
+  payload: z.object({
+    sessionId: z.string(),
+    page: z.number(),
+    perPage: z.number(),
+  }),
+  response: messageListClientSchema,
 });

@@ -1,5 +1,5 @@
 import { createMediatorToken } from '@sanamyvn/foundation/mediator/mediator-token';
-import type { SessionClientModel, SessionSummaryClient } from './schemas.js';
+import type { SessionClientModel, SessionSummaryClient, MessageListClient } from './schemas.js';
 import {
   FindSessionByIdQuery,
   ListSessionsQuery,
@@ -7,6 +7,7 @@ import {
   EndSessionCommand,
   UpdateSessionCommand,
   UpdateSessionLastMessageCommand,
+  GetSessionMessagesQuery,
 } from './queries.js';
 
 export interface ISessionMediator {
@@ -16,6 +17,7 @@ export interface ISessionMediator {
   end(command: InstanceType<typeof EndSessionCommand>): Promise<void>;
   update(command: InstanceType<typeof UpdateSessionCommand>): Promise<void>;
   updateLastMessage(command: InstanceType<typeof UpdateSessionLastMessageCommand>): Promise<void>;
+  getMessages(query: InstanceType<typeof GetSessionMessagesQuery>): Promise<MessageListClient>;
 }
 
 export const SESSION_MEDIATOR = createMediatorToken<ISessionMediator>('SESSION_MEDIATOR', {
@@ -25,4 +27,5 @@ export const SESSION_MEDIATOR = createMediatorToken<ISessionMediator>('SESSION_M
   end: EndSessionCommand,
   update: UpdateSessionCommand,
   updateLastMessage: UpdateSessionLastMessageCommand,
+  getMessages: GetSessionMessagesQuery,
 });
