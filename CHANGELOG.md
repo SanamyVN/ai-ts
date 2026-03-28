@@ -1,3 +1,28 @@
+## [1.17.0](https://github.com/SanamyVN/ai-ts/compare/v1.16.0...v1.17.0) (2026-03-28)
+
+### Features
+
+* **business:** add updateLastMessage to session service ([25e1679](https://github.com/SanamyVN/ai-ts/commit/25e167924b4d8ebd7363d8cc86748b4eddb84680))
+* **client-queries:** add UpdateSessionLastMessageCommand ([7ca30aa](https://github.com/SanamyVN/ai-ts/commit/7ca30aaa04b646ed8098f826a683b0f14e8640cf))
+* **client-schema:** add lastMessage and lastMessageAt to session client schemas ([327e250](https://github.com/SanamyVN/ai-ts/commit/327e250f27e1f8a0f802ecd9840fe4b91b0d1649))
+* **client-schema:** add message schemas ([3f1d417](https://github.com/SanamyVN/ai-ts/commit/3f1d417ec164da10e311e2a520522baa5bd982c5))
+* **client:** add GetSessionMessagesQuery and getMessages to ISessionMediator ([f6c260f](https://github.com/SanamyVN/ai-ts/commit/f6c260f8bc4f6d08946be02c856a437c11d714f6))
+* **conversation:** update lastMessage after send() completes ([82515d8](https://github.com/SanamyVN/ai-ts/commit/82515d8bd5f364abfd3ff96807daa38b51d5b993))
+* **conversation:** update lastMessage after stream() finishes accumulating text ([e80ae39](https://github.com/SanamyVN/ai-ts/commit/e80ae3917a57d4e053ad081b1bbd7b2d23199a73))
+* **local-mediator:** implement getMessages in SessionLocalMediator ([e829c40](https://github.com/SanamyVN/ai-ts/commit/e829c4086efe9d098aee020637c5ef9e5ec75981))
+* **mapper:** add toMessageListClient ([5d9e06a](https://github.com/SanamyVN/ai-ts/commit/5d9e06aa05850e2b657965a6675a0942489e7b96))
+* **mapper:** map lastMessage and lastMessageAt in session mappers ([58075f5](https://github.com/SanamyVN/ai-ts/commit/58075f55e6d730472814010e12039cbd5cf55ac0))
+* **mediator:** handle UpdateSessionLastMessageCommand in local and remote mediators ([331fe83](https://github.com/SanamyVN/ai-ts/commit/331fe83bd4b32566a96528c93d33efde3eb7ba17))
+* **model:** add lastMessage and lastMessageAt to Session and SessionSummary ([07eba15](https://github.com/SanamyVN/ai-ts/commit/07eba158c28e69c7e31f67c58143a4e3598d937d))
+* **remote-mediator:** implement getMessages in SessionRemoteMediator ([d361ccb](https://github.com/SanamyVN/ai-ts/commit/d361ccbe1c283b42cc6579b875d227b9ce0f7af5))
+* **repository:** add updateLastMessage method to session repository ([82d52e1](https://github.com/SanamyVN/ai-ts/commit/82d52e16b7211befc780e7e882580e4babf3bc3e))
+* **schema:** add lastMessage and lastMessageAt columns to ai_sessions ([a43e002](https://github.com/SanamyVN/ai-ts/commit/a43e0025aad2bf180973fd6967c00884f130b7c1))
+
+### Bug Fixes
+
+* **conversation:** guard send() lastMessage update against empty text ([9624972](https://github.com/SanamyVN/ai-ts/commit/9624972c2c0c3a65e4d728460f052d4f235a90f1))
+* restore updateResolvedPrompt in mock factory and repo spec assertion ([daa63a5](https://github.com/SanamyVN/ai-ts/commit/daa63a5366f03b1fa4872b8c18be3ae524ae0491))
+
 ## [1.16.0](https://github.com/SanamyVN/ai-ts/compare/v1.15.1...v1.16.0) (2026-03-25)
 
 ### Features
