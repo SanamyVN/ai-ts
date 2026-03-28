@@ -517,5 +517,114 @@ describe('ConversationEngine', () => {
         instructions: 'Hello {{name}}',
       });
     });
+
+    it('dispatches UpdateSessionLastMessageCommand on finish chunk with accumulated text', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      const chunks = [
+        { type: 'text-delta' as const, content: 'Hello' },
+        { type: 'text-delta' as const, content: ' world' },
+        { type: 'finish' as const, content: '' },
+      ];
+
+      agent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) {
+            yield chunk;
+          }
+        })(),
+      );
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      // Allow the UpdateSessionLastMessageCommand call to succeed
+      send.mockResolvedValueOnce(undefined);
+
+      const collected = [];
+      for await (const chunk of engine.stream(convo.id, 'Hello')) {
+        collected.push(chunk);
+      }
+
+      expect(collected).toEqual(chunks);
+      expect(send).toHaveBeenCalledWith(expect.any(UpdateSessionLastMessageCommand));
+      const lastMessageCall = send.mock.calls.find(
+        (call) => call[0] instanceof UpdateSessionLastMessageCommand,
+      );
+      expect(lastMessageCall).toBeDefined();
+      if (lastMessageCall) {
+        expect(lastMessageCall[0]).toHaveProperty('sessionId', 'session-1');
+        expect(lastMessageCall[0]).toHaveProperty('lastMessage', 'Hello world');
+      }
+    });
+
+    it('does not dispatch UpdateSessionLastMessageCommand when no text was accumulated', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      const chunks = [{ type: 'finish' as const, content: '' }];
+
+      agent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) {
+            yield chunk;
+          }
+        })(),
+      );
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      for await (const _ of engine.stream(convo.id, 'Hello')) {
+        // consume
+      }
+
+      const lastMessageCall = send.mock.calls.find(
+        (call) => call[0] instanceof UpdateSessionLastMessageCommand,
+      );
+      expect(lastMessageCall).toBeUndefined();
+    });
+
+    it('does not throw when UpdateSessionLastMessageCommand fails during stream', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      const chunks = [
+        { type: 'text-delta' as const, content: 'Hi' },
+        { type: 'finish' as const, content: '' },
+      ];
+
+      agent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) {
+            yield chunk;
+          }
+        })(),
+      );
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      // Make the UpdateSessionLastMessageCommand call fail
+      send.mockRejectedValueOnce(new Error('DB write failed'));
+
+      const collected = [];
+      for await (const chunk of engine.stream(convo.id, 'Hello')) {
+        collected.push(chunk);
+      }
+
+      // All chunks should still be yielded
+      expect(collected).toEqual(chunks);
+    });
   });
 });
