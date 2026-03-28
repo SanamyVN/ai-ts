@@ -30,3 +30,18 @@ export const sessionSummaryClientSchema = z.object({
 });
 
 export type SessionSummaryClient = z.infer<typeof sessionSummaryClientSchema>;
+
+export const messageClientSchema = z.object({
+  id: z.string(),
+  role: z.enum(['user', 'assistant', 'system']),
+  content: z.string(),
+  createdAt: z.date(),
+});
+export type MessageClient = z.infer<typeof messageClientSchema>;
+
+export const messageListClientSchema = z.object({
+  messages: z.array(messageClientSchema),
+  page: z.number(),
+  perPage: z.number(),
+});
+export type MessageListClient = z.infer<typeof messageListClientSchema>;
