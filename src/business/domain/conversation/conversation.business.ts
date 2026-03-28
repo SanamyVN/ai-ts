@@ -110,7 +110,9 @@ export class ConversationEngine implements IConversationEngine {
     };
     try {
       const response = await this.mastraAgent.generate(message, options);
-      await this.updateLastMessageBestEffort(state.sessionId, response.text);
+      if (response.text.length > 0) {
+        await this.updateLastMessageBestEffort(state.sessionId, response.text);
+      }
       return { text: response.text, object: response.object };
     } catch (error) {
       if (isMastraAdapterError(error)) {

@@ -343,6 +343,30 @@ describe('ConversationEngine', () => {
       }
     });
 
+    it('does not dispatch UpdateSessionLastMessageCommand when response text is empty', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: '',
+        object: { answer: 42 },
+        threadId: 'thread-1',
+      });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      await engine.send(convo.id, 'Hello');
+
+      const lastMessageCall = send.mock.calls.find(
+        (call) => call[0] instanceof UpdateSessionLastMessageCommand,
+      );
+      expect(lastMessageCall).toBeUndefined();
+    });
+
     it('does not throw when UpdateSessionLastMessageCommand fails after send', async () => {
       send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
 
