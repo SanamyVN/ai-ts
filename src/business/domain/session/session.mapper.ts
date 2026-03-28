@@ -14,6 +14,8 @@ export function toSessionFromRecord(record: SessionRecord): Session {
     metadata: record.metadata,
     startedAt: record.startedAt,
     endedAt: record.endedAt,
+    lastMessage: record.lastMessage,
+    lastMessageAt: record.lastMessageAt,
   };
 }
 
@@ -25,5 +27,7 @@ export function toSessionSummaryFromRecord(record: SessionRecord): SessionSummar
     purpose: record.purpose,
     status: record.status,
     startedAt: record.startedAt,
+    lastMessage: record.lastMessage,
+    lastMessageAt: record.lastMessageAt,
   };
 }
