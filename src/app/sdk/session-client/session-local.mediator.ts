@@ -50,6 +50,7 @@ export class SessionLocalMediator implements ISessionMediator {
   async list(query: InstanceType<typeof ListSessionsQuery>): Promise<SessionSummaryClient[]> {
     const results = await this.sessionService.list({
       ...(query.userId !== undefined ? { userId: query.userId } : {}),
+      ...(query.userIds !== undefined ? { userIds: query.userIds } : {}),
       ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
       ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
       ...(query.status !== undefined ? { status: query.status } : {}),

@@ -16,6 +16,7 @@ export const ListSessionsQuery = createQuery({
   type: 'ai.session.list',
   payload: z.object({
     userId: z.string().optional(),
+    userIds: z.array(z.string()).optional(),
     tenantId: z.string().optional(),
     purpose: z.string().optional(),
     status: z.string().optional(),

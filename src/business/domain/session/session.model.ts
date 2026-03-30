@@ -45,6 +45,7 @@ export interface StartSessionInput {
 /** Criteria for filtering sessions in list queries. */
 export interface SessionFilter {
   readonly userId?: string;
+  readonly userIds?: string[];
   readonly tenantId?: string;
   readonly purpose?: string;
   readonly status?: string;
