@@ -1,3 +1,9 @@
+## [1.18.0](https://github.com/SanamyVN/ai-ts/compare/v1.17.0...v1.18.0) (2026-03-30)
+
+### Features
+
+* rename Whisper/Speaches adapters to OpenAI STT/TTS ([86afbcf](https://github.com/SanamyVN/ai-ts/commit/86afbcf81afe38d84087a58f54fd8bbfd671aaa8))
+
 ## [1.17.0](https://github.com/SanamyVN/ai-ts/compare/v1.16.0...v1.17.0) (2026-03-28)
 
 ### Features
