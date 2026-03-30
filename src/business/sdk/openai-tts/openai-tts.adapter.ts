@@ -2,24 +2,24 @@ import { Readable } from 'node:stream';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMastraVoiceTts, SpeakOptions } from '@/business/sdk/mastra/mastra.interface.js';
 import { AI_CONFIG, type AiConfig } from '@/config.js';
-import { SpeachesTtsAdapterError } from './speaches.error.js';
+import { OpenAiTtsAdapterError } from './openai-tts.error.js';
 
 const DEFAULT_VOICE = 'af_heart';
 
 /**
- * Wraps an OpenAI-compatible TTS HTTP server (e.g. Speaches, OpenAI)
- * behind the stable `IMastraVoiceTts` interface. Sends text to
- * `POST /v1/audio/speech` and returns the audio as a readable stream.
+ * Wraps an OpenAI-compatible TTS HTTP server behind the stable
+ * `IMastraVoiceTts` interface. Sends text to `POST /v1/audio/speech`
+ * and returns the audio as a readable stream.
  *
  * Configuration is read from `AI_CONFIG`:
- * - `ttsProvider.url` — base URL of the TTS server (required for local models)
+ * - `ttsProvider.url` — base URL of the TTS server (defaults to OpenAI)
  * - `ttsProvider.apiKey` — API key (required for cloud providers like OpenAI)
- * - `ttsModel` — model name (e.g. 'tts-1' for OpenAI, 'speaches-ai/Kokoro-82M-v1.0-ONNX' for Speaches)
+ * - `ttsModel` — model name (e.g. 'tts-1' for OpenAI, 'speaches-ai/Kokoro-82M-v1.0-ONNX' for local models)
  *
- * All errors are caught and re-thrown as `SpeachesTtsAdapterError`.
+ * All errors are caught and re-thrown as `OpenAiTtsAdapterError`.
  */
 @Injectable()
-export class SpeachesTtsAdapter implements IMastraVoiceTts {
+export class OpenAiTtsAdapter implements IMastraVoiceTts {
   private readonly baseUrl: string;
   private readonly model: string;
   private readonly apiKey: string | undefined;
@@ -56,6 +56,7 @@ export class SpeachesTtsAdapter implements IMastraVoiceTts {
           model: this.model,
           input: text,
           voice,
+          response_format: 'mp3',
         }),
       });
 
@@ -66,10 +67,10 @@ export class SpeachesTtsAdapter implements IMastraVoiceTts {
 
       return responseToNodeReadable(response);
     } catch (error) {
-      if (error instanceof SpeachesTtsAdapterError) {
+      if (error instanceof OpenAiTtsAdapterError) {
         throw error;
       }
-      throw new SpeachesTtsAdapterError('textToSpeech', error);
+      throw new OpenAiTtsAdapterError('textToSpeech', error);
     }
   }
 
@@ -95,10 +96,10 @@ export class SpeachesTtsAdapter implements IMastraVoiceTts {
       }
       return [];
     } catch (error) {
-      if (error instanceof SpeachesTtsAdapterError) {
+      if (error instanceof OpenAiTtsAdapterError) {
         throw error;
       }
-      throw new SpeachesTtsAdapterError('getSpeakers', error);
+      throw new OpenAiTtsAdapterError('getSpeakers', error);
     }
   }
 }

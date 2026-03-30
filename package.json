@@ -394,13 +394,13 @@
       "types": "./dist/business/sdk/silero/silero.error.d.ts",
       "default": "./dist/business/sdk/silero/silero.error.js"
     },
-    "./business/sdk/whisper/providers": {
-      "types": "./dist/business/sdk/whisper/whisper.providers.d.ts",
-      "default": "./dist/business/sdk/whisper/whisper.providers.js"
+    "./business/sdk/openai-stt/providers": {
+      "types": "./dist/business/sdk/openai-stt/openai-stt.providers.d.ts",
+      "default": "./dist/business/sdk/openai-stt/openai-stt.providers.js"
     },
-    "./business/sdk/whisper/error": {
-      "types": "./dist/business/sdk/whisper/whisper.error.d.ts",
-      "default": "./dist/business/sdk/whisper/whisper.error.js"
+    "./business/sdk/openai-stt/error": {
+      "types": "./dist/business/sdk/openai-stt/openai-stt.error.d.ts",
+      "default": "./dist/business/sdk/openai-stt/openai-stt.error.js"
     },
     "./business/sdk/kokoro/providers": {
       "types": "./dist/business/sdk/kokoro/kokoro.providers.d.ts",
@@ -410,13 +410,13 @@
       "types": "./dist/business/sdk/kokoro/kokoro.error.d.ts",
       "default": "./dist/business/sdk/kokoro/kokoro.error.js"
     },
-    "./business/sdk/speaches/providers": {
-      "types": "./dist/business/sdk/speaches/speaches.providers.d.ts",
-      "default": "./dist/business/sdk/speaches/speaches.providers.js"
+    "./business/sdk/openai-tts/providers": {
+      "types": "./dist/business/sdk/openai-tts/openai-tts.providers.d.ts",
+      "default": "./dist/business/sdk/openai-tts/openai-tts.providers.js"
     },
-    "./business/sdk/speaches/error": {
-      "types": "./dist/business/sdk/speaches/speaches.error.d.ts",
-      "default": "./dist/business/sdk/speaches/speaches.error.js"
+    "./business/sdk/openai-tts/error": {
+      "types": "./dist/business/sdk/openai-tts/openai-tts.error.d.ts",
+      "default": "./dist/business/sdk/openai-tts/openai-tts.error.js"
     },
     "./business/vad": {
       "types": "./dist/business/domain/vad/vad.interface.d.ts",

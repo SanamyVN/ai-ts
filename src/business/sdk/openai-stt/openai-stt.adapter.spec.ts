@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Readable } from 'node:stream';
-import { WhisperSttAdapter } from './whisper.adapter.js';
-import { WhisperAdapterError } from './whisper.error.js';
+import { OpenAiSttAdapter } from './openai-stt.adapter.js';
+import { OpenAiSttAdapterError } from './openai-stt.error.js';
 import type { AiConfig } from '@/config.js';
 
 // ---------------------------------------------------------------------------
@@ -63,14 +63,14 @@ function mockFetchError(status: number, body: string) {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('WhisperSttAdapter', () => {
-  let adapter: WhisperSttAdapter;
+describe('OpenAiSttAdapter', () => {
+  let adapter: OpenAiSttAdapter;
 
   beforeEach(() => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
     mockFetchSuccess('hello world');
-    adapter = new WhisperSttAdapter(makeConfig());
+    adapter = new OpenAiSttAdapter(makeConfig());
   });
 
   describe('speechToText', () => {
@@ -87,7 +87,7 @@ describe('WhisperSttAdapter', () => {
     });
 
     it('sends the configured model in the form data', async () => {
-      const customAdapter = new WhisperSttAdapter(
+      const customAdapter = new OpenAiSttAdapter(
         makeConfig({ sttModel: 'openai/whisper-large-v3' }),
       );
       const stream = makeAudioStream(SILENT_PCM);
@@ -103,7 +103,7 @@ describe('WhisperSttAdapter', () => {
     });
 
     it('defaults to whisper-1 when no sttModel configured', async () => {
-      const defaultAdapter = new WhisperSttAdapter(makeConfig({ sttModel: undefined }));
+      const defaultAdapter = new OpenAiSttAdapter(makeConfig({ sttModel: undefined }));
       const stream = makeAudioStream(SILENT_PCM);
 
       await defaultAdapter.speechToText(stream);
@@ -116,7 +116,7 @@ describe('WhisperSttAdapter', () => {
     });
 
     it('defaults to OpenAI URL when no sttProvider configured', async () => {
-      const cloudAdapter = new WhisperSttAdapter(makeConfig({ sttProvider: undefined }));
+      const cloudAdapter = new OpenAiSttAdapter(makeConfig({ sttProvider: undefined }));
       const stream = makeAudioStream(SILENT_PCM);
 
       await cloudAdapter.speechToText(stream);
@@ -126,7 +126,7 @@ describe('WhisperSttAdapter', () => {
     });
 
     it('sends Authorization header when apiKey is configured', async () => {
-      const authAdapter = new WhisperSttAdapter(
+      const authAdapter = new OpenAiSttAdapter(
         makeConfig({ sttProvider: { url: BASE_URL, apiKey: 'sk-test-123' } }),
       );
       const stream = makeAudioStream(SILENT_PCM);
@@ -139,7 +139,7 @@ describe('WhisperSttAdapter', () => {
     });
 
     it('trims trailing slash from baseUrl', async () => {
-      const trailingSlash = new WhisperSttAdapter(
+      const trailingSlash = new OpenAiSttAdapter(
         makeConfig({ sttProvider: { url: 'http://localhost:8000/' } }),
       );
       const stream = makeAudioStream(SILENT_PCM);
@@ -150,14 +150,14 @@ describe('WhisperSttAdapter', () => {
       expect(call?.[0]).toBe('http://localhost:8000/v1/audio/transcriptions');
     });
 
-    it('wraps HTTP error responses as WhisperAdapterError', async () => {
+    it('wraps HTTP error responses as OpenAiSttAdapterError', async () => {
       mockFetchError(500, 'Internal Server Error');
       const stream = makeAudioStream(SILENT_PCM);
 
-      await expect(adapter.speechToText(stream)).rejects.toThrow(WhisperAdapterError);
+      await expect(adapter.speechToText(stream)).rejects.toThrow(OpenAiSttAdapterError);
     });
 
-    it('wraps network errors as WhisperAdapterError', async () => {
+    it('wraps network errors as OpenAiSttAdapterError', async () => {
       vi.stubGlobal(
         'fetch',
         vi.fn(async () => {
@@ -166,10 +166,10 @@ describe('WhisperSttAdapter', () => {
       );
       const stream = makeAudioStream(SILENT_PCM);
 
-      await expect(adapter.speechToText(stream)).rejects.toThrow(WhisperAdapterError);
+      await expect(adapter.speechToText(stream)).rejects.toThrow(OpenAiSttAdapterError);
     });
 
-    it('wraps stream errors as WhisperAdapterError', async () => {
+    it('wraps stream errors as OpenAiSttAdapterError', async () => {
       const errStream = new Readable({
         read() {
           // no-op
@@ -177,7 +177,7 @@ describe('WhisperSttAdapter', () => {
       });
       errStream.destroy(new Error('stream read error'));
 
-      await expect(adapter.speechToText(errStream)).rejects.toThrow(WhisperAdapterError);
+      await expect(adapter.speechToText(errStream)).rejects.toThrow(OpenAiSttAdapterError);
     });
 
     it('includes the original error as the cause', async () => {
@@ -196,8 +196,8 @@ describe('WhisperSttAdapter', () => {
         caught = err;
       }
 
-      expect(caught).toBeInstanceOf(WhisperAdapterError);
-      if (caught instanceof WhisperAdapterError) {
+      expect(caught).toBeInstanceOf(OpenAiSttAdapterError);
+      if (caught instanceof OpenAiSttAdapterError) {
         expect(caught.cause).toBeInstanceOf(Error);
       }
     });

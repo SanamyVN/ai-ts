@@ -1,22 +1,22 @@
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMastraVoiceStt } from '@/business/sdk/mastra/mastra.interface.js';
 import { AI_CONFIG, type AiConfig } from '@/config.js';
-import { WhisperAdapterError } from './whisper.error.js';
+import { OpenAiSttAdapterError } from './openai-stt.error.js';
 
 /**
- * Wraps an OpenAI-compatible STT HTTP server (e.g. Speaches, OpenAI)
- * behind the stable `IMastraVoiceStt` interface. Sends audio to
+ * Wraps an OpenAI-compatible STT HTTP server behind the stable
+ * `IMastraVoiceStt` interface. Sends audio to
  * `POST /v1/audio/transcriptions` as multipart/form-data.
  *
  * Configuration is read from `AI_CONFIG`:
- * - `sttProvider.url` — base URL of the STT server (required for local models)
+ * - `sttProvider.url` — base URL of the STT server (defaults to OpenAI)
  * - `sttProvider.apiKey` — API key (required for cloud providers like OpenAI)
- * - `sttModel` — model name (e.g. 'whisper-1' for OpenAI, 'Systran/faster-distil-whisper-small.en' for Speaches)
+ * - `sttModel` — model name (e.g. 'whisper-1' for OpenAI, 'Systran/faster-distil-whisper-small.en' for local models)
  *
- * All errors are caught and re-thrown as `WhisperAdapterError`.
+ * All errors are caught and re-thrown as `OpenAiSttAdapterError`.
  */
 @Injectable()
-export class WhisperSttAdapter implements IMastraVoiceStt {
+export class OpenAiSttAdapter implements IMastraVoiceStt {
   private readonly baseUrl: string;
   private readonly model: string;
   private readonly apiKey: string | undefined;
@@ -70,10 +70,10 @@ export class WhisperSttAdapter implements IMastraVoiceStt {
       }
       return text.trim();
     } catch (error) {
-      if (error instanceof WhisperAdapterError) {
+      if (error instanceof OpenAiSttAdapterError) {
         throw error;
       }
-      throw new WhisperAdapterError('speechToText', error);
+      throw new OpenAiSttAdapterError('speechToText', error);
     }
   }
 
@@ -94,8 +94,8 @@ function isTranscriptionResult(value: unknown): value is TranscriptionResult {
 }
 
 /**
- * Prepends a 44-byte RIFF/WAV header to raw PCM data so that STT servers
- * (Whisper, Speaches, OpenAI) can decode the audio correctly.
+ * Prepends a 44-byte RIFF/WAV header to raw PCM data so that
+ * OpenAI-compatible STT servers can decode the audio correctly.
  */
 function wrapPcmInWav(
   pcm: Buffer,
