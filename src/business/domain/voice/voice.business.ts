@@ -1,7 +1,8 @@
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import { MASTRA_VOICE_TTS, MASTRA_VOICE_STT } from '@/business/sdk/mastra/mastra.interface.js';
 import type { IMastraVoiceTts, IMastraVoiceStt } from '@/business/sdk/mastra/mastra.interface.js';
-import type { IVoiceBusiness } from './voice.interface.js';
+import type { IVoiceBusiness, VoiceTtsConfig } from './voice.interface.js';
+import { VOICE_TTS_CONFIG } from './voice.interface.js';
 import type {
   TextToSpeechInput,
   TextToSpeechResult,
@@ -16,12 +17,14 @@ export class VoiceBusiness implements IVoiceBusiness {
   constructor(
     @Inject(MASTRA_VOICE_TTS) private readonly tts: IMastraVoiceTts,
     @Inject(MASTRA_VOICE_STT) private readonly stt: IMastraVoiceStt,
+    @Inject(VOICE_TTS_CONFIG) private readonly ttsConfig: VoiceTtsConfig,
   ) {}
 
   async textToSpeech(input: TextToSpeechInput): Promise<TextToSpeechResult> {
     try {
+      const speaker = this.ttsConfig[input.speakerGender];
       const audioStream = await this.tts.textToSpeech(input.text, {
-        ...(input.speaker !== undefined ? { speaker: input.speaker } : {}),
+        speaker,
         ...input.options,
       });
       if (!audioStream) throw new VoiceTtsError('Provider returned no audio stream');
