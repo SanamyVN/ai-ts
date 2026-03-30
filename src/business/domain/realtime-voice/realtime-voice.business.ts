@@ -6,6 +6,7 @@ import {
   VoiceSpeechToTextCommand,
   VoiceTextToSpeechCommand,
 } from '@/business/domain/voice/client/queries.js';
+import { VOICE_TTS_CONFIG, type VoiceTtsConfig } from '@/business/domain/voice/voice.interface.js';
 import { SendMessageCommand } from '@/business/domain/conversation/client/queries.js';
 import type {
   IRealtimeVoiceBusiness,
@@ -20,7 +21,10 @@ import type { ConversationPipelineState } from './realtime-voice.model.js';
 export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
   private readonly conversations = new Map<string, ConversationPipelineState>();
 
-  constructor(@Inject(AI_MEDIATOR) private readonly mediator: IMediator) {}
+  constructor(
+    @Inject(AI_MEDIATOR) private readonly mediator: IMediator,
+    @Inject(VOICE_TTS_CONFIG) private readonly ttsConfig: VoiceTtsConfig,
+  ) {}
 
   async processAudio(input: ProcessAudioInput): Promise<ProcessAudioResult> {
     const { conversationId, audio } = input;
@@ -120,7 +124,10 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
       state.eventQueue.push({ type: 'stateChange', state: 'synthesizing' });
 
       const ttsResult = await this.mediator.send(
-        new VoiceTextToSpeechCommand({ text: llmResult.text, speakerGender: 'female' }),
+        new VoiceTextToSpeechCommand({
+          text: llmResult.text,
+          speakerGender: this.ttsConfig.defaultSpeakerGender,
+        }),
       );
 
       // 4. Done — queue final events and reset

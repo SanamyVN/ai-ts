@@ -24,7 +24,11 @@ describe('RealtimeVoiceBusiness', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mediator = createMockMediator();
-    business = new RealtimeVoiceBusiness(mediator);
+    business = new RealtimeVoiceBusiness(mediator, {
+      male: 'alloy',
+      female: 'nova',
+      defaultSpeakerGender: 'male',
+    });
   });
 
   function mockVad(isSpeech: boolean, probability = 0.9) {
@@ -106,7 +110,7 @@ describe('RealtimeVoiceBusiness', () => {
       );
     });
 
-    it('includes speakerGender when sending TTS command', async () => {
+    it('uses configured default speakerGender when sending TTS command', async () => {
       // Frame 1: speech
       mockVad(true);
       await business.processAudio({ conversationId: 'conv-1', audio: makeSpeechAudio() });
@@ -124,7 +128,7 @@ describe('RealtimeVoiceBusiness', () => {
 
       expect(ttsCall?.[0]).toEqual(
         expect.objectContaining({
-          speakerGender: 'female',
+          speakerGender: 'male',
         }),
       );
     });

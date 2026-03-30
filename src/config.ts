@@ -25,6 +25,7 @@ const vadConfigSchema = z.object({
 const voiceTtsConfigSchema = z.object({
   male: z.string().min(1),
   female: z.string().min(1),
+  defaultSpeakerGender: z.enum(['male', 'female']).default('female'),
 });
 
 const voiceConfigSchema = z.object({
