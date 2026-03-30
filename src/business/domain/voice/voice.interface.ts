@@ -7,6 +7,15 @@ import type {
   GetSpeakersResult,
 } from './voice.model.js';
 
+export type SpeakerGender = 'male' | 'female';
+
+export interface VoiceTtsConfig {
+  readonly male: string;
+  readonly female: string;
+}
+
+export const VOICE_TTS_CONFIG = createToken<VoiceTtsConfig>('VOICE_TTS_CONFIG');
+
 /** Abstraction over voice operations for text-to-speech and speech-to-text. */
 export interface IVoiceBusiness {
   /** Convert text to an audio stream. */

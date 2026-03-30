@@ -1,6 +1,8 @@
+import type { SpeakerGender } from './voice.interface.js';
+
 export interface TextToSpeechInput {
   readonly text: string;
-  readonly speaker?: string;
+  readonly speakerGender: SpeakerGender;
   readonly options?: Record<string, unknown>;
 }
 
