@@ -1,3 +1,19 @@
+## [1.19.0](https://github.com/SanamyVN/ai-ts/compare/v1.18.0...v1.19.0) (2026-03-30)
+
+### Features
+
+* **config:** add nested tts voice mapping ([40fa510](https://github.com/SanamyVN/ai-ts/commit/40fa51079592a77de3d35762ad8f05de1f3a1ff8))
+* **realtime-voice:** use voice tts config for default speaker gender ([d09b240](https://github.com/SanamyVN/ai-ts/commit/d09b240d36d2d870c92d73823eaacd39fe12c5d9))
+* **voice:** pass speakerGender through mediators ([94cb896](https://github.com/SanamyVN/ai-ts/commit/94cb896bdb61fa152bbe78dba1b5e7013e7b7abe))
+* **voice:** replace speaker with speakerGender contract ([4cd2968](https://github.com/SanamyVN/ai-ts/commit/4cd2968ca55aff91926dc3effc23f0554f166ad1))
+* **voice:** resolve speakerGender via injected tts config ([75861be](https://github.com/SanamyVN/ai-ts/commit/75861bef090a23cbc91f173a36dcae07da93d5d2))
+
+### Bug Fixes
+
+* **ci:** satisfy lint in realtime voice spec ([5f7ad9e](https://github.com/SanamyVN/ai-ts/commit/5f7ad9ea570eda46179e54a19f7cc6713f4707e2))
+* **voice:** drive realtime and speaker mapping from ai config ([2c65888](https://github.com/SanamyVN/ai-ts/commit/2c65888c392c84c64cbad470d52d4872725561c1))
+* **voice:** enforce speakerGender resolution precedence ([54c50ea](https://github.com/SanamyVN/ai-ts/commit/54c50eac1b36d56a0895cfff909af8bd803011c4))
+
 ## [1.18.0](https://github.com/SanamyVN/ai-ts/compare/v1.17.0...v1.18.0) (2026-03-30)
 
 ### Features
