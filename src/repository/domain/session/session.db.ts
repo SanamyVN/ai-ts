@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
 import type { AiSchema } from '@/shared/schema.js';
@@ -28,6 +28,7 @@ export class SessionDrizzleRepository implements ISessionRepository {
   async list(filter: SessionRepoFilter): Promise<SessionRecord[]> {
     const conditions = [];
     if (filter.userId) conditions.push(eq(aiSessions.userId, filter.userId));
+    if (filter.userIds?.length) conditions.push(inArray(aiSessions.userId, filter.userIds));
     if (filter.tenantId) conditions.push(eq(aiSessions.tenantId, filter.tenantId));
     if (filter.purpose) conditions.push(eq(aiSessions.purpose, filter.purpose));
     if (filter.status) conditions.push(eq(aiSessions.status, filter.status));

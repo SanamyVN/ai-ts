@@ -4,6 +4,7 @@ import type { SessionRecord, NewSessionRecord } from './session.model.js';
 /** Criteria for filtering sessions in list queries. All fields are optional. */
 export interface SessionRepoFilter {
   userId?: string;
+  userIds?: string[];
   tenantId?: string;
   purpose?: string;
   status?: string;
