@@ -120,7 +120,7 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
       state.eventQueue.push({ type: 'stateChange', state: 'synthesizing' });
 
       const ttsResult = await this.mediator.send(
-        new VoiceTextToSpeechCommand({ text: llmResult.text }),
+        new VoiceTextToSpeechCommand({ text: llmResult.text, speakerGender: 'female' }),
       );
 
       // 4. Done — queue final events and reset

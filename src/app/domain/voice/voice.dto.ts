@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const textToSpeechRequestDto = z.object({
   text: z.string().min(1),
-  speaker: z.string().optional(),
+  speakerGender: z.enum(['male', 'female']),
   options: z.record(z.string(), z.unknown()).optional(),
 });
 export type TextToSpeechRequestDto = z.infer<typeof textToSpeechRequestDto>;

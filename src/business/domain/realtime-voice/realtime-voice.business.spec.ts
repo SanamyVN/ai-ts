@@ -106,6 +106,29 @@ describe('RealtimeVoiceBusiness', () => {
       );
     });
 
+    it('includes speakerGender when sending TTS command', async () => {
+      // Frame 1: speech
+      mockVad(true);
+      await business.processAudio({ conversationId: 'conv-1', audio: makeSpeechAudio() });
+
+      // Frame 2: silence → triggers chain
+      mockVad(false, 0.1);
+      mockFullChain();
+      await business.processAudio({ conversationId: 'conv-1', audio: makeSilenceAudio() });
+      await flushMicrotasks();
+
+      const calls = vi.mocked(mediator.send).mock.calls;
+      const ttsCall = calls.find(
+        (call) => (call[0] as { type?: string }).type === 'ai.voice.textToSpeech',
+      );
+
+      expect(ttsCall?.[0]).toEqual(
+        expect.objectContaining({
+          speakerGender: 'female',
+        }),
+      );
+    });
+
     it('does not trigger a new chain when state is not listening', async () => {
       // Frame 1: speech
       mockVad(true);

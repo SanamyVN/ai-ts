@@ -27,7 +27,7 @@ export class VoiceLocalMediator implements IVoiceMediator {
   ): Promise<TextToSpeechClientResult> {
     const result = await this.voiceBusiness.textToSpeech({
       text: command.text,
-      ...(command.speaker !== undefined ? { speaker: command.speaker } : {}),
+      speakerGender: command.speakerGender,
       ...(command.options !== undefined ? { options: command.options } : {}),
     });
     return toTextToSpeechClientResult(result);

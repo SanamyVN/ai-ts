@@ -45,7 +45,7 @@ export class VoiceRemoteMediator implements IVoiceMediator {
   ): Promise<TextToSpeechClientResult> {
     const response = await this.http.post(`${this.config.baseUrl}/ai/voice/text-to-speech`, {
       text: command.text,
-      speaker: command.speaker,
+      speakerGender: command.speakerGender,
       options: command.options,
     });
     if (!response.ok) {
