@@ -17,7 +17,8 @@ describe('VoiceBusiness', () => {
     vi.clearAllMocks();
     mockTts = createMockMastraVoiceTts();
     mockStt = createMockMastraVoiceStt();
-    business = new VoiceBusiness(mockTts, mockStt);
+    const ttsConfig = { male: 'alloy', female: 'nova' };
+    business = new VoiceBusiness(mockTts, mockStt, ttsConfig);
   });
 
   describe('textToSpeech', () => {
@@ -26,20 +27,37 @@ describe('VoiceBusiness', () => {
       const audioStream = new Readable({ read() {} });
       mockTts.textToSpeech.mockResolvedValue(audioStream);
 
-      const result = await business.textToSpeech({ text: 'hello', speaker: 'nova' });
+      const result = await business.textToSpeech({ text: 'hello', speakerGender: 'male' });
 
-      expect(mockTts.textToSpeech).toHaveBeenCalledWith('hello', { speaker: 'nova' });
+      expect(mockTts.textToSpeech).toHaveBeenCalledWith('hello', { speaker: 'alloy' });
       expect(result.audioStream).toBe(audioStream);
     });
 
-    it('passes provider-specific options', async () => {
+    it('resolves female speakerGender to configured voice', async () => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       const audioStream = new Readable({ read() {} });
       mockTts.textToSpeech.mockResolvedValue(audioStream);
 
-      await business.textToSpeech({ text: 'hello', options: { speed: 1.5 } });
+      await business.textToSpeech({ text: 'hello', speakerGender: 'female' });
 
-      expect(mockTts.textToSpeech).toHaveBeenCalledWith('hello', { speed: 1.5 });
+      expect(mockTts.textToSpeech).toHaveBeenCalledWith('hello', { speaker: 'nova' });
+    });
+
+    it('passes provider-specific options with resolved speaker', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      const audioStream = new Readable({ read() {} });
+      mockTts.textToSpeech.mockResolvedValue(audioStream);
+
+      await business.textToSpeech({
+        text: 'hello',
+        speakerGender: 'male',
+        options: { speed: 1.5 },
+      });
+
+      expect(mockTts.textToSpeech).toHaveBeenCalledWith('hello', {
+        speaker: 'alloy',
+        speed: 1.5,
+      });
     });
 
     it('throws VoiceTtsError when provider returns void', async () => {
