@@ -51,12 +51,12 @@ describe('VoiceBusiness', () => {
       await business.textToSpeech({
         text: 'hello',
         speakerGender: 'male',
-        options: { speed: 1.5 },
+        options: { speed: 1.5, speaker: 'override' },
       });
 
       expect(mockTts.textToSpeech).toHaveBeenCalledWith('hello', {
-        speaker: 'alloy',
         speed: 1.5,
+        speaker: 'alloy',
       });
     });
 
