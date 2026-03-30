@@ -63,7 +63,9 @@ describe('VoiceBusiness', () => {
     it('throws VoiceTtsError when provider returns void', async () => {
       mockTts.textToSpeech.mockResolvedValue(undefined);
 
-      await expect(business.textToSpeech({ text: 'hello' })).rejects.toThrow(VoiceTtsError);
+      await expect(business.textToSpeech({ text: 'hello', speakerGender: 'male' })).rejects.toThrow(
+        VoiceTtsError,
+      );
     });
 
     it('wraps adapter errors as VoiceTtsError', async () => {
@@ -71,7 +73,9 @@ describe('VoiceBusiness', () => {
         new MastraAdapterError('textToSpeech', new Error('provider error')),
       );
 
-      await expect(business.textToSpeech({ text: 'hello' })).rejects.toThrow(VoiceTtsError);
+      await expect(business.textToSpeech({ text: 'hello', speakerGender: 'male' })).rejects.toThrow(
+        VoiceTtsError,
+      );
     });
   });
 
