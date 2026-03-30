@@ -1,3 +1,10 @@
+## [1.20.0](https://github.com/SanamyVN/ai-ts/compare/v1.19.0...v1.20.0) (2026-03-30)
+
+### Features
+
+* **session:** add userIds array filter to session repository ([a3c19f8](https://github.com/SanamyVN/ai-ts/commit/a3c19f8643bdb2162ed61fe47fdb0032d84ea98c))
+* **session:** add userIds to session filter across business and client layers ([336d91e](https://github.com/SanamyVN/ai-ts/commit/336d91e4b8a59a56270a97cd9d9c41133478265f))
+
 ## [1.19.0](https://github.com/SanamyVN/ai-ts/compare/v1.18.0...v1.19.0) (2026-03-30)
 
 ### Features
