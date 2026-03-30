@@ -22,6 +22,15 @@ const vadConfigSchema = z.object({
   minSilenceDurationMs: z.number().int().optional(),
 });
 
+const voiceTtsConfigSchema = z.object({
+  male: z.string().min(1),
+  female: z.string().min(1),
+});
+
+const voiceConfigSchema = z.object({
+  tts: voiceTtsConfigSchema,
+});
+
 /** Zod schema that validates and provides defaults for the AI module configuration. */
 export const aiConfigSchema = z.object({
   defaultModel: z.string().default('anthropic/claude-sonnet-4-20250514'),
@@ -35,6 +44,7 @@ export const aiConfigSchema = z.object({
   sttProvider: openaiCompatibleProviderSchema.optional(),
   ttsModel: z.string().optional(),
   ttsProvider: openaiCompatibleProviderSchema.optional(),
+  voices: voiceConfigSchema.optional(),
   vad: vadConfigSchema.optional(),
 });
 
