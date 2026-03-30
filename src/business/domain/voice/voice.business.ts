@@ -23,9 +23,10 @@ export class VoiceBusiness implements IVoiceBusiness {
   async textToSpeech(input: TextToSpeechInput): Promise<TextToSpeechResult> {
     try {
       const speaker = this.ttsConfig[input.speakerGender];
+      const { speaker: _ignoredSpeaker, ...providerOptions } = input.options ?? {};
       const audioStream = await this.tts.textToSpeech(input.text, {
-        ...input.options,
-        speaker,
+        ...providerOptions,
+        ...(speaker !== undefined ? { speaker } : {}),
       });
       if (!audioStream) throw new VoiceTtsError('Provider returned no audio stream');
       return { audioStream };

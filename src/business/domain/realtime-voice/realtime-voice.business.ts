@@ -6,8 +6,8 @@ import {
   VoiceSpeechToTextCommand,
   VoiceTextToSpeechCommand,
 } from '@/business/domain/voice/client/queries.js';
-import { VOICE_TTS_CONFIG, type VoiceTtsConfig } from '@/business/domain/voice/voice.interface.js';
 import { SendMessageCommand } from '@/business/domain/conversation/client/queries.js';
+import { AI_CONFIG, type AiConfig } from '@/config.js';
 import type {
   IRealtimeVoiceBusiness,
   ProcessAudioInput,
@@ -23,7 +23,7 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
 
   constructor(
     @Inject(AI_MEDIATOR) private readonly mediator: IMediator,
-    @Inject(VOICE_TTS_CONFIG) private readonly ttsConfig: VoiceTtsConfig,
+    @Inject(AI_CONFIG) private readonly config: AiConfig,
   ) {}
 
   async processAudio(input: ProcessAudioInput): Promise<ProcessAudioResult> {
@@ -122,11 +122,12 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
       // 3. Synthesize speech
       state.state = 'synthesizing';
       state.eventQueue.push({ type: 'stateChange', state: 'synthesizing' });
+      const defaultSpeakerGender = this.config.voices?.tts.defaultSpeakerGender ?? 'female';
 
       const ttsResult = await this.mediator.send(
         new VoiceTextToSpeechCommand({
           text: llmResult.text,
-          speakerGender: this.ttsConfig.defaultSpeakerGender,
+          speakerGender: defaultSpeakerGender,
         }),
       );
 

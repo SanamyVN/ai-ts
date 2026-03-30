@@ -8,8 +8,8 @@ export function voiceBusinessProviders() {
     VOICE_TTS_CONFIG,
     [AI_CONFIG],
     (config: AiConfig): VoiceTtsConfig => ({
-      male: config.voices?.tts.male ?? 'alloy',
-      female: config.voices?.tts.female ?? 'nova',
+      ...(config.voices?.tts.male !== undefined ? { male: config.voices.tts.male } : {}),
+      ...(config.voices?.tts.female !== undefined ? { female: config.voices.tts.female } : {}),
       defaultSpeakerGender: config.voices?.tts.defaultSpeakerGender ?? 'female',
     }),
   );

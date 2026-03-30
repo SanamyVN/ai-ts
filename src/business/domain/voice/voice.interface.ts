@@ -10,8 +10,8 @@ import type {
 export type SpeakerGender = 'male' | 'female';
 
 export interface VoiceTtsConfig {
-  readonly male: string;
-  readonly female: string;
+  readonly male?: string;
+  readonly female?: string;
   readonly defaultSpeakerGender: SpeakerGender;
 }
 

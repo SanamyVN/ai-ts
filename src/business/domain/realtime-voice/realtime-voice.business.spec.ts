@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockMediator } from '@sanamyvn/foundation/mediator/testing';
 import type { MockMediator } from '@sanamyvn/foundation/mediator/testing';
 import { RealtimeVoiceBusiness } from './realtime-voice.business.js';
+import { aiConfigSchema } from '@/config.js';
 
 function makeSpeechAudio(): Int16Array {
   return new Int16Array([100, 200, 300]);
@@ -24,11 +25,18 @@ describe('RealtimeVoiceBusiness', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mediator = createMockMediator();
-    business = new RealtimeVoiceBusiness(mediator, {
-      male: 'alloy',
-      female: 'nova',
-      defaultSpeakerGender: 'male',
-    });
+    business = new RealtimeVoiceBusiness(
+      mediator,
+      aiConfigSchema.parse({
+        voices: {
+          tts: {
+            male: 'alloy',
+            female: 'nova',
+            defaultSpeakerGender: 'male',
+          },
+        },
+      }),
+    );
   });
 
   function mockVad(isSpeech: boolean, probability = 0.9) {
