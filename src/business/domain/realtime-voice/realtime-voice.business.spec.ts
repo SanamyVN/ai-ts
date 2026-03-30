@@ -18,6 +18,13 @@ function flushMicrotasks(): Promise<void> {
   });
 }
 
+function hasCommandType(value: unknown, type: string): boolean {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  return Reflect.get(value, 'type') === type;
+}
+
 describe('RealtimeVoiceBusiness', () => {
   let mediator: MockMediator;
   let business: RealtimeVoiceBusiness;
@@ -130,9 +137,7 @@ describe('RealtimeVoiceBusiness', () => {
       await flushMicrotasks();
 
       const calls = vi.mocked(mediator.send).mock.calls;
-      const ttsCall = calls.find(
-        (call) => (call[0] as { type?: string }).type === 'ai.voice.textToSpeech',
-      );
+      const ttsCall = calls.find(([command]) => hasCommandType(command, 'ai.voice.textToSpeech'));
 
       expect(ttsCall?.[0]).toEqual(
         expect.objectContaining({
