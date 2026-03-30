@@ -20,4 +20,22 @@ describe('aiConfigSchema', () => {
     const result = aiConfigSchema.safeParse({ defaultModel: 123 });
     expect(result.success).toBe(false);
   });
+
+  it('accepts voice mapping with non-empty male and female keys', () => {
+    const config = aiConfigSchema.parse({
+      voices: { tts: { male: 'alloy', female: 'nova' } },
+    });
+
+    expect(config.voices).toBeDefined();
+    expect(config.voices?.tts.male).toBe('alloy');
+    expect(config.voices?.tts.female).toBe('nova');
+  });
+
+  it('rejects empty male voice identifier', () => {
+    const result = aiConfigSchema.safeParse({
+      voices: { tts: { male: '', female: 'nova' } },
+    });
+
+    expect(result.success).toBe(false);
+  });
 });
