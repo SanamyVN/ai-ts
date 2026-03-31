@@ -150,6 +150,29 @@ describe('OpenAiSttAdapter', () => {
       expect(call?.[0]).toBe('http://localhost:8000/v1/audio/transcriptions');
     });
 
+    it('normalizes OpenAI /v1 base URLs before building the transcription endpoint', async () => {
+      const openAiAdapter = new OpenAiSttAdapter(
+        makeConfig({ sttProvider: { url: 'https://api.openai.com/v1/' } }),
+      );
+      const stream = makeAudioStream(SILENT_PCM);
+
+      await openAiAdapter.speechToText(stream);
+
+      const call = vi.mocked(fetch).mock.calls[0];
+      expect(call?.[0]).toBe('https://api.openai.com/v1/audio/transcriptions');
+    });
+
+    it('falls back to OPENAI_API_KEY for the default OpenAI provider', async () => {
+      vi.stubEnv('OPENAI_API_KEY', 'sk-env-stt');
+      const cloudAdapter = new OpenAiSttAdapter(makeConfig({ sttProvider: undefined }));
+      const stream = makeAudioStream(SILENT_PCM);
+
+      await cloudAdapter.speechToText(stream);
+
+      const call = vi.mocked(fetch).mock.calls[0];
+      expect(call?.[1]?.headers).toMatchObject({ Authorization: 'Bearer sk-env-stt' });
+    });
+
     it('wraps HTTP error responses as OpenAiSttAdapterError', async () => {
       mockFetchError(500, 'Internal Server Error');
       const stream = makeAudioStream(SILENT_PCM);

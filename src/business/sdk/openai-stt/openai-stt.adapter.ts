@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMastraVoiceStt } from '@/business/sdk/mastra/mastra.interface.js';
 import { AI_CONFIG, type AiConfig } from '@/config.js';
+import { resolveOpenAiCompatibleProvider } from '@/business/sdk/openai-compatible/openai-provider-config.js';
 import { OpenAiSttAdapterError } from './openai-stt.error.js';
 
 /**
@@ -23,11 +24,11 @@ export class OpenAiSttAdapter implements IMastraVoiceStt {
   private readonly headers: Record<string, string> | undefined;
 
   constructor(@Inject(AI_CONFIG) config: AiConfig) {
-    const url = config.sttProvider?.url ?? 'https://api.openai.com';
-    this.baseUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+    const provider = resolveOpenAiCompatibleProvider(config.sttProvider);
+    this.baseUrl = provider.url;
     this.model = config.sttModel ?? 'whisper-1';
-    this.apiKey = config.sttProvider?.apiKey;
-    this.headers = config.sttProvider?.headers;
+    this.apiKey = provider.apiKey;
+    this.headers = provider.headers;
   }
 
   async speechToText(

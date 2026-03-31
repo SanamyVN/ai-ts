@@ -2,6 +2,7 @@ import { Readable } from 'node:stream';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMastraVoiceTts, SpeakOptions } from '@/business/sdk/mastra/mastra.interface.js';
 import { AI_CONFIG, type AiConfig } from '@/config.js';
+import { resolveOpenAiCompatibleProvider } from '@/business/sdk/openai-compatible/openai-provider-config.js';
 import { OpenAiTtsAdapterError } from './openai-tts.error.js';
 
 const DEFAULT_VOICE = 'af_heart';
@@ -26,11 +27,11 @@ export class OpenAiTtsAdapter implements IMastraVoiceTts {
   private readonly headers: Record<string, string> | undefined;
 
   constructor(@Inject(AI_CONFIG) config: AiConfig) {
-    const url = config.ttsProvider?.url ?? 'https://api.openai.com';
-    this.baseUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+    const provider = resolveOpenAiCompatibleProvider(config.ttsProvider);
+    this.baseUrl = provider.url;
     this.model = config.ttsModel ?? 'tts-1';
-    this.apiKey = config.ttsProvider?.apiKey;
-    this.headers = config.ttsProvider?.headers;
+    this.apiKey = provider.apiKey;
+    this.headers = provider.headers;
   }
 
   async textToSpeech(
