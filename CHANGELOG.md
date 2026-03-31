@@ -1,3 +1,9 @@
+## [1.20.1](https://github.com/SanamyVN/ai-ts/compare/v1.20.0...v1.20.1) (2026-03-31)
+
+### Bug Fixes
+
+* **voice:** normalize OpenAI provider config ([5b19f6a](https://github.com/SanamyVN/ai-ts/commit/5b19f6a9e94089acf0f49ffb3111026cf07df942))
+
 ## [1.20.0](https://github.com/SanamyVN/ai-ts/compare/v1.19.0...v1.20.0) (2026-03-30)
 
 ### Features
