@@ -1,3 +1,11 @@
+## [1.21.0](https://github.com/SanamyVN/ai-ts/compare/v1.20.1...v1.21.0) (2026-03-31)
+
+### Features
+
+* **realtime-voice:** add optional speakerGender to client schema and app DTO ([2939cb1](https://github.com/SanamyVN/ai-ts/commit/2939cb1df4d963734ab582c0915d7e9fa7168831))
+* **realtime-voice:** add optional speakerGender to ProcessAudioInput and ConversationPipelineState ([32d082a](https://github.com/SanamyVN/ai-ts/commit/32d082ad73ba42c6c5aaf28b92b6ab4b3fed34bd))
+* **voice:** remove defaultSpeakerGender from VoiceTtsConfig and config schema ([f526588](https://github.com/SanamyVN/ai-ts/commit/f52658892664722b1da5402f5dc2af6472356c58))
+
 ## [1.20.1](https://github.com/SanamyVN/ai-ts/compare/v1.20.0...v1.20.1) (2026-03-31)
 
 ### Bug Fixes
