@@ -412,6 +412,74 @@ describe('RealtimeVoiceBusiness', () => {
       expect(sttInt16[0]).toBe(20);
     });
 
+    it('falls back to male when no speakerGender provided and no config', async () => {
+      const noVoicesBusiness = new RealtimeVoiceBusiness(
+        mediator,
+        aiConfigSchema.parse({}),
+      );
+
+      // Frame 1: speech without speakerGender
+      mockVad(true);
+      await noVoicesBusiness.processAudio({
+        conversationId: 'conv-fallback',
+        audio: makeSpeechAudio(),
+      });
+
+      // Frame 2: silence -> triggers chain
+      mockVad(false, 0.1);
+      mockFullChain();
+      await noVoicesBusiness.processAudio({
+        conversationId: 'conv-fallback',
+        audio: makeSilenceAudio(),
+      });
+      await flushMicrotasks();
+
+      const calls = vi.mocked(mediator.send).mock.calls;
+      const ttsCall = calls.find(([command]) => hasCommandType(command, 'ai.voice.textToSpeech'));
+
+      expect(ttsCall?.[0]).toEqual(
+        expect.objectContaining({
+          speakerGender: 'male',
+        }),
+      );
+    });
+
+    it('uses speakerGender from first processAudio call even if later calls differ', async () => {
+      // Frame 1: speech with 'female'
+      mockVad(true);
+      await business.processAudio({
+        conversationId: 'conv-sticky',
+        audio: makeSpeechAudio(),
+        speakerGender: 'female',
+      });
+
+      // Frame 2: speech with 'male' (should be ignored -- state already set)
+      mockVad(true);
+      await business.processAudio({
+        conversationId: 'conv-sticky',
+        audio: makeSpeechAudio(),
+        speakerGender: 'male',
+      });
+
+      // Frame 3: silence -> triggers chain
+      mockVad(false, 0.1);
+      mockFullChain();
+      await business.processAudio({
+        conversationId: 'conv-sticky',
+        audio: makeSilenceAudio(),
+      });
+      await flushMicrotasks();
+
+      const calls = vi.mocked(mediator.send).mock.calls;
+      const ttsCall = calls.find(([command]) => hasCommandType(command, 'ai.voice.textToSpeech'));
+
+      expect(ttsCall?.[0]).toEqual(
+        expect.objectContaining({
+          speakerGender: 'female',
+        }),
+      );
+    });
+
     it('fills pre-buffer during pipeline processing for next onset capture', async () => {
       // Speech → silence → triggers chain
       mockVad(true);
