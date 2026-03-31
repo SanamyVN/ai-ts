@@ -1,9 +1,11 @@
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { VadFrame } from '@/business/domain/vad/vad.interface.js';
+import type { SpeakerGender } from '@/business/domain/voice/voice.interface.js';
 
 export interface ProcessAudioInput {
   readonly conversationId: string;
   readonly audio: Int16Array;
+  readonly speakerGender?: SpeakerGender;
 }
 
 export type PipelineState =

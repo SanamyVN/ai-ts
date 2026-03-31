@@ -39,6 +39,7 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
         speaking: false,
         eventQueue: [],
         lastFrameAt: Date.now(),
+        ...(input.speakerGender !== undefined && { speakerGender: input.speakerGender }),
       };
       this.conversations.set(conversationId, state);
     }
@@ -122,12 +123,14 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
       // 3. Synthesize speech
       state.state = 'synthesizing';
       state.eventQueue.push({ type: 'stateChange', state: 'synthesizing' });
-      const defaultSpeakerGender = this.config.voices?.tts.defaultSpeakerGender ?? 'female';
+      const speakerGender = state.speakerGender
+        ?? this.config.voices?.tts.defaultSpeakerGender
+        ?? 'male';
 
       const ttsResult = await this.mediator.send(
         new VoiceTextToSpeechCommand({
           text: llmResult.text,
-          speakerGender: defaultSpeakerGender,
+          speakerGender,
         }),
       );
 
