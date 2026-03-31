@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const processAudioRequestDto = z.object({
   conversationId: z.string(),
   audio: z.string().min(1),
+  speakerGender: z.enum(['male', 'female']).optional(),
 });
 export type ProcessAudioRequestDto = z.infer<typeof processAudioRequestDto>;
 

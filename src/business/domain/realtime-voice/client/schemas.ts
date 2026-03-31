@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const processAudioClientSchema = z.object({
   conversationId: z.string(),
   audio: z.string(),
+  speakerGender: z.enum(['male', 'female']).optional(),
 });
 
 const pipelineEventSchema = z.discriminatedUnion('type', [
