@@ -17,7 +17,7 @@ describe('VoiceBusiness', () => {
     vi.clearAllMocks();
     mockTts = createMockMastraVoiceTts();
     mockStt = createMockMastraVoiceStt();
-    const ttsConfig = { male: 'alloy', female: 'nova', defaultSpeakerGender: 'female' as const };
+    const ttsConfig = { male: 'alloy', female: 'nova' };
     business = new VoiceBusiness(mockTts, mockStt, ttsConfig);
   });
 

@@ -10,7 +10,6 @@ export function voiceBusinessProviders() {
     (config: AiConfig): VoiceTtsConfig => ({
       ...(config.voices?.tts.male !== undefined ? { male: config.voices.tts.male } : {}),
       ...(config.voices?.tts.female !== undefined ? { female: config.voices.tts.female } : {}),
-      defaultSpeakerGender: config.voices?.tts.defaultSpeakerGender ?? 'female',
     }),
   );
 

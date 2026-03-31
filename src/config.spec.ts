@@ -29,7 +29,6 @@ describe('aiConfigSchema', () => {
     expect(config.voices).toBeDefined();
     expect(config.voices?.tts.male).toBe('alloy');
     expect(config.voices?.tts.female).toBe('nova');
-    expect(config.voices?.tts.defaultSpeakerGender).toBe('female');
   });
 
   it('rejects empty male voice identifier', () => {
@@ -40,17 +39,4 @@ describe('aiConfigSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('accepts explicit default speaker gender in voice mapping', () => {
-    const config = aiConfigSchema.parse({
-      voices: {
-        tts: {
-          male: 'alloy',
-          female: 'nova',
-          defaultSpeakerGender: 'male',
-        },
-      },
-    });
-
-    expect(config.voices?.tts.defaultSpeakerGender).toBe('male');
-  });
 });

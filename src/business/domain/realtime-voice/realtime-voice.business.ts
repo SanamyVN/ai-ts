@@ -123,9 +123,7 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
       // 3. Synthesize speech
       state.state = 'synthesizing';
       state.eventQueue.push({ type: 'stateChange', state: 'synthesizing' });
-      const speakerGender = state.speakerGender
-        ?? this.config.voices?.tts.defaultSpeakerGender
-        ?? 'male';
+      const speakerGender = state.speakerGender ?? 'male';
 
       const ttsResult = await this.mediator.send(
         new VoiceTextToSpeechCommand({

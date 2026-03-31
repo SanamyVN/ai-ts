@@ -12,7 +12,6 @@ export type SpeakerGender = 'male' | 'female';
 export interface VoiceTtsConfig {
   readonly male?: string;
   readonly female?: string;
-  readonly defaultSpeakerGender: SpeakerGender;
 }
 
 export const VOICE_TTS_CONFIG = createToken<VoiceTtsConfig>('VOICE_TTS_CONFIG');

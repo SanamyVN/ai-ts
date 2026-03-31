@@ -39,7 +39,6 @@ describe('RealtimeVoiceBusiness', () => {
           tts: {
             male: 'alloy',
             female: 'nova',
-            defaultSpeakerGender: 'male',
           },
         },
       }),
@@ -125,12 +124,12 @@ describe('RealtimeVoiceBusiness', () => {
       );
     });
 
-    it('uses configured default speakerGender when sending TTS command', async () => {
-      // Frame 1: speech
+    it('falls back to male speakerGender when none provided in input', async () => {
+      // Frame 1: speech without speakerGender
       mockVad(true);
       await business.processAudio({ conversationId: 'conv-1', audio: makeSpeechAudio() });
 
-      // Frame 2: silence → triggers chain
+      // Frame 2: silence -> triggers chain
       mockVad(false, 0.1);
       mockFullChain();
       await business.processAudio({ conversationId: 'conv-1', audio: makeSilenceAudio() });
@@ -410,38 +409,6 @@ describe('RealtimeVoiceBusiness', () => {
       );
       // First value should be 20 (frame index 2), not 0 (frame index 0)
       expect(sttInt16[0]).toBe(20);
-    });
-
-    it('falls back to male when no speakerGender provided and no config', async () => {
-      const noVoicesBusiness = new RealtimeVoiceBusiness(
-        mediator,
-        aiConfigSchema.parse({}),
-      );
-
-      // Frame 1: speech without speakerGender
-      mockVad(true);
-      await noVoicesBusiness.processAudio({
-        conversationId: 'conv-fallback',
-        audio: makeSpeechAudio(),
-      });
-
-      // Frame 2: silence -> triggers chain
-      mockVad(false, 0.1);
-      mockFullChain();
-      await noVoicesBusiness.processAudio({
-        conversationId: 'conv-fallback',
-        audio: makeSilenceAudio(),
-      });
-      await flushMicrotasks();
-
-      const calls = vi.mocked(mediator.send).mock.calls;
-      const ttsCall = calls.find(([command]) => hasCommandType(command, 'ai.voice.textToSpeech'));
-
-      expect(ttsCall?.[0]).toEqual(
-        expect.objectContaining({
-          speakerGender: 'male',
-        }),
-      );
     });
 
     it('uses speakerGender from first processAudio call even if later calls differ', async () => {
