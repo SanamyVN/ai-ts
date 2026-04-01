@@ -1,3 +1,9 @@
+/** A single pre-seeded message to inject into a new conversation thread. */
+export interface SeedMessage {
+  readonly role: 'user' | 'assistant';
+  readonly content: string;
+}
+
 /** Configuration for creating a new conversation. */
 export interface ConversationConfig {
   readonly promptSlug: string;
@@ -7,6 +13,8 @@ export interface ConversationConfig {
   readonly purpose: string;
   /** LLM model identifier override; falls back to the system default when omitted. */
   readonly model?: string;
+  /** Pre-seeded messages to inject into the thread immediately after creation. */
+  readonly seedMessages?: readonly SeedMessage[];
 }
 
 /** A live conversation handle tied to a session and model. */
