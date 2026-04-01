@@ -108,6 +108,17 @@ export interface IMastraMemory {
    * @throws {MastraAdapterError} When the underlying Mastra call fails.
    */
   listThreads(filter?: ThreadFilter): Promise<Thread[]>;
+
+  /**
+   * Save pre-seeded messages into a thread.
+   * @param threadId - The thread to save messages into.
+   * @param messages - Messages to save, with role and plain-text content.
+   * @throws {MastraAdapterError} When the underlying Mastra call fails.
+   */
+  saveMessages(
+    threadId: string,
+    messages: readonly { readonly role: 'user' | 'assistant'; readonly content: string }[],
+  ): Promise<void>;
 }
 
 /** DI token for the application-level Mastra agent adapter — bound by the Mastra SDK module. */

@@ -112,4 +112,26 @@ export class MastraMemoryAdapter implements IMastraMemory {
       throw new MastraAdapterError('listThreads', error);
     }
   }
+
+  async saveMessages(
+    threadId: string,
+    messages: readonly { readonly role: 'user' | 'assistant'; readonly content: string }[],
+  ): Promise<void> {
+    try {
+      const mastraMessages = messages.map((m) => ({
+        id: crypto.randomUUID(),
+        role: m.role,
+        createdAt: new Date(),
+        threadId,
+        type: 'text' as const,
+        content: {
+          format: 2 as const,
+          parts: [{ type: 'text' as const, text: m.content }],
+        },
+      }));
+      await this.memory.saveMessages({ messages: mastraMessages });
+    } catch (error) {
+      throw new MastraAdapterError('saveMessages', error);
+    }
+  }
 }
