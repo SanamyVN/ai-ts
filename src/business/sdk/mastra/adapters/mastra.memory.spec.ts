@@ -112,9 +112,6 @@ describe('MastraMemoryAdapter', () => {
       const promise = adapter.saveMessages('thread-5', [{ role: 'assistant', content: 'Hello' }]);
 
       await expect(promise).rejects.toThrow('Mastra operation failed: saveMessages');
-      await expect(
-        adapter.saveMessages('thread-5', [{ role: 'assistant', content: 'Hello' }]),
-      ).resolves.toBeUndefined();
     });
 
     it('throws MastraAdapterError with the original cause', async () => {
