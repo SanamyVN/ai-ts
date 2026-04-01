@@ -3,7 +3,10 @@ import { createMockMediator, type MockMediator } from '@sanamyvn/foundation/medi
 import type { Sendable } from '@sanamyvn/foundation/mediator/request';
 import { ConversationEngine } from './conversation.business.js';
 import { ConversationNotFoundError, ConversationSendError } from './conversation.error.js';
-import { createMockMastraAgent } from '@/business/sdk/mastra/mastra.testing.js';
+import {
+  createMockMastraAgent,
+  createMockMastraMemory,
+} from '@/business/sdk/mastra/mastra.testing.js';
 import { MastraAdapterError } from '@/business/sdk/mastra/mastra.error.js';
 import { ResolvePromptQuery } from '@/business/domain/prompt/client/queries.js';
 import {
@@ -46,13 +49,15 @@ describe('ConversationEngine', () => {
   let mediator: MockMediator;
   let send: PermissiveSendMock;
   let agent: ReturnType<typeof createMockMastraAgent>;
+  let memory: ReturnType<typeof createMockMastraMemory>;
 
   beforeEach(() => {
     mediator = createMockMediator();
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     send = mediator.send as PermissiveSendMock;
     agent = createMockMastraAgent();
-    engine = new ConversationEngine(mediator, agent, DEFAULT_CONFIG);
+    memory = createMockMastraMemory();
+    engine = new ConversationEngine(mediator, agent, DEFAULT_CONFIG, memory);
   });
 
   describe('create', () => {
@@ -110,6 +115,69 @@ describe('ConversationEngine', () => {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const sessionCommand = call[0] as InstanceType<typeof CreateSessionCommand>;
       expect(sessionCommand).toHaveProperty('tenantId', 'tenant-1');
+    });
+
+    it('saves seed messages to the thread after session creation', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+      memory.saveMessages.mockResolvedValueOnce(undefined);
+
+      const seedMessages = [
+        { role: 'assistant' as const, content: 'Welcome! How can I help?' },
+        { role: 'user' as const, content: 'I need help with billing.' },
+      ];
+
+      await engine.create({
+        promptSlug: 'greet',
+        promptParams: { name: 'World' },
+        userId: 'user-1',
+        purpose: 'test',
+        seedMessages,
+      });
+
+      expect(memory.saveMessages).toHaveBeenCalledTimes(1);
+      expect(memory.saveMessages).toHaveBeenCalledWith('thread-1', seedMessages);
+    });
+
+    it('does not call saveMessages when seedMessages is omitted', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      await engine.create({
+        promptSlug: 'greet',
+        promptParams: { name: 'World' },
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      expect(memory.saveMessages).not.toHaveBeenCalled();
+    });
+
+    it('does not call saveMessages when seedMessages is an empty array', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      await engine.create({
+        promptSlug: 'greet',
+        promptParams: { name: 'World' },
+        userId: 'user-1',
+        purpose: 'test',
+        seedMessages: [],
+      });
+
+      expect(memory.saveMessages).not.toHaveBeenCalled();
+    });
+
+    it('propagates saveMessages errors from create', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+      memory.saveMessages.mockRejectedValueOnce(new Error('Memory write failed'));
+
+      await expect(
+        engine.create({
+          promptSlug: 'greet',
+          promptParams: { name: 'World' },
+          userId: 'user-1',
+          purpose: 'test',
+          seedMessages: [{ role: 'assistant' as const, content: 'Welcome!' }],
+        }),
+      ).rejects.toThrow('Memory write failed');
     });
   });
 
