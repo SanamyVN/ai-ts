@@ -56,18 +56,23 @@ describe('MastraMemoryAdapter', () => {
 
       expect(mockMemory.saveMessages).toHaveBeenCalledTimes(1);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const rawCall = vi.mocked(mockMemory.saveMessages).mock.calls[0]!;
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const callArgs = mockMemory.saveMessages.mock.calls[0][0] as {
-        messages: Record<string, unknown>[];
-      };
+      const callArgs = rawCall[0] as { messages: Record<string, unknown>[] };
       expect(callArgs.messages).toHaveLength(3);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(callArgs.messages[0]!['role']).toBe('assistant');
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(callArgs.messages[0]!['threadId']).toBe('thread-2');
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(callArgs.messages[1]!['role']).toBe('user');
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(callArgs.messages[1]!['content']).toEqual({
         format: 2,
         parts: [{ type: 'text', text: 'Hi there' }],
       });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(callArgs.messages[2]!['role']).toBe('assistant');
     });
 
@@ -77,10 +82,11 @@ describe('MastraMemoryAdapter', () => {
         { role: 'assistant', content: 'Second' },
       ]);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const rawCall = vi.mocked(mockMemory.saveMessages).mock.calls[0]!;
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const callArgs = mockMemory.saveMessages.mock.calls[0][0] as {
-        messages: Record<string, unknown>[];
-      };
+      const callArgs = rawCall[0] as { messages: Record<string, unknown>[] };
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const ids = callArgs.messages.map((m) => m['id'] as string);
 
       expect(ids[0]).not.toBe(ids[1]);
@@ -92,8 +98,10 @@ describe('MastraMemoryAdapter', () => {
       await adapter.saveMessages('thread-4', []);
 
       expect(mockMemory.saveMessages).toHaveBeenCalledTimes(1);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const rawCall = vi.mocked(mockMemory.saveMessages).mock.calls[0]!;
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const callArgs = mockMemory.saveMessages.mock.calls[0][0] as { messages: unknown[] };
+      const callArgs = rawCall[0] as { messages: unknown[] };
       expect(callArgs.messages).toHaveLength(0);
     });
 
@@ -118,7 +126,9 @@ describe('MastraMemoryAdapter', () => {
         expect.fail('Expected MastraAdapterError to be thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(MastraAdapterError);
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         expect((error as MastraAdapterError).operation).toBe('saveMessages');
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         expect((error as MastraAdapterError).cause).toBe(cause);
       }
     });
