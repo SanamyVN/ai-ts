@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { MastraMemory } from '@mastra/core/memory';
 import { MastraMemoryAdapter } from './mastra.memory.js';
+import { MastraAdapterError } from '../mastra.error.js';
 
 function createMockMemory() {
   return {
@@ -44,6 +45,82 @@ describe('MastraMemoryAdapter', () => {
       expect(typeof msg['id']).toBe('string');
       expect(String(msg['id']).length).toBeGreaterThan(0);
       expect(msg['createdAt']).toBeInstanceOf(Date);
+    });
+
+    it('maps multiple messages into a single saveMessages call', async () => {
+      await adapter.saveMessages('thread-2', [
+        { role: 'assistant', content: 'Hello' },
+        { role: 'user', content: 'Hi there' },
+        { role: 'assistant', content: 'How can I help?' },
+      ]);
+
+      expect(mockMemory.saveMessages).toHaveBeenCalledTimes(1);
+
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const callArgs = mockMemory.saveMessages.mock.calls[0][0] as {
+        messages: Record<string, unknown>[];
+      };
+      expect(callArgs.messages).toHaveLength(3);
+      expect(callArgs.messages[0]!['role']).toBe('assistant');
+      expect(callArgs.messages[0]!['threadId']).toBe('thread-2');
+      expect(callArgs.messages[1]!['role']).toBe('user');
+      expect(callArgs.messages[1]!['content']).toEqual({
+        format: 2,
+        parts: [{ type: 'text', text: 'Hi there' }],
+      });
+      expect(callArgs.messages[2]!['role']).toBe('assistant');
+    });
+
+    it('assigns a unique id to each message', async () => {
+      await adapter.saveMessages('thread-3', [
+        { role: 'assistant', content: 'First' },
+        { role: 'assistant', content: 'Second' },
+      ]);
+
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const callArgs = mockMemory.saveMessages.mock.calls[0][0] as {
+        messages: Record<string, unknown>[];
+      };
+      const ids = callArgs.messages.map((m) => m['id'] as string);
+
+      expect(ids[0]).not.toBe(ids[1]);
+      expect(ids[0]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+      expect(ids[1]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    });
+
+    it('calls saveMessages with an empty array when no messages are provided', async () => {
+      await adapter.saveMessages('thread-4', []);
+
+      expect(mockMemory.saveMessages).toHaveBeenCalledTimes(1);
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const callArgs = mockMemory.saveMessages.mock.calls[0][0] as { messages: unknown[] };
+      expect(callArgs.messages).toHaveLength(0);
+    });
+
+    it('wraps errors from the underlying memory as MastraAdapterError', async () => {
+      const cause = new Error('database connection lost');
+      mockMemory.saveMessages.mockRejectedValueOnce(cause);
+
+      const promise = adapter.saveMessages('thread-5', [{ role: 'assistant', content: 'Hello' }]);
+
+      await expect(promise).rejects.toThrow('Mastra operation failed: saveMessages');
+      await expect(
+        adapter.saveMessages('thread-5', [{ role: 'assistant', content: 'Hello' }]),
+      ).resolves.toBeUndefined();
+    });
+
+    it('throws MastraAdapterError with the original cause', async () => {
+      const cause = new Error('timeout');
+      mockMemory.saveMessages.mockRejectedValueOnce(cause);
+
+      try {
+        await adapter.saveMessages('thread-6', [{ role: 'assistant', content: 'Hello' }]);
+        expect.fail('Expected MastraAdapterError to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(MastraAdapterError);
+        expect((error as MastraAdapterError).operation).toBe('saveMessages');
+        expect((error as MastraAdapterError).cause).toBe(cause);
+      }
     });
   });
 });
