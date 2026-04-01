@@ -87,7 +87,7 @@ describe('Conversation / Flow', () => {
 
     const mediator = createTestMediator(ctx);
     const config = aiConfigSchema.parse({});
-    engine = new ConversationEngine(mediator, ctx.mastraAgent, config);
+    engine = new ConversationEngine(mediator, ctx.mastraAgent, config, ctx.mastraMemory);
   });
 
   afterEach(async () => {
@@ -147,6 +147,7 @@ describe('Conversation / Flow', () => {
       freshMediator,
       ctx.mastraAgent,
       aiConfigSchema.parse({}),
+      ctx.mastraMemory,
     );
 
     const response = await freshEngine.send(conversation.id, 'Tell me about Rome.');
@@ -222,9 +223,11 @@ describe('Conversation / Flow', () => {
       { type: 'text-delta' as const, content: 'chunk' },
       { type: 'finish' as const, content: '' },
     ];
-    ctx.mastraAgent.stream.mockReturnValue((async function* () {
-      for (const chunk of mockChunks) yield chunk;
-    })());
+    ctx.mastraAgent.stream.mockReturnValue(
+      (async function* () {
+        for (const chunk of mockChunks) yield chunk;
+      })(),
+    );
 
     const conversation = await engine.create({
       promptSlug: 'test-prompt',
