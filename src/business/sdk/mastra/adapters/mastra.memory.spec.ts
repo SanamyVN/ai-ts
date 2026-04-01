@@ -42,7 +42,7 @@ describe('MastraMemoryAdapter', () => {
         parts: [{ type: 'text', text: 'Welcome!' }],
       });
       expect(typeof msg['id']).toBe('string');
-      expect((msg['id'] as string).length).toBeGreaterThan(0);
+      expect(String(msg['id']).length).toBeGreaterThan(0);
       expect(msg['createdAt']).toBeInstanceOf(Date);
     });
   });
