@@ -1,3 +1,9 @@
+## [1.22.1](https://github.com/SanamyVN/ai-ts/compare/v1.22.0...v1.22.1) (2026-04-01)
+
+### Bug Fixes
+
+* **mastra:** add resourceId to saveMessages to satisfy PostgresStore requirement ([a9b12cb](https://github.com/SanamyVN/ai-ts/commit/a9b12cbde6ea711de4f5ca875baef90ff2ed3d61))
+
 ## [1.22.0](https://github.com/SanamyVN/ai-ts/compare/v1.21.0...v1.22.0) (2026-04-01)
 
 ### Features
