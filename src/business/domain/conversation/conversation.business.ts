@@ -88,7 +88,11 @@ export class ConversationEngine implements IConversationEngine {
     this.conversations.set(session.id, state);
 
     if (config.seedMessages && config.seedMessages.length > 0) {
-      await this.mastraMemory.saveMessages(session.mastraThreadId, config.seedMessages);
+      await this.mastraMemory.saveMessages(
+        session.mastraThreadId,
+        config.seedMessages,
+        config.userId,
+      );
     }
 
     return {

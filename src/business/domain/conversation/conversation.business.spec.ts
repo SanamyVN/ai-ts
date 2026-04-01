@@ -135,7 +135,7 @@ describe('ConversationEngine', () => {
       });
 
       expect(memory.saveMessages).toHaveBeenCalledTimes(1);
-      expect(memory.saveMessages).toHaveBeenCalledWith('thread-1', seedMessages);
+      expect(memory.saveMessages).toHaveBeenCalledWith('thread-1', seedMessages, 'user-1');
     });
 
     it('does not call saveMessages when seedMessages is omitted', async () => {

@@ -24,7 +24,11 @@ describe('MastraMemoryAdapter', () => {
 
   describe('saveMessages', () => {
     it('calls memory.saveMessages with correctly formatted MastraDBMessages', async () => {
-      await adapter.saveMessages('thread-1', [{ role: 'assistant', content: 'Welcome!' }]);
+      await adapter.saveMessages(
+        'thread-1',
+        [{ role: 'assistant', content: 'Welcome!' }],
+        'user-1',
+      );
 
       expect(mockMemory.saveMessages).toHaveBeenCalledTimes(1);
 
@@ -37,6 +41,7 @@ describe('MastraMemoryAdapter', () => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const msg = messages[0]!;
       expect(msg['threadId']).toBe('thread-1');
+      expect(msg['resourceId']).toBe('user-1');
       expect(msg['role']).toBe('assistant');
       expect(msg['content']).toEqual({
         format: 2,
@@ -48,11 +53,15 @@ describe('MastraMemoryAdapter', () => {
     });
 
     it('maps multiple messages into a single saveMessages call', async () => {
-      await adapter.saveMessages('thread-2', [
-        { role: 'assistant', content: 'Hello' },
-        { role: 'user', content: 'Hi there' },
-        { role: 'assistant', content: 'How can I help?' },
-      ]);
+      await adapter.saveMessages(
+        'thread-2',
+        [
+          { role: 'assistant', content: 'Hello' },
+          { role: 'user', content: 'Hi there' },
+          { role: 'assistant', content: 'How can I help?' },
+        ],
+        'user-1',
+      );
 
       expect(mockMemory.saveMessages).toHaveBeenCalledTimes(1);
 
@@ -77,10 +86,14 @@ describe('MastraMemoryAdapter', () => {
     });
 
     it('assigns a unique id to each message', async () => {
-      await adapter.saveMessages('thread-3', [
-        { role: 'assistant', content: 'First' },
-        { role: 'assistant', content: 'Second' },
-      ]);
+      await adapter.saveMessages(
+        'thread-3',
+        [
+          { role: 'assistant', content: 'First' },
+          { role: 'assistant', content: 'Second' },
+        ],
+        'user-1',
+      );
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const rawCall = vi.mocked(mockMemory.saveMessages).mock.calls[0]!;
@@ -95,7 +108,7 @@ describe('MastraMemoryAdapter', () => {
     });
 
     it('calls saveMessages with an empty array when no messages are provided', async () => {
-      await adapter.saveMessages('thread-4', []);
+      await adapter.saveMessages('thread-4', [], 'user-1');
 
       expect(mockMemory.saveMessages).toHaveBeenCalledTimes(1);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -109,7 +122,11 @@ describe('MastraMemoryAdapter', () => {
       const cause = new Error('database connection lost');
       mockMemory.saveMessages.mockRejectedValueOnce(cause);
 
-      const promise = adapter.saveMessages('thread-5', [{ role: 'assistant', content: 'Hello' }]);
+      const promise = adapter.saveMessages(
+        'thread-5',
+        [{ role: 'assistant', content: 'Hello' }],
+        'user-1',
+      );
 
       await expect(promise).rejects.toThrow('Mastra operation failed: saveMessages');
     });
@@ -119,7 +136,7 @@ describe('MastraMemoryAdapter', () => {
       mockMemory.saveMessages.mockRejectedValueOnce(cause);
 
       try {
-        await adapter.saveMessages('thread-6', [{ role: 'assistant', content: 'Hello' }]);
+        await adapter.saveMessages('thread-6', [{ role: 'assistant', content: 'Hello' }], 'user-1');
         expect.fail('Expected MastraAdapterError to be thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(MastraAdapterError);

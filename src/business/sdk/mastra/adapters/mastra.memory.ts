@@ -116,6 +116,7 @@ export class MastraMemoryAdapter implements IMastraMemory {
   async saveMessages(
     threadId: string,
     messages: readonly { readonly role: 'user' | 'assistant'; readonly content: string }[],
+    resourceId: string,
   ): Promise<void> {
     try {
       const mastraMessages = messages.map((m) => ({
@@ -123,6 +124,7 @@ export class MastraMemoryAdapter implements IMastraMemory {
         role: m.role,
         createdAt: new Date(),
         threadId,
+        resourceId,
         type: 'text' as const,
         content: {
           format: 2 as const,

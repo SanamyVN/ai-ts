@@ -113,11 +113,13 @@ export interface IMastraMemory {
    * Save pre-seeded messages into a thread.
    * @param threadId - The thread to save messages into.
    * @param messages - Messages to save, with role and plain-text content.
+   * @param resourceId - The resource (user) that owns the thread — required by the Mastra storage layer.
    * @throws {MastraAdapterError} When the underlying Mastra call fails.
    */
   saveMessages(
     threadId: string,
     messages: readonly { readonly role: 'user' | 'assistant'; readonly content: string }[],
+    resourceId: string,
   ): Promise<void>;
 }
 
