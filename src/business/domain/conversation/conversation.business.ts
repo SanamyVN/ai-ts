@@ -3,7 +3,9 @@ import type { IMediator } from '@sanamyvn/foundation/mediator';
 import { AI_MEDIATOR } from '@/shared/tokens.js';
 import {
   MASTRA_AGENT,
+  MASTRA_MEMORY,
   type IMastraAgent,
+  type IMastraMemory,
   type StreamChunk,
   type GenerateOptions,
 } from '@/business/sdk/mastra/mastra.interface.js';
@@ -44,7 +46,7 @@ interface ConversationState {
  * and a configured Mastra agent in memory. `conversationId` maps 1:1 to `sessionId`.
  *
  * @example
- * const engine = new ConversationEngine(mediator, agent, config);
+ * const engine = new ConversationEngine(mediator, agent, config, memory);
  * const convo = await engine.create({ promptSlug: 'greet', promptParams: {}, userId: 'u1', purpose: 'demo' });
  * const reply = await engine.send(convo.id, 'Hello!');
  */
@@ -56,6 +58,7 @@ export class ConversationEngine implements IConversationEngine {
     @Inject(AI_MEDIATOR) private readonly mediator: IMediator,
     @Inject(MASTRA_AGENT) private readonly mastraAgent: IMastraAgent,
     @Inject(AI_CONFIG) private readonly config: AiConfig,
+    @Inject(MASTRA_MEMORY) private readonly mastraMemory: IMastraMemory,
   ) {}
 
   async create(config: ConversationConfig): Promise<Conversation> {
@@ -83,6 +86,10 @@ export class ConversationEngine implements IConversationEngine {
       baseOptions: { threadId: session.mastraThreadId, resourceId: config.userId },
     };
     this.conversations.set(session.id, state);
+
+    if (config.seedMessages && config.seedMessages.length > 0) {
+      await this.mastraMemory.saveMessages(session.mastraThreadId, config.seedMessages);
+    }
 
     return {
       id: session.id,
