@@ -1,3 +1,16 @@
+## [1.22.0](https://github.com/SanamyVN/ai-ts/compare/v1.21.0...v1.22.0) (2026-04-01)
+
+### Features
+
+* **conversation:** add SeedMessage type and seedMessages to ConversationConfig ([97044ea](https://github.com/SanamyVN/ai-ts/commit/97044ea437d11104a66bb9b2fa9d8c17d3e5b774))
+* **conversation:** inject IMastraMemory and seed messages on create ([abf9e8f](https://github.com/SanamyVN/ai-ts/commit/abf9e8fd3e3b70265254a2544c1c0cabe6060bf6))
+* **mastra:** add saveMessages to IMastraMemory interface and adapter ([69ebd38](https://github.com/SanamyVN/ai-ts/commit/69ebd38e5c4ca02420f9a0a02ea1ae478753d691))
+* **mastra:** add saveMessages to IMastraMemory interface and adapter ([8d7aaf5](https://github.com/SanamyVN/ai-ts/commit/8d7aaf59f6abf48d9487f1172dcaa4b0c78fd5ad))
+
+### Bug Fixes
+
+* **conversation:** pass IMastraMemory to ConversationEngine in integration tests ([fc25608](https://github.com/SanamyVN/ai-ts/commit/fc256083b123c5707a738d78bc03b75b3870d7b7))
+
 ## [1.21.0](https://github.com/SanamyVN/ai-ts/compare/v1.20.1...v1.21.0) (2026-03-31)
 
 ### Features
