@@ -9,5 +9,7 @@ export function createMockSessionRepository() {
     updateStatus: vi.fn<ISessionRepository['updateStatus']>(),
     updateResolvedPrompt: vi.fn<ISessionRepository['updateResolvedPrompt']>(),
     updateLastMessage: vi.fn<ISessionRepository['updateLastMessage']>(),
+    updateTitle: vi.fn<ISessionRepository['updateTitle']>(),
+    deleteById: vi.fn<ISessionRepository['deleteById']>(),
   };
 }

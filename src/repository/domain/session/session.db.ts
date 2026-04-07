@@ -79,4 +79,23 @@ export class SessionDrizzleRepository implements ISessionRepository {
     }
     return record;
   }
+
+  async updateTitle(id: string, title: string): Promise<SessionRecord> {
+    const [record] = await this.db.db
+      .update(aiSessions)
+      .set({ title })
+      .where(eq(aiSessions.id, id))
+      .returning();
+    if (!record) {
+      throw new SessionNotFoundRepoError(id);
+    }
+    return record;
+  }
+
+  async deleteById(id: string): Promise<void> {
+    const [record] = await this.db.db.delete(aiSessions).where(eq(aiSessions.id, id)).returning();
+    if (!record) {
+      throw new SessionNotFoundRepoError(id);
+    }
+  }
 }

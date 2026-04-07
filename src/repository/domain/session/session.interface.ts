@@ -61,6 +61,22 @@ export interface ISessionRepository {
    * @throws {SessionNotFoundRepoError} When no session exists with the given ID.
    */
   updateLastMessage(id: string, lastMessage: string, lastMessageAt: Date): Promise<SessionRecord>;
+
+  /**
+   * Update the session title.
+   * @param id - Session ID.
+   * @param title - The new title text.
+   * @returns The updated session record.
+   * @throws {SessionNotFoundRepoError} When no session exists with the given ID.
+   */
+  updateTitle(id: string, title: string): Promise<SessionRecord>;
+
+  /**
+   * Delete a session by its unique ID.
+   * @param id - Session ID.
+   * @throws {SessionNotFoundRepoError} When no session exists with the given ID.
+   */
+  deleteById(id: string): Promise<void>;
 }
 
 /** Dependency-injection token for {@link ISessionRepository}. */

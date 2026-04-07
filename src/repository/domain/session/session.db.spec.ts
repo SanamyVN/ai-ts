@@ -10,5 +10,7 @@ describe('SessionDrizzleRepository', () => {
     expect(mock.updateStatus).toBeDefined();
     expect(mock.updateResolvedPrompt).toBeDefined();
     expect(mock.updateLastMessage).toBeDefined();
+    expect(mock.updateTitle).toBeDefined();
+    expect(mock.deleteById).toBeDefined();
   });
 });
