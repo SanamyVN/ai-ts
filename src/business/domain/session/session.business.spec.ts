@@ -302,6 +302,29 @@ describe('SessionService', () => {
       expect(sessionRepo.deleteById).not.toHaveBeenCalled();
     });
 
+    it('throws SessionNotFoundError when deleteById reports not found after thread deletion', async () => {
+      sessionRepo.findById.mockResolvedValue({
+        id: 'session-1',
+        mastraThreadId: 'thread-1',
+        userId: 'user-1',
+        tenantId: null,
+        promptSlug: 'test',
+        resolvedPrompt: 'You are a test assistant.',
+        purpose: 'test',
+        status: 'active',
+        title: null,
+        metadata: null,
+        startedAt: new Date(),
+        endedAt: null,
+        lastMessage: null,
+        lastMessageAt: null,
+      });
+      mastraMemory.deleteThread.mockResolvedValue(undefined);
+      sessionRepo.deleteById.mockRejectedValue(new SessionNotFoundRepoError('session-1'));
+
+      await expect(service.delete('session-1')).rejects.toThrow(SessionNotFoundError);
+    });
+
     it('confirms deleted session is absent from subsequent list results', async () => {
       sessionRepo.findById.mockResolvedValue({
         id: 'session-to-delete',

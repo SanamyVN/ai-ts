@@ -104,7 +104,14 @@ export class SessionService implements ISessionService {
   async delete(sessionId: string): Promise<void> {
     const session = await this.getSessionOrThrow(sessionId);
     await this.mastraMemory.deleteThread(session.mastraThreadId);
-    await this.sessionRepo.deleteById(sessionId);
+    try {
+      await this.sessionRepo.deleteById(sessionId);
+    } catch (error) {
+      if (isSessionNotFoundRepoError(error)) {
+        throw new SessionNotFoundError(sessionId, { cause: error });
+      }
+      throw error;
+    }
   }
 
   async exportTranscript(sessionId: string, format: 'json' | 'text'): Promise<Transcript> {

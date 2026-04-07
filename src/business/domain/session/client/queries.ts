@@ -56,7 +56,7 @@ export const UpdateSessionTitleCommand = createCommand({
   type: 'ai.session.updateTitle',
   payload: z.object({
     sessionId: z.string(),
-    title: z.string(),
+    title: z.string().min(1).max(200),
   }),
   response: z.void(),
 });
