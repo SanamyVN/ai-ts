@@ -19,10 +19,10 @@ export const transcriptQueryDto = z.object({
 });
 export type TranscriptQueryDto = z.infer<typeof transcriptQueryDto>;
 
-export const updateSessionTitleDto = z.object({
-  title: z.string().min(1).max(200),
+export const updateTitleBodyDto = z.object({
+  title: z.string().min(1).max(100),
 });
-export type UpdateSessionTitleDto = z.infer<typeof updateSessionTitleDto>;
+export type UpdateTitleBodyDto = z.infer<typeof updateTitleBodyDto>;
 
 export const sessionResponseDto = z.object({
   id: z.string(),

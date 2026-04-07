@@ -10,7 +10,7 @@ import {
   transcriptQueryDto,
   transcriptResponseDto,
   messageResponseDto,
-  updateSessionTitleDto,
+  updateTitleBodyDto,
 } from './session.dto.js';
 import { SESSION_APP_SERVICE, type SessionAppService } from './session.service.js';
 import { SESSION_MIDDLEWARE_CONFIG, type SessionMiddlewareConfig } from './session.tokens.js';
@@ -80,7 +80,7 @@ export class SessionRouter implements IRouter {
     app
       .patch('/:id/title')
       .middleware(...(this.middlewareConfig.updateTitle ?? []))
-      .schema({ params: idParams, body: updateSessionTitleDto })
+      .schema({ params: idParams, body: updateTitleBodyDto })
       .handle(async ({ params, body, ctx }) => {
         await this.service.updateTitle(params.id, body.title);
         return ctx.response(204);

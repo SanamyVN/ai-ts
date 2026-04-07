@@ -111,6 +111,14 @@ describe('SessionRemoteMediator', () => {
         ),
       ).rejects.toThrow(SessionNotFoundClientError);
     });
+
+    it('throws generic error on non-404 failure', async () => {
+      vi.mocked(http.patch).mockResolvedValue({ ok: false, status: 500 });
+
+      await expect(
+        mediator.updateTitle(new UpdateSessionTitleCommand({ sessionId: 'session-1', title: 'Renamed' })),
+      ).rejects.toThrow('Failed to update session title: 500');
+    });
   });
 
   describe('delete', () => {
@@ -130,6 +138,14 @@ describe('SessionRemoteMediator', () => {
       await expect(
         mediator.delete(new DeleteSessionCommand({ sessionId: 'missing' })),
       ).rejects.toThrow(SessionNotFoundClientError);
+    });
+
+    it('throws generic error on non-404 failure', async () => {
+      vi.mocked(http.delete).mockResolvedValue({ ok: false, status: 500 });
+
+      await expect(mediator.delete(new DeleteSessionCommand({ sessionId: 'session-1' }))).rejects.toThrow(
+        'Failed to delete session: 500',
+      );
     });
   });
 });

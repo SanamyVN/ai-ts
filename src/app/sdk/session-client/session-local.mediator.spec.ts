@@ -100,6 +100,15 @@ describe('SessionLocalMediator', () => {
         ),
       ).rejects.toThrow(SessionNotFoundClientError);
     });
+
+    it('re-throws unknown errors', async () => {
+      const unknownError = new Error('database connection failed');
+      sessionService.updateTitle.mockRejectedValue(unknownError);
+
+      await expect(
+        mediator.updateTitle(new UpdateSessionTitleCommand({ sessionId: 'session-1', title: 'Title' })),
+      ).rejects.toThrow('database connection failed');
+    });
   });
 
   describe('delete', () => {
@@ -117,6 +126,15 @@ describe('SessionLocalMediator', () => {
       await expect(
         mediator.delete(new DeleteSessionCommand({ sessionId: 'missing' })),
       ).rejects.toThrow(SessionNotFoundClientError);
+    });
+
+    it('re-throws unknown errors', async () => {
+      const unknownError = new Error('Mastra unavailable');
+      sessionService.delete.mockRejectedValue(unknownError);
+
+      await expect(mediator.delete(new DeleteSessionCommand({ sessionId: 'session-1' }))).rejects.toThrow(
+        'Mastra unavailable',
+      );
     });
   });
 });
