@@ -1,3 +1,22 @@
+## [1.23.0](https://github.com/SanamyVN/ai-ts/compare/v1.22.1...v1.23.0) (2026-04-07)
+
+### Features
+
+* add title column to ai_sessions schema ([66ce9b9](https://github.com/SanamyVN/ai-ts/commit/66ce9b9673968a331a4ef25d7ce85da44d187557))
+* add title to Session and SessionSummary business models ([7519eb2](https://github.com/SanamyVN/ai-ts/commit/7519eb2ad2ebb994e3b7a2ab060e07fdddc9654a))
+* add updateTitle and deleteById to session repository ([8917a27](https://github.com/SanamyVN/ai-ts/commit/8917a275584100e1d08aeb25ef1ba0c1a5519d91))
+* complete session title and delete flows ([2d73656](https://github.com/SanamyVN/ai-ts/commit/2d736568a9521390ca8b170cbf8325c7892d1e31))
+* map title through session business mappers ([83aaed1](https://github.com/SanamyVN/ai-ts/commit/83aaed10e6e90708298d49684c07b784d151cfae))
+
+### Bug Fixes
+
+* align title constraints and mediator error-path tests ([dae6b66](https://github.com/SanamyVN/ai-ts/commit/dae6b666c98d33ae9bd720b751d498e6b740772b))
+* map delete race not-found and validate session title length ([137cfec](https://github.com/SanamyVN/ai-ts/commit/137cfec76a197f7e7020792c9851ae6889e96567))
+
+### Reverts
+
+* Revert "chore: scope task 1 to schema-only change" ([63fe9ec](https://github.com/SanamyVN/ai-ts/commit/63fe9ec9f3152b0a14c87616f281a09d83335cdf))
+
 ## [1.22.1](https://github.com/SanamyVN/ai-ts/compare/v1.22.0...v1.22.1) (2026-04-01)
 
 ### Bug Fixes
