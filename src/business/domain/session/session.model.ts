@@ -12,6 +12,7 @@ export interface Session {
   readonly resolvedPrompt: string;
   readonly purpose: string;
   readonly status: string;
+  readonly title: string | null;
   readonly metadata: Record<string, unknown> | null;
   readonly startedAt: Date;
   readonly endedAt: Date | null;
@@ -26,6 +27,7 @@ export interface SessionSummary {
   readonly promptSlug: string;
   readonly purpose: string;
   readonly status: string;
+  readonly title: string | null;
   readonly startedAt: Date;
   readonly lastMessage: string | null;
   readonly lastMessageAt: Date | null;
