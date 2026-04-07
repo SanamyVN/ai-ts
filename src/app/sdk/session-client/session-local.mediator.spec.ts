@@ -3,7 +3,11 @@ import { SessionLocalMediator } from './session-local.mediator.js';
 import { createMockSessionService } from '@/business/domain/session/session.testing.js';
 import { SessionNotFoundError } from '@/business/domain/session/session.error.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
-import { GetSessionMessagesQuery } from '@/business/domain/session/client/queries.js';
+import {
+  DeleteSessionCommand,
+  GetSessionMessagesQuery,
+  UpdateSessionTitleCommand,
+} from '@/business/domain/session/client/queries.js';
 
 describe('SessionLocalMediator', () => {
   let mediator: SessionLocalMediator;
@@ -72,6 +76,47 @@ describe('SessionLocalMediator', () => {
       const query = new GetSessionMessagesQuery({ sessionId: 'session-1', page: 1, perPage: 10 });
 
       await expect(mediator.getMessages(query)).rejects.toThrow('database connection failed');
+    });
+  });
+
+  describe('updateTitle', () => {
+    it('delegates title updates to the session service', async () => {
+      const command = new UpdateSessionTitleCommand({
+        sessionId: 'session-1',
+        title: 'Renamed session',
+      });
+
+      await mediator.updateTitle(command);
+
+      expect(sessionService.updateTitle).toHaveBeenCalledWith('session-1', 'Renamed session');
+    });
+
+    it('maps SessionNotFoundError to SessionNotFoundClientError', async () => {
+      sessionService.updateTitle.mockRejectedValue(new SessionNotFoundError('missing'));
+
+      await expect(
+        mediator.updateTitle(
+          new UpdateSessionTitleCommand({ sessionId: 'missing', title: 'Title' }),
+        ),
+      ).rejects.toThrow(SessionNotFoundClientError);
+    });
+  });
+
+  describe('delete', () => {
+    it('delegates permanent deletion to the session service', async () => {
+      const command = new DeleteSessionCommand({ sessionId: 'session-1' });
+
+      await mediator.delete(command);
+
+      expect(sessionService.delete).toHaveBeenCalledWith('session-1');
+    });
+
+    it('maps SessionNotFoundError to SessionNotFoundClientError', async () => {
+      sessionService.delete.mockRejectedValue(new SessionNotFoundError('missing'));
+
+      await expect(
+        mediator.delete(new DeleteSessionCommand({ sessionId: 'missing' })),
+      ).rejects.toThrow(SessionNotFoundClientError);
     });
   });
 });

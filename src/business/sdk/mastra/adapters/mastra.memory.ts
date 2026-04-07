@@ -113,6 +113,14 @@ export class MastraMemoryAdapter implements IMastraMemory {
     }
   }
 
+  async deleteThread(threadId: string): Promise<void> {
+    try {
+      await this.memory.deleteThread(threadId);
+    } catch (error) {
+      throw new MastraAdapterError('deleteThread', error);
+    }
+  }
+
   async saveMessages(
     threadId: string,
     messages: readonly { readonly role: 'user' | 'assistant'; readonly content: string }[],

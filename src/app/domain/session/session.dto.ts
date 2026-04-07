@@ -19,6 +19,11 @@ export const transcriptQueryDto = z.object({
 });
 export type TranscriptQueryDto = z.infer<typeof transcriptQueryDto>;
 
+export const updateSessionTitleDto = z.object({
+  title: z.string(),
+});
+export type UpdateSessionTitleDto = z.infer<typeof updateSessionTitleDto>;
+
 export const sessionResponseDto = z.object({
   id: z.string(),
   mastraThreadId: z.string(),
@@ -28,6 +33,7 @@ export const sessionResponseDto = z.object({
   resolvedPrompt: z.string(),
   purpose: z.string(),
   status: z.string(),
+  title: z.string().nullable(),
   metadata: z.record(z.string(), z.unknown()).nullable(),
   startedAt: z.string(),
   endedAt: z.string().nullable(),
@@ -40,6 +46,7 @@ export const sessionSummaryResponseDto = z.object({
   promptSlug: z.string(),
   purpose: z.string(),
   status: z.string(),
+  title: z.string().nullable(),
   startedAt: z.string(),
 });
 export type SessionSummaryResponseDto = z.infer<typeof sessionSummaryResponseDto>;

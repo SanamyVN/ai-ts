@@ -110,6 +110,13 @@ export interface IMastraMemory {
   listThreads(filter?: ThreadFilter): Promise<Thread[]>;
 
   /**
+   * Permanently delete a conversation thread.
+   * @param threadId - The thread to delete.
+   * @throws {MastraAdapterError} When the underlying Mastra call fails.
+   */
+  deleteThread(threadId: string): Promise<void>;
+
+  /**
    * Save pre-seeded messages into a thread.
    * @param threadId - The thread to save messages into.
    * @param messages - Messages to save, with role and plain-text content.

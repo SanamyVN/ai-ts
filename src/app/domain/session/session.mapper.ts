@@ -14,6 +14,7 @@ export function toSessionResponseDtoFromClient(model: SessionClientModel): Sessi
     resolvedPrompt: model.resolvedPrompt,
     purpose: model.purpose,
     status: model.status,
+    title: model.title,
     metadata: model.metadata,
     startedAt: model.startedAt.toISOString(),
     endedAt: model.endedAt !== null ? model.endedAt.toISOString() : null,
@@ -29,6 +30,7 @@ export function toSessionSummaryResponseDtoFromClient(
     promptSlug: model.promptSlug,
     purpose: model.purpose,
     status: model.status,
+    title: model.title,
     startedAt: model.startedAt.toISOString(),
   };
 }

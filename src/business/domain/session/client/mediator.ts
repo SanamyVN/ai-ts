@@ -6,7 +6,9 @@ import {
   CreateSessionCommand,
   EndSessionCommand,
   UpdateSessionCommand,
+  UpdateSessionTitleCommand,
   UpdateSessionLastMessageCommand,
+  DeleteSessionCommand,
   GetSessionMessagesQuery,
 } from './queries.js';
 
@@ -16,7 +18,9 @@ export interface ISessionMediator {
   create(command: InstanceType<typeof CreateSessionCommand>): Promise<SessionClientModel>;
   end(command: InstanceType<typeof EndSessionCommand>): Promise<void>;
   update(command: InstanceType<typeof UpdateSessionCommand>): Promise<void>;
+  updateTitle(command: InstanceType<typeof UpdateSessionTitleCommand>): Promise<void>;
   updateLastMessage(command: InstanceType<typeof UpdateSessionLastMessageCommand>): Promise<void>;
+  delete(command: InstanceType<typeof DeleteSessionCommand>): Promise<void>;
   getMessages(query: InstanceType<typeof GetSessionMessagesQuery>): Promise<MessageListClient>;
 }
 
@@ -26,6 +30,8 @@ export const SESSION_MEDIATOR = createMediatorToken<ISessionMediator>('SESSION_M
   create: CreateSessionCommand,
   end: EndSessionCommand,
   update: UpdateSessionCommand,
+  updateTitle: UpdateSessionTitleCommand,
   updateLastMessage: UpdateSessionLastMessageCommand,
+  delete: DeleteSessionCommand,
   getMessages: GetSessionMessagesQuery,
 });

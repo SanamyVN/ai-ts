@@ -28,6 +28,7 @@ describe('toSessionClientModelFromBusiness', () => {
 
     const result = toSessionClientModelFromBusiness(session);
 
+    expect(result.title).toBe('Session title');
     expect(result.lastMessage).toBe('Hello world');
     expect(result.lastMessageAt).toEqual(new Date('2026-01-01T12:00:00Z'));
   });
@@ -52,6 +53,7 @@ describe('toSessionClientModelFromBusiness', () => {
 
     const result = toSessionClientModelFromBusiness(session);
 
+    expect(result.title).toBeNull();
     expect(result.lastMessage).toBeNull();
     expect(result.lastMessageAt).toBeNull();
   });
@@ -73,6 +75,7 @@ describe('toSessionSummaryClientFromBusiness', () => {
 
     const result = toSessionSummaryClientFromBusiness(summary);
 
+    expect(result.title).toBe('Summary title');
     expect(result.lastMessage).toBe('Goodbye');
     expect(result.lastMessageAt).toEqual(new Date('2026-01-02T00:00:00Z'));
   });
@@ -92,6 +95,7 @@ describe('toSessionSummaryClientFromBusiness', () => {
 
     const result = toSessionSummaryClientFromBusiness(summary);
 
+    expect(result.title).toBeNull();
     expect(result.lastMessage).toBeNull();
     expect(result.lastMessageAt).toBeNull();
   });

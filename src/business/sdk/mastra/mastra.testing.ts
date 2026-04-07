@@ -36,6 +36,7 @@ export function createMockMastraMemory() {
     createThread: vi.fn<IMastraMemory['createThread']>(),
     getMessages: vi.fn<IMastraMemory['getMessages']>(),
     listThreads: vi.fn<IMastraMemory['listThreads']>(),
+    deleteThread: vi.fn<IMastraMemory['deleteThread']>(),
     saveMessages: vi.fn<IMastraMemory['saveMessages']>(),
   };
 }

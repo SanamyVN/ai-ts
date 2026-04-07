@@ -90,6 +90,21 @@ export interface ISessionService {
    * @throws {SessionNotFoundError} If the session does not exist.
    */
   updateLastMessage(sessionId: string, lastMessage: string): Promise<void>;
+
+  /**
+   * Updates the title of a session.
+   * @param sessionId - Session to update.
+   * @param title - The new title text.
+   * @throws {SessionNotFoundError} If the session does not exist.
+   */
+  updateTitle(sessionId: string, title: string): Promise<void>;
+
+  /**
+   * Permanently deletes a session and its backing Mastra thread.
+   * @param sessionId - Session to delete.
+   * @throws {SessionNotFoundError} If the session does not exist.
+   */
+  delete(sessionId: string): Promise<void>;
 }
 
 /** Dependency-injection token for {@link ISessionService}. */

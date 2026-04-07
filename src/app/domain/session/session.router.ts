@@ -10,6 +10,7 @@ import {
   transcriptQueryDto,
   transcriptResponseDto,
   messageResponseDto,
+  updateSessionTitleDto,
 } from './session.dto.js';
 import { SESSION_APP_SERVICE, type SessionAppService } from './session.service.js';
 import { SESSION_MIDDLEWARE_CONFIG, type SessionMiddlewareConfig } from './session.tokens.js';
@@ -77,11 +78,29 @@ export class SessionRouter implements IRouter {
       });
 
     app
+      .patch('/:id/title')
+      .middleware(...(this.middlewareConfig.updateTitle ?? []))
+      .schema({ params: idParams, body: updateSessionTitleDto })
+      .handle(async ({ params, body, ctx }) => {
+        await this.service.updateTitle(params.id, body.title);
+        return ctx.response(204);
+      });
+
+    app
       .put('/:id/end')
       .middleware(...(this.middlewareConfig.end ?? []))
       .schema({ params: idParams })
       .handle(async ({ params, ctx }) => {
         await this.service.end(params.id);
+        return ctx.response(204);
+      });
+
+    app
+      .delete('/:id/permanent')
+      .middleware(...(this.middlewareConfig.delete ?? []))
+      .schema({ params: idParams })
+      .handle(async ({ params, ctx }) => {
+        await this.service.delete(params.id);
         return ctx.response(204);
       });
   }

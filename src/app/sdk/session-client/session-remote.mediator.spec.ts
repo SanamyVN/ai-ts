@@ -1,7 +1,11 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { SessionRemoteMediator, type HttpClient } from './session-remote.mediator.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
-import { GetSessionMessagesQuery } from '@/business/domain/session/client/queries.js';
+import {
+  DeleteSessionCommand,
+  GetSessionMessagesQuery,
+  UpdateSessionTitleCommand,
+} from '@/business/domain/session/client/queries.js';
 
 describe('SessionRemoteMediator', () => {
   let mediator: SessionRemoteMediator;
@@ -81,6 +85,51 @@ describe('SessionRemoteMediator', () => {
       await expect(mediator.getMessages(query)).rejects.toThrow(
         'Failed to fetch session messages: 500',
       );
+    });
+  });
+
+  describe('updateTitle', () => {
+    it('sends PATCH to the title endpoint', async () => {
+      vi.mocked(http.patch).mockResolvedValue({ ok: true });
+
+      await mediator.updateTitle(
+        new UpdateSessionTitleCommand({ sessionId: 'session-1', title: 'Renamed' }),
+      );
+
+      expect(http.patch).toHaveBeenCalledWith(
+        'https://ai.example.com/ai/sessions/session-1/title',
+        { title: 'Renamed' },
+      );
+    });
+
+    it('maps 404s to SessionNotFoundClientError', async () => {
+      vi.mocked(http.patch).mockResolvedValue({ ok: false, status: 404 });
+
+      await expect(
+        mediator.updateTitle(
+          new UpdateSessionTitleCommand({ sessionId: 'missing', title: 'Renamed' }),
+        ),
+      ).rejects.toThrow(SessionNotFoundClientError);
+    });
+  });
+
+  describe('delete', () => {
+    it('sends DELETE to the permanent deletion endpoint', async () => {
+      vi.mocked(http.delete).mockResolvedValue({ ok: true });
+
+      await mediator.delete(new DeleteSessionCommand({ sessionId: 'session-1' }));
+
+      expect(http.delete).toHaveBeenCalledWith(
+        'https://ai.example.com/ai/sessions/session-1/permanent',
+      );
+    });
+
+    it('maps 404s to SessionNotFoundClientError', async () => {
+      vi.mocked(http.delete).mockResolvedValue({ ok: false, status: 404 });
+
+      await expect(
+        mediator.delete(new DeleteSessionCommand({ sessionId: 'missing' })),
+      ).rejects.toThrow(SessionNotFoundClientError);
     });
   });
 });

@@ -17,7 +17,9 @@ import type {
   CreateSessionCommand,
   EndSessionCommand,
   UpdateSessionCommand,
+  UpdateSessionTitleCommand,
   UpdateSessionLastMessageCommand,
+  DeleteSessionCommand,
   GetSessionMessagesQuery,
 } from '@/business/domain/session/client/queries.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
@@ -123,6 +125,17 @@ export class SessionRemoteMediator implements ISessionMediator {
     }
   }
 
+  async updateTitle(command: InstanceType<typeof UpdateSessionTitleCommand>): Promise<void> {
+    const response = await this.http.patch(
+      `${this.config.baseUrl}/ai/sessions/${command.sessionId}/title`,
+      { title: command.title },
+    );
+    if (!response.ok) {
+      if (response.status === 404) throw new SessionNotFoundClientError(command.sessionId);
+      throw new Error(`Failed to update session title: ${response.status}`);
+    }
+  }
+
   async updateLastMessage(
     command: InstanceType<typeof UpdateSessionLastMessageCommand>,
   ): Promise<void> {
@@ -133,6 +146,16 @@ export class SessionRemoteMediator implements ISessionMediator {
     if (!response.ok) {
       if (response.status === 404) throw new SessionNotFoundClientError(command.sessionId);
       throw new Error(`Failed to update session last message: ${response.status}`);
+    }
+  }
+
+  async delete(command: InstanceType<typeof DeleteSessionCommand>): Promise<void> {
+    const response = await this.http.delete(
+      `${this.config.baseUrl}/ai/sessions/${command.sessionId}/permanent`,
+    );
+    if (!response.ok) {
+      if (response.status === 404) throw new SessionNotFoundClientError(command.sessionId);
+      throw new Error(`Failed to delete session: ${response.status}`);
     }
   }
 

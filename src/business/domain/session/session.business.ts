@@ -90,6 +90,23 @@ export class SessionService implements ISessionService {
     }
   }
 
+  async updateTitle(sessionId: string, title: string): Promise<void> {
+    try {
+      await this.sessionRepo.updateTitle(sessionId, title);
+    } catch (error) {
+      if (isSessionNotFoundRepoError(error)) {
+        throw new SessionNotFoundError(sessionId, { cause: error });
+      }
+      throw error;
+    }
+  }
+
+  async delete(sessionId: string): Promise<void> {
+    const session = await this.getSessionOrThrow(sessionId);
+    await this.mastraMemory.deleteThread(session.mastraThreadId);
+    await this.sessionRepo.deleteById(sessionId);
+  }
+
   async exportTranscript(sessionId: string, format: 'json' | 'text'): Promise<Transcript> {
     const session = await this.getSessionOrThrow(sessionId);
     const { messages } = await this.mastraMemory.getMessages(session.mastraThreadId, {

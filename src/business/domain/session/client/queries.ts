@@ -52,12 +52,27 @@ export const UpdateSessionCommand = createCommand({
   response: z.void(),
 });
 
+export const UpdateSessionTitleCommand = createCommand({
+  type: 'ai.session.updateTitle',
+  payload: z.object({
+    sessionId: z.string(),
+    title: z.string(),
+  }),
+  response: z.void(),
+});
+
 export const UpdateSessionLastMessageCommand = createCommand({
   type: 'ai.session.updateLastMessage',
   payload: z.object({
     sessionId: z.string(),
     lastMessage: z.string(),
   }),
+  response: z.void(),
+});
+
+export const DeleteSessionCommand = createCommand({
+  type: 'ai.session.delete',
+  payload: z.object({ sessionId: z.string() }),
   response: z.void(),
 });
 

@@ -5,7 +5,9 @@ import { AI_MEDIATOR } from '@/shared/tokens.js';
 import {
   FindSessionByIdQuery,
   ListSessionsQuery,
+  DeleteSessionCommand,
   EndSessionCommand,
+  UpdateSessionTitleCommand,
 } from '@/business/domain/session/client/queries.js';
 import { mapSessionError } from './session.error.js';
 import {
@@ -40,6 +42,22 @@ export class SessionAppService {
   async end(sessionId: string): Promise<void> {
     try {
       await this.mediator.send(new EndSessionCommand({ sessionId }));
+    } catch (error) {
+      mapSessionError(error);
+    }
+  }
+
+  async updateTitle(sessionId: string, title: string): Promise<void> {
+    try {
+      await this.mediator.send(new UpdateSessionTitleCommand({ sessionId, title }));
+    } catch (error) {
+      mapSessionError(error);
+    }
+  }
+
+  async delete(sessionId: string): Promise<void> {
+    try {
+      await this.mediator.send(new DeleteSessionCommand({ sessionId }));
     } catch (error) {
       mapSessionError(error);
     }

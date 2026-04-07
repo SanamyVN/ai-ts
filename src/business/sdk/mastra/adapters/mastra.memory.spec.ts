@@ -8,6 +8,7 @@ function createMockMemory() {
     createThread: vi.fn(),
     recall: vi.fn(),
     listThreads: vi.fn(),
+    deleteThread: vi.fn(),
     saveMessages: vi.fn().mockResolvedValue({ messages: [] }),
   };
 }
@@ -145,6 +146,25 @@ describe('MastraMemoryAdapter', () => {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         expect((error as MastraAdapterError).cause).toBe(cause);
       }
+    });
+  });
+
+  describe('deleteThread', () => {
+    it('calls memory.deleteThread with the provided thread id', async () => {
+      mockMemory.deleteThread.mockResolvedValue(undefined);
+
+      await adapter.deleteThread('thread-1');
+
+      expect(mockMemory.deleteThread).toHaveBeenCalledWith('thread-1');
+    });
+
+    it('wraps underlying deleteThread failures as MastraAdapterError', async () => {
+      const cause = new Error('delete failed');
+      mockMemory.deleteThread.mockRejectedValueOnce(cause);
+
+      await expect(adapter.deleteThread('thread-1')).rejects.toThrow(
+        'Mastra operation failed: deleteThread',
+      );
     });
   });
 });
