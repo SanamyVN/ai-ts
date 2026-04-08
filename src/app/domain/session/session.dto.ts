@@ -5,6 +5,7 @@ export const sessionListQueryDto = z.object({
   tenantId: z.string().optional(),
   purpose: z.string().optional(),
   status: z.string().optional(),
+  search: z.string().max(200).optional(),
 });
 export type SessionListQueryDto = z.infer<typeof sessionListQueryDto>;
 

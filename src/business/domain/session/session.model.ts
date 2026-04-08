@@ -51,6 +51,8 @@ export interface SessionFilter {
   readonly tenantId?: string;
   readonly purpose?: string;
   readonly status?: string;
+  /** Case-insensitive substring match against the session title. */
+  readonly search?: string;
 }
 
 /** An exported session transcript containing formatted content and raw messages. */

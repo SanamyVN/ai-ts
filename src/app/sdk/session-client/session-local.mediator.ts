@@ -56,6 +56,7 @@ export class SessionLocalMediator implements ISessionMediator {
       ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
       ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
       ...(query.status !== undefined ? { status: query.status } : {}),
+      ...(query.search !== undefined ? { search: query.search } : {}),
     });
     return results.map(toSessionSummaryClientFromBusiness);
   }

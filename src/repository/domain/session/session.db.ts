@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, ilike, inArray } from 'drizzle-orm';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
 import type { AiSchema } from '@/shared/schema.js';
@@ -32,6 +32,7 @@ export class SessionDrizzleRepository implements ISessionRepository {
     if (filter.tenantId) conditions.push(eq(aiSessions.tenantId, filter.tenantId));
     if (filter.purpose) conditions.push(eq(aiSessions.purpose, filter.purpose));
     if (filter.status) conditions.push(eq(aiSessions.status, filter.status));
+    if (filter.search) conditions.push(ilike(aiSessions.title, `%${filter.search}%`));
 
     const query = this.db.db.select().from(aiSessions);
     if (conditions.length > 0) {

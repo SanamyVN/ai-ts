@@ -20,6 +20,7 @@ export const ListSessionsQuery = createQuery({
     tenantId: z.string().optional(),
     purpose: z.string().optional(),
     status: z.string().optional(),
+    search: z.string().max(200).optional(),
   }),
   response: z.array(sessionSummaryClientSchema),
 });

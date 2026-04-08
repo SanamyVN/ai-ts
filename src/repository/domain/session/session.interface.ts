@@ -8,6 +8,8 @@ export interface SessionRepoFilter {
   tenantId?: string;
   purpose?: string;
   status?: string;
+  /** Case-insensitive substring match against the session title. */
+  search?: string;
 }
 
 /** Manages persistence and retrieval of AI conversation sessions. */

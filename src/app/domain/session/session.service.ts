@@ -25,6 +25,7 @@ export class SessionAppService {
     tenantId?: string;
     purpose?: string;
     status?: string;
+    search?: string;
   }): Promise<SessionSummaryResponseDto[]> {
     const results = await this.mediator.send(new ListSessionsQuery(query ?? {}));
     return results.map(toSessionSummaryResponseDtoFromClient);

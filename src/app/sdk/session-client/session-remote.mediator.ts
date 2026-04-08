@@ -82,6 +82,7 @@ export class SessionRemoteMediator implements ISessionMediator {
     if (query.tenantId) params.set('tenantId', query.tenantId);
     if (query.purpose) params.set('purpose', query.purpose);
     if (query.status) params.set('status', query.status);
+    if (query.search) params.set('search', query.search);
     const qs = params.toString() ? `?${params.toString()}` : '';
     const response = await this.http.get(`${this.config.baseUrl}/ai/sessions${qs}`);
     if (!response.ok) {
