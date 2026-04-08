@@ -1,3 +1,9 @@
+## [1.24.0](https://github.com/SanamyVN/ai-ts/compare/v1.23.0...v1.24.0) (2026-04-08)
+
+### Features
+
+* **session:** add search filter to session listing ([d832f21](https://github.com/SanamyVN/ai-ts/commit/d832f21d3bdd9f9b51fb546ab643c3a6e4c7f5b4))
+
 ## [1.23.0](https://github.com/SanamyVN/ai-ts/compare/v1.22.1...v1.23.0) (2026-04-07)
 
 ### Features
