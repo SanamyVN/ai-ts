@@ -6,6 +6,12 @@ import type {
   ConversationConfig,
   ConversationResponse,
 } from './conversation.model.js';
+import type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
+
+/** Options for send() and stream() calls that override conversation-level defaults. */
+export interface SendOptions {
+  readonly metricsContext?: MetricsContext;
+}
 
 /** Orchestrates AI conversations by creating sessions, sending messages, and streaming responses. */
 export interface IConversationEngine {
@@ -48,6 +54,7 @@ export interface IConversationEngine {
     outputSchema?: ZodType,
     promptParams?: Record<string, unknown>,
     toolsets?: Record<string, Record<string, unknown>>,
+    options?: SendOptions,
   ): Promise<ConversationResponse>;
 
   /**
@@ -72,6 +79,7 @@ export interface IConversationEngine {
     outputSchema?: ZodType,
     promptParams?: Record<string, unknown>,
     toolsets?: Record<string, Record<string, unknown>>,
+    options?: SendOptions,
   ): AsyncIterable<StreamChunk>;
 }
 

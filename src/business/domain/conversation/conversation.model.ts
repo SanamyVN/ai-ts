@@ -1,3 +1,5 @@
+import type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
+
 /** A single pre-seeded message to inject into a new conversation thread. */
 export interface SeedMessage {
   readonly role: 'user' | 'assistant';
@@ -15,6 +17,8 @@ export interface ConversationConfig {
   readonly model?: string;
   /** Pre-seeded messages to inject into the thread immediately after creation. */
   readonly seedMessages?: readonly SeedMessage[];
+  /** Opaque attributes bag forwarded to AI metrics. Set once at creation, inherited by all send/stream calls. */
+  readonly metricsContext?: MetricsContext;
 }
 
 /** A live conversation handle tied to a session and model. */
