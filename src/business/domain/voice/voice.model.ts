@@ -16,6 +16,8 @@ export interface SpeechToTextInput {
   readonly audioStream: NodeJS.ReadableStream;
   readonly options?: Record<string, unknown>;
   readonly metricsContext?: MetricsContext;
+  /** Pre-computed audio duration in seconds. If provided, audio streams directly to the provider (no buffering). */
+  readonly durationSeconds?: number;
 }
 
 export interface SpeechToTextResult {

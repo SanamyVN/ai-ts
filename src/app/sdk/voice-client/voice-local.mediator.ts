@@ -29,6 +29,7 @@ export class VoiceLocalMediator implements IVoiceMediator {
       text: command.text,
       speakerGender: command.speakerGender,
       ...(command.options !== undefined ? { options: command.options } : {}),
+      ...(command.metricsContext !== undefined ? { metricsContext: command.metricsContext } : {}),
     });
     return toTextToSpeechClientResult(result);
   }
@@ -41,6 +42,8 @@ export class VoiceLocalMediator implements IVoiceMediator {
     const result = await this.voiceBusiness.speechToText({
       audioStream,
       ...(command.options !== undefined ? { options: command.options } : {}),
+      ...(command.metricsContext !== undefined ? { metricsContext: command.metricsContext } : {}),
+      ...(command.durationSeconds !== undefined ? { durationSeconds: command.durationSeconds } : {}),
     });
     return toSpeechToTextClientResult(result);
   }

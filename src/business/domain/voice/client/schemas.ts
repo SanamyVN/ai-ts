@@ -4,6 +4,7 @@ export const textToSpeechClientSchema = z.object({
   text: z.string().min(1),
   speakerGender: z.enum(['male', 'female']),
   options: z.record(z.string(), z.unknown()).optional(),
+  metricsContext: z.record(z.string(), z.string()).optional(),
 });
 
 export const textToSpeechResultSchema = z.object({
@@ -15,6 +16,8 @@ export const speechToTextClientSchema = z.object({
   audio: z.string(),
   contentType: z.string(),
   options: z.record(z.string(), z.unknown()).optional(),
+  metricsContext: z.record(z.string(), z.string()).optional(),
+  durationSeconds: z.number().optional(),
 });
 
 export const speechToTextResultSchema = z.object({
