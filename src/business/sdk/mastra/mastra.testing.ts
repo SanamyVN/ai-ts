@@ -7,6 +7,7 @@ import type {
   IMastraVoiceStt,
   IMastraVoiceRealtime,
 } from './mastra.interface.js';
+import type { IAiMetrics } from '@/foundation/ai-metrics/ai-metrics.interface.js';
 
 /**
  * Creates a mock `IMastraAgent` with all methods stubbed via `vi.fn()`.
@@ -104,5 +105,23 @@ export function createMockMastraVoiceRealtime() {
     addTools: vi.fn<IMastraVoiceRealtime['addTools']>(),
     addInstructions: vi.fn<IMastraVoiceRealtime['addInstructions']>(),
     updateConfig: vi.fn<IMastraVoiceRealtime['updateConfig']>(),
+  };
+}
+
+/**
+ * Creates a mock `IAiMetrics` with all methods stubbed via `vi.fn()`.
+ * Use in unit tests to verify metric emission without real OTel instrumentation.
+ *
+ * @example
+ * const metrics = createMockAiMetrics();
+ * expect(metrics.recordLlmUsage).toHaveBeenCalledWith({ model: 'gpt-4o-mini', ... });
+ */
+export function createMockAiMetrics() {
+  return {
+    recordLlmUsage: vi.fn<IAiMetrics['recordLlmUsage']>(),
+    recordSttUsage: vi.fn<IAiMetrics['recordSttUsage']>(),
+    recordTtsUsage: vi.fn<IAiMetrics['recordTtsUsage']>(),
+    recordEmbeddingUsage: vi.fn<IAiMetrics['recordEmbeddingUsage']>(),
+    recordOperation: vi.fn<IAiMetrics['recordOperation']>(),
   };
 }

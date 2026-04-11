@@ -214,8 +214,6 @@ export const MASTRA_RAG = createToken<IMastraRag>('MASTRA_RAG');
 /** DI token for the raw PgVector instance — provided by the downstream app. */
 export const MASTRA_CORE_RAG = createToken<PgVector>('MASTRA_CORE_RAG');
 
-export type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
-
 // ── Voice Types ──
 
 export interface SpeakOptions {
