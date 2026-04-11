@@ -8,6 +8,8 @@ import {
 } from '@/business/domain/voice/client/queries.js';
 import { SendMessageCommand } from '@/business/domain/conversation/client/queries.js';
 import { AI_CONFIG, type AiConfig } from '@/config.js';
+import { AI_METRICS } from '@/foundation/ai-metrics/ai-metrics.interface.js';
+import type { IAiMetrics } from '@/foundation/ai-metrics/ai-metrics.interface.js';
 import type {
   IRealtimeVoiceBusiness,
   ProcessAudioInput,
@@ -17,6 +19,9 @@ import type {
 import { PRE_BUFFER_DEPTH } from './realtime-voice.model.js';
 import type { ConversationPipelineState } from './realtime-voice.model.js';
 
+const STT_MODEL = 'whisper-1';
+const PCM_SAMPLE_RATE = 16000;
+
 @Injectable()
 export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
   private readonly conversations = new Map<string, ConversationPipelineState>();
@@ -24,6 +29,7 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
   constructor(
     @Inject(AI_MEDIATOR) private readonly mediator: IMediator,
     @Inject(AI_CONFIG) private readonly config: AiConfig,
+    @Inject(AI_METRICS) private readonly aiMetrics: IAiMetrics,
   ) {}
 
   async processAudio(input: ProcessAudioInput): Promise<ProcessAudioResult> {
@@ -40,6 +46,7 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
         eventQueue: [],
         lastFrameAt: Date.now(),
         ...(input.speakerGender !== undefined && { speakerGender: input.speakerGender }),
+        ...(input.metricsContext !== undefined && { metricsContext: input.metricsContext }),
       };
       this.conversations.set(conversationId, state);
     }
@@ -95,6 +102,9 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
       state.state = 'transcribing';
       state.eventQueue.push({ type: 'stateChange', state: 'transcribing' });
 
+      const totalSamples = state.audioBuffer.reduce((sum, arr) => sum + arr.length, 0);
+      const durationSeconds = totalSamples / PCM_SAMPLE_RATE;
+
       const concatenated = this.concatInt16Arrays(state.audioBuffer);
       const sttBase64 = Buffer.from(
         concatenated.buffer,
@@ -102,12 +112,27 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
         concatenated.byteLength,
       ).toString('base64');
 
+      const sttStart = performance.now();
       const sttResult = await this.mediator.send(
         new VoiceSpeechToTextCommand({
           audio: sttBase64,
           contentType: 'audio/pcm;rate=16000',
         }),
       );
+
+      this.aiMetrics.recordSttUsage({
+        model: STT_MODEL,
+        userId: 'unknown',
+        durationSeconds,
+        ...(state.metricsContext !== undefined && { metricsContext: state.metricsContext }),
+      });
+      this.aiMetrics.recordOperation({
+        model: STT_MODEL,
+        userId: 'unknown',
+        status: 'success',
+        latencyMs: performance.now() - sttStart,
+        ...(state.metricsContext !== undefined && { metricsContext: state.metricsContext }),
+      });
 
       // 2. Get LLM response
       state.state = 'answering';
@@ -147,6 +172,13 @@ export class RealtimeVoiceBusiness implements IRealtimeVoiceBusiness {
       state.eventQueue.push({ type: 'error', message });
       state.state = 'listening';
       state.audioBuffer = [];
+      this.aiMetrics.recordOperation({
+        model: STT_MODEL,
+        userId: 'unknown',
+        status: 'error',
+        latencyMs: 0,
+        ...(state.metricsContext !== undefined && { metricsContext: state.metricsContext }),
+      });
     }
   }
 

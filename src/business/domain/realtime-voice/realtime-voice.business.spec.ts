@@ -3,6 +3,7 @@ import { createMockMediator } from '@sanamyvn/foundation/mediator/testing';
 import type { MockMediator } from '@sanamyvn/foundation/mediator/testing';
 import { RealtimeVoiceBusiness } from './realtime-voice.business.js';
 import { aiConfigSchema } from '@/config.js';
+import type { IAiMetrics } from '@/foundation/ai-metrics/ai-metrics.interface.js';
 
 function makeSpeechAudio(): Int16Array {
   return new Int16Array([100, 200, 300]);
@@ -25,13 +26,25 @@ function hasCommandType(value: unknown, type: string): boolean {
   return Reflect.get(value, 'type') === type;
 }
 
+function createMockAiMetrics(): { [K in keyof IAiMetrics]: ReturnType<typeof vi.fn> } {
+  return {
+    recordLlmUsage: vi.fn(),
+    recordSttUsage: vi.fn(),
+    recordTtsUsage: vi.fn(),
+    recordEmbeddingUsage: vi.fn(),
+    recordOperation: vi.fn(),
+  };
+}
+
 describe('RealtimeVoiceBusiness', () => {
   let mediator: MockMediator;
   let business: RealtimeVoiceBusiness;
+  let mockAiMetrics: ReturnType<typeof createMockAiMetrics>;
 
   beforeEach(() => {
     vi.clearAllMocks();
     mediator = createMockMediator();
+    mockAiMetrics = createMockAiMetrics();
     business = new RealtimeVoiceBusiness(
       mediator,
       aiConfigSchema.parse({
@@ -42,6 +55,8 @@ describe('RealtimeVoiceBusiness', () => {
           },
         },
       }),
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      mockAiMetrics as unknown as IAiMetrics,
     );
   });
 
@@ -354,9 +369,7 @@ describe('RealtimeVoiceBusiness', () => {
 
       // Find the STT call
       const calls = vi.mocked(mediator.send).mock.calls;
-      const sttCall = calls.find(
-        (c) => c[0] && typeof c[0] === 'object' && 'contentType' in c[0],
-      );
+      const sttCall = calls.find((c) => c[0] && typeof c[0] === 'object' && 'contentType' in c[0]);
       expect(sttCall).toBeDefined();
       expect(sttCall?.[0]).toEqual(
         expect.objectContaining({
@@ -394,9 +407,7 @@ describe('RealtimeVoiceBusiness', () => {
 
       // STT audio should be: pre-buffer(5 frames) + speech(1) = [20,30,40,50,60,70]
       const calls = vi.mocked(mediator.send).mock.calls;
-      const sttCall = calls.find(
-        (c) => c[0] && typeof c[0] === 'object' && 'contentType' in c[0],
-      );
+      const sttCall = calls.find((c) => c[0] && typeof c[0] === 'object' && 'contentType' in c[0]);
       expect(sttCall).toBeDefined();
 
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -503,6 +514,71 @@ describe('RealtimeVoiceBusiness', () => {
       );
       // Should contain 99 from the mid-processing frame
       expect(Array.from(sttInt16)).toContain(99);
+    });
+
+    it('emits STT metrics with audio duration when utterance completes', async () => {
+      const frame1 = new Int16Array(8000); // 0.5 seconds
+      const frame2 = new Int16Array(8000); // 0.5 seconds
+
+      mockVad(true);
+      await business.processAudio({
+        conversationId: 'conv-metrics',
+        audio: frame1,
+        metricsContext: { 'ai.operation': 'stt', 'course.id': 'c-1' },
+      });
+
+      mockVad(true);
+      await business.processAudio({
+        conversationId: 'conv-metrics',
+        audio: frame2,
+        metricsContext: { 'ai.operation': 'stt', 'course.id': 'c-1' },
+      });
+
+      mockVad(false, 0.1);
+      mockFullChain();
+      await business.processAudio({
+        conversationId: 'conv-metrics',
+        audio: makeSilenceAudio(),
+        metricsContext: { 'ai.operation': 'stt', 'course.id': 'c-1' },
+      });
+      await flushMicrotasks();
+
+      expect(mockAiMetrics.recordSttUsage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'whisper-1',
+          userId: 'unknown',
+          durationSeconds: expect.closeTo(1.0, 1),
+          metricsContext: { 'ai.operation': 'stt', 'course.id': 'c-1' },
+        }),
+      );
+      expect(mockAiMetrics.recordOperation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'whisper-1',
+          status: 'success',
+          metricsContext: { 'ai.operation': 'stt', 'course.id': 'c-1' },
+        }),
+      );
+    });
+
+    it('emits STT error metric when chain errors', async () => {
+      mockVad(true);
+      await business.processAudio({
+        conversationId: 'conv-err',
+        audio: makeSpeechAudio(),
+      });
+
+      mockVad(false, 0.1);
+      vi.mocked(mediator.send).mockRejectedValueOnce(new Error('STT failed'));
+      await business.processAudio({
+        conversationId: 'conv-err',
+        audio: makeSilenceAudio(),
+      });
+      await flushMicrotasks();
+
+      expect(mockAiMetrics.recordSttUsage).not.toHaveBeenCalled();
+      expect(mockAiMetrics.recordOperation).toHaveBeenCalledWith(
+        expect.objectContaining({ model: 'whisper-1', status: 'error' }),
+      );
     });
   });
 });

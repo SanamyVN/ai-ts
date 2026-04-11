@@ -1,5 +1,6 @@
 import type { PipelineState, PipelineEvent } from './realtime-voice.interface.js';
 import type { SpeakerGender } from '@/business/domain/voice/voice.interface.js';
+import type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
 
 /** Number of frames to keep before speech onset to capture the beginning of an utterance. */
 export const PRE_BUFFER_DEPTH = 5;
@@ -17,4 +18,5 @@ export interface ConversationPipelineState {
   lastFrameAt: number;
   /** TTS voice gender for this conversation. Set on first processAudio call, immutable afterward. */
   speakerGender?: SpeakerGender;
+  metricsContext?: MetricsContext;
 }
