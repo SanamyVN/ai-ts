@@ -459,6 +459,90 @@ describe('ConversationEngine', () => {
 
       expect(response).toEqual({ text: 'AI response text', object: undefined });
     });
+
+    it('forwards metricsContext from create to agent.generate', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'Hi!',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const metricsContext = { 'ai.operation': 'exam_conversation', 'course.id': 'course-1' };
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+        metricsContext,
+      });
+
+      await engine.send(convo.id, 'Hello');
+
+      expect(agent.generate).toHaveBeenCalledWith(
+        'Hello',
+        expect.objectContaining({
+          metricsContext,
+        }),
+      );
+    });
+
+    it('overrides metricsContext per-call when provided in send options', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'Graded!',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const createContext = { 'ai.operation': 'exam_conversation' };
+      const sendContext = { 'ai.operation': 'exam_grading' };
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+        metricsContext: createContext,
+      });
+
+      await engine.send(convo.id, 'Grade this', undefined, undefined, undefined, {
+        metricsContext: sendContext,
+      });
+
+      expect(agent.generate).toHaveBeenCalledWith(
+        'Grade this',
+        expect.objectContaining({
+          metricsContext: sendContext,
+        }),
+      );
+    });
+
+    it('does not include metricsContext in options when none is set', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'Hi!',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      await engine.send(convo.id, 'Hello');
+
+      expect(agent.generate).toHaveBeenCalledWith('Hello', {
+        threadId: 'thread-1',
+        resourceId: 'user-1',
+        instructions: 'Hello {{name}}',
+      });
+    });
   });
 
   describe('stream', () => {
@@ -717,6 +801,70 @@ describe('ConversationEngine', () => {
 
       // All chunks should still be yielded
       expect(collected).toEqual(chunks);
+    });
+
+    it('forwards metricsContext from create to agent.stream', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      const chunks = [{ type: 'text-delta' as const, content: 'Hi' }];
+      agent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) yield chunk;
+        })(),
+      );
+
+      const metricsContext = { 'ai.operation': 'ta_chat', 'course.id': 'c-1' };
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+        metricsContext,
+      });
+
+      for await (const _ of engine.stream(convo.id, 'Hello')) {
+        // consume
+      }
+
+      expect(agent.stream).toHaveBeenCalledWith(
+        'Hello',
+        expect.objectContaining({
+          metricsContext,
+        }),
+      );
+    });
+
+    it('overrides metricsContext per-call when provided in stream options', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      const chunks = [{ type: 'text-delta' as const, content: 'Hi' }];
+      agent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) yield chunk;
+        })(),
+      );
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+        metricsContext: { 'ai.operation': 'ta_chat' },
+      });
+
+      const overrideContext = { 'ai.operation': 'ta_title_gen' };
+      for await (const _ of engine.stream(convo.id, 'Hello', undefined, undefined, undefined, {
+        metricsContext: overrideContext,
+      })) {
+        // consume
+      }
+
+      expect(agent.stream).toHaveBeenCalledWith(
+        'Hello',
+        expect.objectContaining({
+          metricsContext: overrideContext,
+        }),
+      );
     });
   });
 });

@@ -18,13 +18,14 @@ import {
   UpdateSessionCommand,
   UpdateSessionLastMessageCommand,
 } from '@/business/domain/session/client/queries.js';
-import type { IConversationEngine } from './conversation.interface.js';
+import type { IConversationEngine, SendOptions } from './conversation.interface.js';
 import type {
   Conversation,
   ConversationConfig,
   ConversationResponse,
 } from './conversation.model.js';
 import { ConversationNotFoundError, ConversationSendError } from './conversation.error.js';
+import type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
 import type { ZodType } from 'zod';
 
 interface ConversationState {
@@ -35,6 +36,7 @@ interface ConversationState {
   readonly model: string;
   readonly userId: string;
   readonly baseOptions: { readonly threadId: string; readonly resourceId: string };
+  readonly metricsContext?: MetricsContext;
 }
 
 /**
@@ -84,6 +86,7 @@ export class ConversationEngine implements IConversationEngine {
       model,
       userId: config.userId,
       baseOptions: { threadId: session.mastraThreadId, resourceId: config.userId },
+      ...(config.metricsContext !== undefined ? { metricsContext: config.metricsContext } : {}),
     };
     this.conversations.set(session.id, state);
 
@@ -110,14 +113,17 @@ export class ConversationEngine implements IConversationEngine {
     outputSchema?: ZodType,
     promptParams?: Record<string, unknown>,
     toolsets?: Record<string, Record<string, unknown>>,
+    sendOptions?: SendOptions,
   ): Promise<ConversationResponse> {
     const state = await this.getOrReconstructState(conversationId);
     const instructions = await this.resolveInstructions(state, promptParams);
+    const metricsContext = sendOptions?.metricsContext ?? state.metricsContext;
     const options: GenerateOptions = {
       ...state.baseOptions,
       instructions,
       ...(outputSchema !== undefined && { outputSchema }),
       ...(toolsets !== undefined && { toolsets }),
+      ...(metricsContext !== undefined ? { metricsContext } : {}),
     };
     try {
       const response = await this.mastraAgent.generate(message, options);
@@ -139,14 +145,17 @@ export class ConversationEngine implements IConversationEngine {
     outputSchema?: ZodType,
     promptParams?: Record<string, unknown>,
     toolsets?: Record<string, Record<string, unknown>>,
+    sendOptions?: SendOptions,
   ): AsyncIterable<StreamChunk> {
     const state = await this.getOrReconstructState(conversationId);
     const instructions = await this.resolveInstructions(state, promptParams);
+    const metricsContext = sendOptions?.metricsContext ?? state.metricsContext;
     const options: GenerateOptions = {
       ...state.baseOptions,
       instructions,
       ...(outputSchema !== undefined && { outputSchema }),
       ...(toolsets !== undefined && { toolsets }),
+      ...(metricsContext !== undefined ? { metricsContext } : {}),
     };
     let accumulated = '';
     try {
