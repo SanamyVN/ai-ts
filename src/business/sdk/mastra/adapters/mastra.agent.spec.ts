@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ZodType } from 'zod';
 import { MastraAgentAdapter } from './mastra.agent.js';
 import type { Agent } from '@mastra/core/agent';
-import { createMockAiMetrics } from '../mastra.testing.js';
+import { createMockAiMetrics } from '@/foundation/ai-metrics/ai-metrics.testing.js';
 import type { AiConfig } from '@/config.js';
 
 function createMockAgent() {

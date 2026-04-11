@@ -14,13 +14,13 @@ import type { IAiMetrics } from './ai-metrics.interface.js';
  * ```
  */
 export function createMockAiMetrics(): {
-  [K in keyof IAiMetrics]: ReturnType<typeof vi.fn>;
+  [K in keyof IAiMetrics]: ReturnType<typeof vi.fn<IAiMetrics[K]>>;
 } {
   return {
-    recordLlmUsage: vi.fn(),
-    recordSttUsage: vi.fn(),
-    recordTtsUsage: vi.fn(),
-    recordEmbeddingUsage: vi.fn(),
-    recordOperation: vi.fn(),
+    recordLlmUsage: vi.fn<IAiMetrics['recordLlmUsage']>(),
+    recordSttUsage: vi.fn<IAiMetrics['recordSttUsage']>(),
+    recordTtsUsage: vi.fn<IAiMetrics['recordTtsUsage']>(),
+    recordEmbeddingUsage: vi.fn<IAiMetrics['recordEmbeddingUsage']>(),
+    recordOperation: vi.fn<IAiMetrics['recordOperation']>(),
   };
 }

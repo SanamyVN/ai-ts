@@ -6,7 +6,7 @@ import {
   createMockMastraVoiceTts,
   createMockMastraVoiceStt,
 } from '@/business/sdk/mastra/mastra.testing.js';
-import { createMockAiMetrics } from '@/business/sdk/mastra/mastra.testing.js';
+import { createMockAiMetrics } from '@/foundation/ai-metrics/ai-metrics.testing.js';
 import type { IAiMetrics } from '@/foundation/ai-metrics/ai-metrics.interface.js';
 import { Readable } from 'node:stream';
 

@@ -4,6 +4,7 @@ import type { MockMediator } from '@sanamyvn/foundation/mediator/testing';
 import { RealtimeVoiceBusiness } from './realtime-voice.business.js';
 import { aiConfigSchema } from '@/config.js';
 import type { IAiMetrics } from '@/foundation/ai-metrics/ai-metrics.interface.js';
+import { createMockAiMetrics } from '@/foundation/ai-metrics/ai-metrics.testing.js';
 
 function makeSpeechAudio(): Int16Array {
   return new Int16Array([100, 200, 300]);
@@ -24,16 +25,6 @@ function hasCommandType(value: unknown, type: string): boolean {
     return false;
   }
   return Reflect.get(value, 'type') === type;
-}
-
-function createMockAiMetrics(): { [K in keyof IAiMetrics]: ReturnType<typeof vi.fn> } {
-  return {
-    recordLlmUsage: vi.fn(),
-    recordSttUsage: vi.fn(),
-    recordTtsUsage: vi.fn(),
-    recordEmbeddingUsage: vi.fn(),
-    recordOperation: vi.fn(),
-  };
 }
 
 describe('RealtimeVoiceBusiness', () => {

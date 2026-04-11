@@ -5,6 +5,7 @@ import { MastraAdapterError } from '@/business/sdk/mastra/mastra.error.js';
 import { createMockMastraRag } from '@/business/sdk/mastra/mastra.testing.js';
 import type { AiConfig } from '@/config.js';
 import type { IAiMetrics } from '@/foundation/ai-metrics/ai-metrics.interface.js';
+import { createMockAiMetrics } from '@/foundation/ai-metrics/ai-metrics.testing.js';
 import type { IngestInput, DeleteInput, ReplaceInput } from './rag.model.js';
 
 // Mock @mastra/rag
@@ -37,16 +38,6 @@ vi.mock('ai', () => ({
 }));
 
 let capturedEmbeddingConfigs: unknown[] = [];
-
-function createMockAiMetrics(): { [K in keyof IAiMetrics]: ReturnType<typeof vi.fn> } {
-  return {
-    recordLlmUsage: vi.fn(),
-    recordSttUsage: vi.fn(),
-    recordTtsUsage: vi.fn(),
-    recordEmbeddingUsage: vi.fn(),
-    recordOperation: vi.fn(),
-  };
-}
 
 // Mock @mastra/core/llm
 vi.mock('@mastra/core/llm', () => ({
