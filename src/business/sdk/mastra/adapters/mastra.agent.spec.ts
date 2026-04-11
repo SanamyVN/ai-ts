@@ -370,5 +370,61 @@ describe('MastraAgentAdapter', () => {
         expect.objectContaining({ userId: 'unknown' }),
       );
     });
+
+    it('emits recordOperation with cancelled when stream is abandoned via break', async () => {
+      mockAgent.stream = vi.fn().mockResolvedValue({
+        textStream: (async function* () {
+          yield 'hello';
+          yield ' world';
+          yield ' more';
+        })(),
+        usage: Promise.resolve({ inputTokens: 5, outputTokens: 15, totalTokens: 20 }),
+      });
+
+      for await (const chunk of adapter.stream('Hello', {
+        threadId: 'thread-1',
+        resourceId: 'user-1',
+        metricsContext: { 'ai.operation': 'ta_chat' },
+      })) {
+        if (chunk.content === 'hello') break; // cancel after first chunk
+      }
+
+      // Should NOT emit LLM usage (no token data on cancellation)
+      expect(mockMetrics.recordLlmUsage).not.toHaveBeenCalled();
+      // Should emit operation with cancelled status
+      expect(mockMetrics.recordOperation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'openai/gpt-4o-mini',
+          userId: 'user-1',
+          status: 'cancelled',
+          latencyMs: expect.any(Number),
+          metricsContext: { 'ai.operation': 'ta_chat' },
+        }),
+      );
+    });
+
+    it('does not emit cancelled when stream completes normally', async () => {
+      mockAgent.stream = vi.fn().mockResolvedValue({
+        textStream: (async function* () {
+          yield 'hi';
+        })(),
+        usage: Promise.resolve({ inputTokens: 1, outputTokens: 2, totalTokens: 3 }),
+      });
+
+      for await (const _ of adapter.stream('Hello', {
+        threadId: 'thread-1',
+        resourceId: 'user-1',
+      })) {
+        // consume all
+      }
+
+      // Should have success, not cancelled
+      expect(mockMetrics.recordOperation).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'success' }),
+      );
+      expect(mockMetrics.recordOperation).not.toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'cancelled' }),
+      );
+    });
   });
 });

@@ -88,6 +88,7 @@ export class MastraAgentAdapter implements IMastraAgent {
     const start = performance.now();
     const userId = options?.resourceId ?? 'unknown';
     const model = this.config.defaultModel;
+    let metricsRecorded = false;
     try {
       const base = this.buildBaseOptions(options);
       const result =
@@ -126,6 +127,7 @@ export class MastraAgentAdapter implements IMastraAgent {
           ? { metricsContext: options.metricsContext }
           : {}),
       });
+      metricsRecorded = true;
 
       yield {
         type: 'finish',
@@ -142,7 +144,20 @@ export class MastraAgentAdapter implements IMastraAgent {
           ? { metricsContext: options.metricsContext }
           : {}),
       });
+      metricsRecorded = true;
       throw new MastraAdapterError('stream', error);
+    } finally {
+      if (!metricsRecorded) {
+        this.aiMetrics.recordOperation({
+          model,
+          userId,
+          status: 'cancelled',
+          latencyMs: performance.now() - start,
+          ...(options?.metricsContext !== undefined
+            ? { metricsContext: options.metricsContext }
+            : {}),
+        });
+      }
     }
   }
 
