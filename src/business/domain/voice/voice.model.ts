@@ -1,9 +1,11 @@
 import type { SpeakerGender } from './voice.interface.js';
+import type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
 
 export interface TextToSpeechInput {
   readonly text: string;
   readonly speakerGender: SpeakerGender;
   readonly options?: Record<string, unknown>;
+  readonly metricsContext?: MetricsContext;
 }
 
 export interface TextToSpeechResult {
@@ -13,6 +15,7 @@ export interface TextToSpeechResult {
 export interface SpeechToTextInput {
   readonly audioStream: NodeJS.ReadableStream;
   readonly options?: Record<string, unknown>;
+  readonly metricsContext?: MetricsContext;
 }
 
 export interface SpeechToTextResult {
