@@ -197,8 +197,15 @@ export class ConversationEngine implements IConversationEngine {
       throw new ConversationNotFoundError(conversationId);
     }
 
+    const raw = session.metadata?.metricsContext;
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const restoredContext = session.metadata?.metricsContext as MetricsContext | undefined;
+    const restoredContext =
+      typeof raw === 'object' &&
+      raw !== null &&
+      !Array.isArray(raw) &&
+      Object.values(raw as Record<string, unknown>).every((v) => typeof v === 'string')
+        ? (raw as MetricsContext)
+        : undefined;
     const state: ConversationState = {
       sessionId: session.id,
       mastraThreadId: session.mastraThreadId,
