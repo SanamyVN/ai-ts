@@ -42,6 +42,22 @@
       "types": "./dist/shared/provider-bundle.d.ts",
       "default": "./dist/shared/provider-bundle.js"
     },
+    "./foundation/ai-metrics": {
+      "types": "./dist/foundation/ai-metrics/ai-metrics.interface.d.ts",
+      "default": "./dist/foundation/ai-metrics/ai-metrics.interface.js"
+    },
+    "./foundation/ai-metrics/model": {
+      "types": "./dist/foundation/ai-metrics/ai-metrics.model.d.ts",
+      "default": "./dist/foundation/ai-metrics/ai-metrics.model.js"
+    },
+    "./foundation/ai-metrics/module": {
+      "types": "./dist/foundation/ai-metrics/ai-metrics.module.d.ts",
+      "default": "./dist/foundation/ai-metrics/ai-metrics.module.js"
+    },
+    "./foundation/ai-metrics/testing": {
+      "types": "./dist/foundation/ai-metrics/ai-metrics.testing.d.ts",
+      "default": "./dist/foundation/ai-metrics/ai-metrics.testing.js"
+    },
     "./repository/providers": {
       "types": "./dist/repository/providers.d.ts",
       "default": "./dist/repository/providers.js"
