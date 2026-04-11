@@ -79,11 +79,21 @@ export class VoiceBusiness implements IVoiceBusiness {
   async speechToText(input: SpeechToTextInput): Promise<SpeechToTextResult> {
     const start = performance.now();
     try {
-      const audioBuffer = await this.bufferStream(input.audioStream);
-      const durationSeconds = audioBuffer.byteLength / 2 / PCM_SAMPLE_RATE;
-      const audioReadable = Readable.from(audioBuffer);
+      let audioStream: NodeJS.ReadableStream;
+      let durationSeconds: number;
 
-      const result = await this.stt.speechToText(audioReadable, input.options);
+      if (input.durationSeconds !== undefined) {
+        // Caller provided duration — stream directly to provider, no buffering
+        audioStream = input.audioStream;
+        durationSeconds = input.durationSeconds;
+      } else {
+        // No duration provided — buffer to compute from PCM byte length
+        const audioBuffer = await this.bufferStream(input.audioStream);
+        durationSeconds = audioBuffer.byteLength / 2 / PCM_SAMPLE_RATE;
+        audioStream = Readable.from(audioBuffer);
+      }
+
+      const result = await this.stt.speechToText(audioStream, input.options);
       let text: string;
       if (typeof result === 'string') {
         text = result;

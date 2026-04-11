@@ -256,6 +256,27 @@ describe('VoiceBusiness', () => {
         }),
       );
     });
+
+    it('uses provided durationSeconds without buffering when caller supplies it', async () => {
+      mockStt.speechToText.mockResolvedValue('hello');
+      const audioStream = new Readable({
+        read() {
+          this.push(Buffer.alloc(100));
+          this.push(null);
+        },
+      });
+
+      await business.speechToText({
+        audioStream,
+        durationSeconds: 3.5,
+        metricsContext: { 'ai.operation': 'stt' },
+      });
+
+      // Should use the provided duration, not compute from buffer
+      expect(mockMetrics.recordSttUsage).toHaveBeenCalledWith(
+        expect.objectContaining({ durationSeconds: 3.5 }),
+      );
+    });
   });
 
   describe('getSpeakers', () => {
