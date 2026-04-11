@@ -198,7 +198,7 @@ export class ConversationEngine implements IConversationEngine {
     }
 
     const raw = session.metadata?.metricsContext;
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    /* eslint-disable @typescript-eslint/consistent-type-assertions */
     const restoredContext =
       typeof raw === 'object' &&
       raw !== null &&
@@ -206,6 +206,7 @@ export class ConversationEngine implements IConversationEngine {
       Object.values(raw as Record<string, unknown>).every((v) => typeof v === 'string')
         ? (raw as MetricsContext)
         : undefined;
+    /* eslint-enable @typescript-eslint/consistent-type-assertions */
     const state: ConversationState = {
       sessionId: session.id,
       mastraThreadId: session.mastraThreadId,
