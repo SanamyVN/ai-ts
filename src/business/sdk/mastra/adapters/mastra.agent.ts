@@ -88,7 +88,7 @@ export class MastraAgentAdapter implements IMastraAgent {
     const start = performance.now();
     const userId = options?.resourceId ?? 'unknown';
     const model = this.config.defaultModel;
-    let metricsRecorded = false;
+    let metricsRecorded = false; // eslint-disable-line no-useless-assignment -- read in finally block
     try {
       const base = this.buildBaseOptions(options);
       const result =
