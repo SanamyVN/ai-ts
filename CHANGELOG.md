@@ -1,3 +1,33 @@
+## [1.25.0](https://github.com/SanamyVN/ai-ts/compare/v1.24.0...v1.25.0) (2026-04-11)
+
+### Features
+
+* add AI metrics input types and MetricsContext ([1bff0c3](https://github.com/SanamyVN/ai-ts/commit/1bff0c3f8cc6b4317344285c1fc030bc26c96981))
+* add AiMetricsModule DI module ([48e09e4](https://github.com/SanamyVN/ai-ts/commit/48e09e4693ebe957a1ad485fe8802adb9527c6af))
+* add cancelled status to OperationInput for stream cancellation tracking ([73a0ce6](https://github.com/SanamyVN/ai-ts/commit/73a0ce6c5792061df293a154dd532b78d0db2ee3))
+* add createMockAiMetrics test helper ([b2d03d5](https://github.com/SanamyVN/ai-ts/commit/b2d03d5a18c474018c693664685edcc4eda99a93))
+* add createMockAiMetrics testing helper ([eebc23a](https://github.com/SanamyVN/ai-ts/commit/eebc23a13bbdb297495bf278ffd1389c517ce06b))
+* add IAiMetrics interface and AI_METRICS DI token ([dc2ae7b](https://github.com/SanamyVN/ai-ts/commit/dc2ae7b824560fcceba29c9b0bf0b0d0aee10365))
+* add metricsContext to ConversationConfig and SendOptions to IConversationEngine ([6749d72](https://github.com/SanamyVN/ai-ts/commit/6749d720ccd330d6998f74c42200ecf9fb3dff1e))
+* add metricsContext to GenerateOptions and UsageInfo to StreamChunk ([8ab1606](https://github.com/SanamyVN/ai-ts/commit/8ab160610b6df692ef682b0d19456398fe83698f))
+* add metricsContext to voice commands and optional durationSeconds to STT ([6265194](https://github.com/SanamyVN/ai-ts/commit/62651947791d1a0f95d66aa09bfa1720312a455e))
+* emit cancelled operation metric when stream is abandoned ([c3766aa](https://github.com/SanamyVN/ai-ts/commit/c3766aaa30b68c3a6df7f3da36a474b192058316))
+* export ai-metrics from package.json ([52acc2a](https://github.com/SanamyVN/ai-ts/commit/52acc2adabda5a17ce93450fa6a15c8ee494c175))
+* implement AiMetrics with all record methods ([3a57822](https://github.com/SanamyVN/ai-ts/commit/3a5782254c7603daec767815f83764eb0ab5c6c9))
+* instrument MastraAgentAdapter generate() and stream() with AI cost metrics ([8f393f5](https://github.com/SanamyVN/ai-ts/commit/8f393f58548ef3c94ef3c0914ec064aa07e94ea2))
+* instrument RagBusiness with embedding metrics ([fa71292](https://github.com/SanamyVN/ai-ts/commit/fa712925e267b458d843052d5171871fd7089247))
+* instrument RealtimeVoiceBusiness with STT metrics ([c5823aa](https://github.com/SanamyVN/ai-ts/commit/c5823aa2dc5784326713b458aaea66ef817aab60))
+* instrument VoiceBusiness TTS and STT with AiMetrics ([b4a4013](https://github.com/SanamyVN/ai-ts/commit/b4a40133632eef0c0060bc134006cd32b47baf31))
+* persist metricsContext in session metadata for cross-instance reconstruction ([77c12cb](https://github.com/SanamyVN/ai-ts/commit/77c12cbb0ba9b6bcabe107f7414a380afc438636))
+* propagate metricsContext through ConversationEngine create/send/stream ([09cc568](https://github.com/SanamyVN/ai-ts/commit/09cc5687789a3f08111996c266da3bc4a36522fb))
+* skip audio buffering when durationSeconds is pre-computed ([f23fc78](https://github.com/SanamyVN/ai-ts/commit/f23fc78a8ef8939179b20a9cc50602252fe58179))
+
+### Bug Fixes
+
+* correct eslint-disable scope for type assertions in metricsContext validation ([0f3327f](https://github.com/SanamyVN/ai-ts/commit/0f3327fb2c807979e5dfa13c94faa3300075e6ec))
+* suppress false-positive no-useless-assignment lint in stream() try/finally ([3a6ccb7](https://github.com/SanamyVN/ai-ts/commit/3a6ccb70053a36cdd2a00c5103bad0a20f582410))
+* validate metricsContext shape when restoring from session metadata ([70018b4](https://github.com/SanamyVN/ai-ts/commit/70018b421a2f7606c59d99614b0a5961c512798a))
+
 ## [1.24.0](https://github.com/SanamyVN/ai-ts/compare/v1.23.0...v1.24.0) (2026-04-08)
 
 ### Features
