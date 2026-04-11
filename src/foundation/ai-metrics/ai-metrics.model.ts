@@ -41,7 +41,7 @@ export interface EmbeddingUsageInput {
 export interface OperationInput {
   readonly model: string;
   readonly userId: string;
-  readonly status: 'success' | 'error';
+  readonly status: 'success' | 'error' | 'cancelled';
   readonly latencyMs: number;
   readonly metricsContext?: MetricsContext;
 }

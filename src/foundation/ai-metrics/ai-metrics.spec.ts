@@ -211,4 +211,17 @@ describe('recordOperation', () => {
       'ai.operation': 'summarize',
     });
   });
+
+  it('records cancelled status', () => {
+    aiMetrics.recordOperation({
+      model: 'gpt-4o',
+      userId: 'user-5',
+      status: 'cancelled',
+      latencyMs: 2300,
+    });
+
+    const counter = telemetry.counters.get('ai.operations.count');
+    expect(counter?.lastAttributes).toMatchObject({ 'ai.status': 'cancelled' });
+    expect(telemetry.histograms.get('ai.latency')?.values).toEqual([2300]);
+  });
 });
