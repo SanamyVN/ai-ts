@@ -4,6 +4,7 @@ import { RagIngestError, RagDeleteError, RagSearchError } from './rag.error.js';
 import { MastraAdapterError } from '@/business/sdk/mastra/mastra.error.js';
 import { createMockMastraRag } from '@/business/sdk/mastra/mastra.testing.js';
 import type { AiConfig } from '@/config.js';
+import type { IAiMetrics } from '@/foundation/ai-metrics/ai-metrics.interface.js';
 import type { IngestInput, DeleteInput, ReplaceInput } from './rag.model.js';
 
 // Mock @mastra/rag
@@ -31,10 +32,21 @@ vi.mock('ai', () => ({
       [0.1, 0.2],
       [0.3, 0.4],
     ],
+    usage: { tokens: 42 },
   }),
 }));
 
 let capturedEmbeddingConfigs: unknown[] = [];
+
+function createMockAiMetrics(): { [K in keyof IAiMetrics]: ReturnType<typeof vi.fn> } {
+  return {
+    recordLlmUsage: vi.fn(),
+    recordSttUsage: vi.fn(),
+    recordTtsUsage: vi.fn(),
+    recordEmbeddingUsage: vi.fn(),
+    recordOperation: vi.fn(),
+  };
+}
 
 // Mock @mastra/core/llm
 vi.mock('@mastra/core/llm', () => ({
@@ -61,6 +73,7 @@ const config: AiConfig = {
 describe('RagBusiness', () => {
   let mastraRag: ReturnType<typeof createMockMastraRag>;
   let business: RagBusiness;
+  let mockAiMetrics: ReturnType<typeof createMockAiMetrics>;
 
   beforeEach(() => {
     capturedEmbeddingConfigs = [];
@@ -68,7 +81,9 @@ describe('RagBusiness', () => {
     mastraRag = createMockMastraRag();
     mastraRag.upsert.mockResolvedValue(2);
     mastraRag.delete.mockResolvedValue(0);
-    business = new RagBusiness(mastraRag, config);
+    mockAiMetrics = createMockAiMetrics();
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    business = new RagBusiness(mastraRag, config, mockAiMetrics as unknown as IAiMetrics);
   });
 
   describe('ingest', () => {
@@ -119,6 +134,48 @@ describe('RagBusiness', () => {
       const { MDocument } = await import('@mastra/rag');
       await business.ingest(htmlInput);
       expect(MDocument.fromHTML).toHaveBeenCalledWith('<p>hi</p>', expect.any(Object));
+    });
+
+    it('emits embedding usage metrics after successful ingest', async () => {
+      await business.ingest({
+        ...input,
+        metricsContext: { 'ai.operation': 'rag_ingest', 'course.id': 'c-1' },
+      });
+
+      expect(mockAiMetrics.recordEmbeddingUsage).toHaveBeenCalledWith({
+        model: 'openai/text-embedding-3-small',
+        userId: 'unknown',
+        totalTokens: 42,
+        metricsContext: { 'ai.operation': 'rag_ingest', 'course.id': 'c-1' },
+      });
+      expect(mockAiMetrics.recordOperation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'openai/text-embedding-3-small',
+          status: 'success',
+          metricsContext: { 'ai.operation': 'rag_ingest', 'course.id': 'c-1' },
+        }),
+      );
+    });
+
+    it('emits embedding error metric when embedding fails during ingest', async () => {
+      const { embedMany } = await import('ai');
+      vi.mocked(embedMany).mockRejectedValueOnce(new Error('rate limit'));
+
+      await expect(
+        business.ingest({
+          ...input,
+          metricsContext: { 'ai.operation': 'rag_ingest' },
+        }),
+      ).rejects.toThrow(RagIngestError);
+
+      expect(mockAiMetrics.recordOperation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'openai/text-embedding-3-small',
+          status: 'error',
+          metricsContext: { 'ai.operation': 'rag_ingest' },
+        }),
+      );
+      expect(mockAiMetrics.recordEmbeddingUsage).not.toHaveBeenCalled();
     });
   });
 
@@ -178,7 +235,9 @@ describe('RagBusiness', () => {
     });
 
     it('wraps MastraAdapterError as RagSearchError', async () => {
-      mastraRag.search.mockRejectedValueOnce(new MastraAdapterError('search', new Error('pg error')));
+      mastraRag.search.mockRejectedValueOnce(
+        new MastraAdapterError('search', new Error('pg error')),
+      );
 
       await expect(
         business.search({ indexName: INDEX_NAME, scopeId: SCOPE_ID, queryText: 'hello', topK: 3 }),
@@ -194,6 +253,44 @@ describe('RagBusiness', () => {
       ).rejects.toThrow(RagSearchError);
     });
 
+    it('emits embedding usage metrics after successful search', async () => {
+      mastraRag.search.mockResolvedValue([{ text: 'chunk', score: 0.9 }]);
+
+      await business.search({
+        indexName: INDEX_NAME,
+        scopeId: SCOPE_ID,
+        queryText: 'hello',
+        topK: 3,
+        metricsContext: { 'ai.operation': 'rag_search', 'course.id': 'c-2' },
+      });
+
+      expect(mockAiMetrics.recordEmbeddingUsage).toHaveBeenCalledWith({
+        model: 'openai/text-embedding-3-small',
+        userId: 'unknown',
+        totalTokens: 42,
+        metricsContext: { 'ai.operation': 'rag_search', 'course.id': 'c-2' },
+      });
+    });
+
+    it('emits embedding error metric when search embedding fails', async () => {
+      const { embedMany } = await import('ai');
+      vi.mocked(embedMany).mockRejectedValueOnce(new Error('rate limit'));
+
+      await expect(
+        business.search({
+          indexName: INDEX_NAME,
+          scopeId: SCOPE_ID,
+          queryText: 'hello',
+          topK: 3,
+          metricsContext: { 'ai.operation': 'rag_search' },
+        }),
+      ).rejects.toThrow(RagSearchError);
+
+      expect(mockAiMetrics.recordOperation).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'error' }),
+      );
+    });
+
     it('passes documentIds to mastraRag.search when provided', async () => {
       mastraRag.search.mockResolvedValue([{ text: 'filtered', score: 0.95 }]);
 
@@ -205,7 +302,10 @@ describe('RagBusiness', () => {
         documentIds: ['doc-1', 'doc-2'],
       });
 
-      expect(mastraRag.search).toHaveBeenCalledWith(INDEX_NAME, [0.1, 0.2], 3, SCOPE_ID, ['doc-1', 'doc-2']);
+      expect(mastraRag.search).toHaveBeenCalledWith(INDEX_NAME, [0.1, 0.2], 3, SCOPE_ID, [
+        'doc-1',
+        'doc-2',
+      ]);
       expect(result).toEqual({ results: [{ text: 'filtered', score: 0.95 }] });
     });
   });
@@ -227,7 +327,12 @@ describe('RagBusiness', () => {
         },
       };
 
-      new RagBusiness(createMockMastraRag(), configWithProvider);
+      new RagBusiness(
+        createMockMastraRag(),
+        configWithProvider,
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        mockAiMetrics as unknown as IAiMetrics,
+      );
 
       // capturedEmbeddingConfigs[0] is from beforeEach (string), [1] is from this test (object)
       expect(capturedEmbeddingConfigs[1]).toEqual(
@@ -250,7 +355,12 @@ describe('RagBusiness', () => {
         },
       };
 
-      new RagBusiness(createMockMastraRag(), configWithAuth);
+      new RagBusiness(
+        createMockMastraRag(),
+        configWithAuth,
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        mockAiMetrics as unknown as IAiMetrics,
+      );
 
       expect(capturedEmbeddingConfigs[1]).toEqual(
         expect.objectContaining({

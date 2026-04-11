@@ -1,3 +1,5 @@
+import type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
+
 /** Content types matching MDocument factory methods. */
 export interface RagContent {
   readonly type: 'text' | 'html' | 'markdown' | 'json';
@@ -32,6 +34,7 @@ export interface IngestInput {
   readonly scopeId: string;
   readonly documents: DocumentInput[];
   readonly chunkOptions?: ChunkOptions;
+  readonly metricsContext?: MetricsContext;
 }
 
 /** Result of an ingest operation. */
@@ -73,6 +76,7 @@ export interface SearchInput {
   readonly queryText: string;
   readonly topK: number;
   readonly documentIds?: string[];
+  readonly metricsContext?: MetricsContext;
 }
 
 /** A single search result chunk. */

@@ -5,6 +5,9 @@ import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import { MASTRA_RAG, type IMastraRag } from '@/business/sdk/mastra/mastra.interface.js';
 import { isMastraAdapterError } from '@/business/sdk/mastra/mastra.error.js';
 import { AI_CONFIG, type AiConfig } from '@/config.js';
+import { AI_METRICS } from '@/foundation/ai-metrics/ai-metrics.interface.js';
+import type { IAiMetrics } from '@/foundation/ai-metrics/ai-metrics.interface.js';
+import type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
 import type { IRagBusiness } from './rag.interface.js';
 import type {
   IngestInput,
@@ -37,6 +40,7 @@ export class RagBusiness implements IRagBusiness {
   constructor(
     @Inject(MASTRA_RAG) private readonly mastraRag: IMastraRag,
     @Inject(AI_CONFIG) private readonly config: AiConfig,
+    @Inject(AI_METRICS) private readonly aiMetrics: IAiMetrics,
   ) {
     this.embeddingModel = new ModelRouterEmbeddingModel(
       this.config.embeddingProvider
@@ -74,7 +78,7 @@ export class RagBusiness implements IRagBusiness {
         const chunks = await mdoc.chunk(chunkParams);
 
         const texts = chunks.map((c) => c.text);
-        const embeddings = await this.embedBatched(texts);
+        const embeddings = await this.embedBatched(texts, input.metricsContext);
 
         const stored = await this.mastraRag.upsert(
           input.indexName,
@@ -128,7 +132,7 @@ export class RagBusiness implements IRagBusiness {
 
   async search(input: SearchInput): Promise<SearchResult> {
     try {
-      const embeddings = await this.embedBatched([input.queryText]);
+      const embeddings = await this.embedBatched([input.queryText], input.metricsContext);
       const [queryVector] = embeddings;
       if (!queryVector) {
         throw new RagEmbeddingError(new Error('No embedding generated for query text'));
@@ -167,18 +171,44 @@ export class RagBusiness implements IRagBusiness {
     }
   }
 
-  private async embedBatched(texts: string[]): Promise<number[][]> {
+  private async embedBatched(
+    texts: string[],
+    metricsContext?: MetricsContext,
+  ): Promise<number[][]> {
     const allEmbeddings: number[][] = [];
 
     for (let i = 0; i < texts.length; i += DEFAULT_EMBEDDING_BATCH_SIZE) {
       const batch = texts.slice(i, i + DEFAULT_EMBEDDING_BATCH_SIZE);
+      const start = performance.now();
       try {
-        const { embeddings } = await embedMany({
+        const { embeddings, usage } = await embedMany({
           model: this.embeddingModel as any, // eslint-disable-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
           values: batch,
         });
         allEmbeddings.push(...embeddings);
+
+        const totalTokens = usage?.tokens ?? 0;
+        this.aiMetrics.recordEmbeddingUsage({
+          model: this.config.embeddingModel,
+          userId: 'unknown',
+          totalTokens,
+          ...(metricsContext !== undefined ? { metricsContext } : {}),
+        });
+        this.aiMetrics.recordOperation({
+          model: this.config.embeddingModel,
+          userId: 'unknown',
+          status: 'success',
+          latencyMs: performance.now() - start,
+          ...(metricsContext !== undefined ? { metricsContext } : {}),
+        });
       } catch (error) {
+        this.aiMetrics.recordOperation({
+          model: this.config.embeddingModel,
+          userId: 'unknown',
+          status: 'error',
+          latencyMs: performance.now() - start,
+          ...(metricsContext !== undefined ? { metricsContext } : {}),
+        });
         throw new RagEmbeddingError(error);
       }
     }
