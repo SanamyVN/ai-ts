@@ -74,6 +74,9 @@ export class ConversationEngine implements IConversationEngine {
         promptSlug: config.promptSlug,
         resolvedPrompt: prompt.text,
         purpose: config.purpose,
+        ...(config.metricsContext !== undefined
+          ? { metadata: { metricsContext: config.metricsContext } }
+          : {}),
       }),
     );
 
@@ -194,6 +197,8 @@ export class ConversationEngine implements IConversationEngine {
       throw new ConversationNotFoundError(conversationId);
     }
 
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const restoredContext = session.metadata?.metricsContext as MetricsContext | undefined;
     const state: ConversationState = {
       sessionId: session.id,
       mastraThreadId: session.mastraThreadId,
@@ -202,6 +207,7 @@ export class ConversationEngine implements IConversationEngine {
       model: this.config.defaultModel,
       userId: session.userId,
       baseOptions: { threadId: session.mastraThreadId, resourceId: session.userId },
+      ...(restoredContext !== undefined ? { metricsContext: restoredContext } : {}),
     };
     this.conversations.set(session.id, state);
     return state;

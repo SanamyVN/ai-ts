@@ -165,6 +165,38 @@ describe('ConversationEngine', () => {
       expect(memory.saveMessages).not.toHaveBeenCalled();
     });
 
+    it('persists metricsContext in session metadata', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+        metricsContext: { 'ai.operation': 'exam', 'course.id': 'CS101' },
+      });
+
+      const createCall = send.mock.calls.find((call) => call[0] instanceof CreateSessionCommand);
+      expect(createCall).toBeDefined();
+      expect(createCall?.[0]).toHaveProperty('metadata', {
+        metricsContext: { 'ai.operation': 'exam', 'course.id': 'CS101' },
+      });
+    });
+
+    it('does not set metadata when metricsContext is not provided', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      const createCall = send.mock.calls.find((call) => call[0] instanceof CreateSessionCommand);
+      expect(createCall?.[0]).not.toHaveProperty('metadata');
+    });
+
     it('propagates saveMessages errors from create', async () => {
       send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
       memory.saveMessages.mockRejectedValueOnce(new Error('Memory write failed'));
@@ -542,6 +574,30 @@ describe('ConversationEngine', () => {
         resourceId: 'user-1',
         instructions: 'Hello {{name}}',
       });
+    });
+
+    it('reconstructs metricsContext from session metadata on cache miss', async () => {
+      const metricsContext = { 'ai.operation': 'exam', 'course.id': 'CS101' };
+      // Simulate a different instance: send() with no cached state
+      send.mockResolvedValue({
+        ...SESSION,
+        metadata: { metricsContext },
+      });
+
+      agent.generate.mockResolvedValue({
+        text: 'Reconstructed!',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      await engine.send('session-1', 'Hello');
+
+      expect(agent.generate).toHaveBeenCalledWith(
+        'Hello',
+        expect.objectContaining({
+          metricsContext,
+        }),
+      );
     });
   });
 
