@@ -4,6 +4,7 @@ import type { MastraMemory } from '@mastra/core/memory';
 import type { PgVector } from '@mastra/pg';
 import type { MastraVoice } from '@mastra/core/voice';
 import type { ZodType } from 'zod';
+import type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
 
 /** Result returned by an agent after generating a response. */
 export interface AgentResponse {
@@ -12,10 +13,30 @@ export interface AgentResponse {
   readonly threadId: string;
 }
 
+/**
+ * Token usage information returned by LLM calls.
+ *
+ * NAMING MISMATCH: The Mastra SDK uses different field names than our types:
+ *   Mastra SDK         ->  UsageInfo / LlmUsageInput
+ *   promptTokens       ->  inputTokens
+ *   completionTokens   ->  outputTokens
+ *   totalTokens        ->  totalTokens (same)
+ *
+ * MastraAgentAdapter is responsible for remapping Mastra's names to ours.
+ * Do NOT use Mastra field names (promptTokens, completionTokens) anywhere
+ * outside the adapter -- all downstream code uses inputTokens/outputTokens.
+ */
+export interface UsageInfo {
+  readonly inputTokens: number;
+  readonly outputTokens: number;
+  readonly totalTokens: number;
+}
+
 /** A single chunk emitted during a streaming agent response. */
 export interface StreamChunk {
   readonly type: 'text-delta' | 'tool-call' | 'finish';
   readonly content: string;
+  readonly usage?: UsageInfo;
 }
 
 /** Options passed to agent generate/stream calls. */
@@ -25,6 +46,7 @@ export interface GenerateOptions {
   readonly outputSchema?: ZodType;
   readonly instructions?: string;
   readonly toolsets?: Record<string, Record<string, unknown>>;
+  readonly metricsContext?: MetricsContext;
 }
 
 /** A conversation thread managed by Mastra memory. */
@@ -191,6 +213,8 @@ export const MASTRA_RAG = createToken<IMastraRag>('MASTRA_RAG');
 
 /** DI token for the raw PgVector instance — provided by the downstream app. */
 export const MASTRA_CORE_RAG = createToken<PgVector>('MASTRA_CORE_RAG');
+
+export type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
 
 // ── Voice Types ──
 
