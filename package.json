@@ -516,8 +516,6 @@
     }
   },
   "dependencies": {
-    "avr-vad": "^1.0.9",
-    "kokoro-js": "^1.2.1",
     "mustache": "^4.0.0"
   },
   "peerDependencies": {
@@ -526,7 +524,9 @@
     "@mastra/rag": "^2.1.0",
     "@sanamyvn/foundation": "^1.12.0",
     "ai": "^6.0.0",
+    "avr-vad": "^1.0.9",
     "drizzle-orm": ">=0.45.1",
+    "kokoro-js": "^1.2.1",
     "zod": "^4.0.0"
   },
   "peerDependenciesMeta": {
@@ -537,6 +537,12 @@
       "optional": true
     },
     "ai": {
+      "optional": true
+    },
+    "avr-vad": {
+      "optional": true
+    },
+    "kokoro-js": {
       "optional": true
     }
   },
@@ -558,11 +564,13 @@
     "@types/node": "^24.12.0",
     "@vitest/coverage-v8": "^4.1.0",
     "ai": "^6.0.116",
+    "avr-vad": "^1.0.9",
     "conventional-changelog-conventionalcommits": "^9.3.0",
     "drizzle-kit": "^0.31.9",
     "drizzle-orm": "^0.45.1",
     "eslint": "^10.0.3",
     "husky": "^9.1.7",
+    "kokoro-js": "^1.2.1",
     "prettier": "^3.8.1",
     "semantic-release": "^25.0.3",
     "testcontainers": "^11.12.0",
