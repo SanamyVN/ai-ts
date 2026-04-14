@@ -33,6 +33,7 @@ export const ingestClientSchema = z.object({
   scopeId: z.string(),
   documents: z.array(documentInputSchema).min(1),
   chunkOptions: chunkOptionsSchema.optional(),
+  metricsContext: z.record(z.string(), z.string()).optional(),
 });
 
 export type IngestClientInput = z.infer<typeof ingestClientSchema>;
@@ -51,6 +52,7 @@ export const replaceClientSchema = z.object({
   documentId: z.string(),
   content: ragContentSchema,
   chunkOptions: chunkOptionsSchema.optional(),
+  metricsContext: z.record(z.string(), z.string()).optional(),
 });
 
 export type ReplaceClientInput = z.infer<typeof replaceClientSchema>;
@@ -80,6 +82,7 @@ export const searchClientSchema = z.object({
   queryText: z.string().min(1),
   topK: z.number().int().positive(),
   documentIds: z.array(z.string()).optional(),
+  metricsContext: z.record(z.string(), z.string()).optional(),
 });
 
 export type SearchClientInput = z.infer<typeof searchClientSchema>;

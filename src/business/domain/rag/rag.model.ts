@@ -61,6 +61,7 @@ export interface ReplaceInput {
   readonly documentId: string;
   readonly content: RagContent;
   readonly chunkOptions?: ChunkOptions;
+  readonly metricsContext?: MetricsContext;
 }
 
 /** Result of a replace operation. */

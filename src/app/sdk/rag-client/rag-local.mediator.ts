@@ -14,7 +14,12 @@ import type {
   RagSearchQuery,
 } from '@/business/domain/rag/client/queries.js';
 import type { ChunkOptions } from '@/business/domain/rag/rag.model.js';
-import { toIngestClientResult, toDeleteClientResult, toReplaceClientResult, toSearchClientResult } from './rag.mapper.js';
+import {
+  toIngestClientResult,
+  toDeleteClientResult,
+  toReplaceClientResult,
+  toSearchClientResult,
+} from './rag.mapper.js';
 
 function toChunkOptions(
   raw:
@@ -44,6 +49,7 @@ export class RagLocalMediator implements IRagMediator {
       scopeId: command.scopeId,
       documents: command.documents,
       ...(chunkOptions !== undefined ? { chunkOptions } : {}),
+      ...(command.metricsContext !== undefined ? { metricsContext: command.metricsContext } : {}),
     });
     return toIngestClientResult(result);
   }
@@ -65,6 +71,7 @@ export class RagLocalMediator implements IRagMediator {
       documentId: command.documentId,
       content: command.content,
       ...(chunkOptions !== undefined ? { chunkOptions } : {}),
+      ...(command.metricsContext !== undefined ? { metricsContext: command.metricsContext } : {}),
     });
     return toReplaceClientResult(result);
   }
@@ -75,6 +82,7 @@ export class RagLocalMediator implements IRagMediator {
       scopeId: query.scopeId,
       queryText: query.queryText,
       topK: query.topK,
+      ...(query.metricsContext !== undefined ? { metricsContext: query.metricsContext } : {}),
     });
     return toSearchClientResult(result);
   }

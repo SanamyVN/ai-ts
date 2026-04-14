@@ -125,6 +125,7 @@ export class RagBusiness implements IRagBusiness {
       scopeId: input.scopeId,
       documents: [{ documentId: input.documentId, content: input.content }],
       ...(input.chunkOptions !== undefined ? { chunkOptions: input.chunkOptions } : {}),
+      ...(input.metricsContext !== undefined ? { metricsContext: input.metricsContext } : {}),
     });
 
     return { chunksDeleted, chunksStored };
