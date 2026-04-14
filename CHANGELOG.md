@@ -1,3 +1,9 @@
+## [1.25.3](https://github.com/SanamyVN/ai-ts/compare/v1.25.2...v1.25.3) (2026-04-14)
+
+### Bug Fixes
+
+* move kokoro-js and avr-vad to optional peer dependencies ([d38096f](https://github.com/SanamyVN/ai-ts/commit/d38096f4a8fb188fc9b1448b6fc09be8302a6940))
+
 ## [1.25.2](https://github.com/SanamyVN/ai-ts/compare/v1.25.1...v1.25.2) (2026-04-14)
 
 ### Bug Fixes

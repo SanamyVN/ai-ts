@@ -1,6 +1,6 @@
 {
   "name": "@sanamyvn/ai-ts",
-  "version": "1.25.2",
+  "version": "1.25.3",
   "description": "Shared AI primitives — prompt registry, conversation engine, session lifecycle",
   "license": "MIT",
   "repository": {
