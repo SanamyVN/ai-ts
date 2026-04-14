@@ -1,3 +1,9 @@
+## [1.25.1](https://github.com/SanamyVN/ai-ts/compare/v1.25.0...v1.25.1) (2026-04-14)
+
+### Bug Fixes
+
+* pass metricsContext through all RAG command layers ([7073564](https://github.com/SanamyVN/ai-ts/commit/70735647c9036d5d7205fcab727965f0acff9605))
+
 ## [1.25.0](https://github.com/SanamyVN/ai-ts/compare/v1.24.0...v1.25.0) (2026-04-11)
 
 ### Features
