@@ -54,8 +54,6 @@ interface ConversationState {
  */
 @Injectable()
 export class ConversationEngine implements IConversationEngine {
-  private readonly conversations = new Map<string, ConversationState>();
-
   constructor(
     @Inject(AI_MEDIATOR) private readonly mediator: IMediator,
     @Inject(MASTRA_AGENT) private readonly mastraAgent: IMastraAgent,
@@ -81,18 +79,6 @@ export class ConversationEngine implements IConversationEngine {
     );
 
     const model = config.model ?? this.config.defaultModel;
-    const state: ConversationState = {
-      sessionId: session.id,
-      mastraThreadId: session.mastraThreadId,
-      promptSlug: config.promptSlug,
-      resolvedPrompt: prompt.text,
-      model,
-      userId: config.userId,
-      baseOptions: { threadId: session.mastraThreadId, resourceId: config.userId },
-      ...(config.metricsContext !== undefined ? { metricsContext: config.metricsContext } : {}),
-    };
-    this.conversations.set(session.id, state);
-
     if (config.seedMessages && config.seedMessages.length > 0) {
       await this.mastraMemory.saveMessages(
         session.mastraThreadId,
@@ -118,7 +104,7 @@ export class ConversationEngine implements IConversationEngine {
     toolsets?: Record<string, Record<string, unknown>>,
     sendOptions?: SendOptions,
   ): Promise<ConversationResponse> {
-    const state = await this.getOrReconstructState(conversationId);
+    const state = await this.loadState(conversationId);
     const instructions = await this.resolveInstructions(state, promptParams);
     const metricsContext = sendOptions?.metricsContext ?? state.metricsContext;
     const options: GenerateOptions = {
@@ -150,7 +136,7 @@ export class ConversationEngine implements IConversationEngine {
     toolsets?: Record<string, Record<string, unknown>>,
     sendOptions?: SendOptions,
   ): AsyncIterable<StreamChunk> {
-    const state = await this.getOrReconstructState(conversationId);
+    const state = await this.loadState(conversationId);
     const instructions = await this.resolveInstructions(state, promptParams);
     const metricsContext = sendOptions?.metricsContext ?? state.metricsContext;
     const options: GenerateOptions = {
@@ -180,16 +166,11 @@ export class ConversationEngine implements IConversationEngine {
   }
 
   /**
-   * Returns the cached state or reconstructs it from the session store.
-   * Reconstruction enables multi-instance deployments where a different
-   * instance may have created the conversation.
+   * Loads conversation state from the session store.
+   * Stateless per call — no in-memory caching, so memory stays bounded
+   * regardless of how many conversations are created over the process lifetime.
    */
-  private async getOrReconstructState(conversationId: string): Promise<ConversationState> {
-    const cached = this.conversations.get(conversationId);
-    if (cached) {
-      return cached;
-    }
-
+  private async loadState(conversationId: string): Promise<ConversationState> {
     let session;
     try {
       session = await this.mediator.send(new FindSessionByIdQuery({ sessionId: conversationId }));
@@ -207,7 +188,7 @@ export class ConversationEngine implements IConversationEngine {
         ? (raw as MetricsContext)
         : undefined;
     /* eslint-enable @typescript-eslint/consistent-type-assertions */
-    const state: ConversationState = {
+    return {
       sessionId: session.id,
       mastraThreadId: session.mastraThreadId,
       promptSlug: session.promptSlug,
@@ -217,8 +198,6 @@ export class ConversationEngine implements IConversationEngine {
       baseOptions: { threadId: session.mastraThreadId, resourceId: session.userId },
       ...(restoredContext !== undefined ? { metricsContext: restoredContext } : {}),
     };
-    this.conversations.set(session.id, state);
-    return state;
   }
 
   /**
@@ -251,10 +230,6 @@ export class ConversationEngine implements IConversationEngine {
     const prompt = await this.mediator.send(
       new ResolvePromptQuery({ slug: state.promptSlug, params: promptParams }),
     );
-    // Update in-memory state
-    const updatedState: ConversationState = { ...state, resolvedPrompt: prompt.text };
-    this.conversations.set(state.sessionId, updatedState);
-    // Persist to DB
     await this.mediator.send(
       new UpdateSessionCommand({ sessionId: state.sessionId, resolvedPrompt: prompt.text }),
     );

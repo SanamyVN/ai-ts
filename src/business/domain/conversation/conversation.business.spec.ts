@@ -230,6 +230,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
+      send.mockResolvedValueOnce(SESSION);
+
       const response = await engine.send(convo.id, 'Hello');
 
       expect(agent.generate).toHaveBeenCalledWith('Hello', {
@@ -276,6 +278,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
+      send.mockResolvedValueOnce(SESSION);
+
       agent.generate.mockRejectedValue(new MastraAdapterError('generate'));
 
       await expect(engine.send('session-1', 'Hello')).rejects.toThrow(ConversationSendError);
@@ -290,6 +294,8 @@ describe('ConversationEngine', () => {
         userId: 'user-1',
         purpose: 'test',
       });
+
+      send.mockResolvedValueOnce(SESSION);
 
       const networkError = new TypeError('Network failure');
       agent.generate.mockRejectedValue(networkError);
@@ -312,6 +318,8 @@ describe('ConversationEngine', () => {
         userId: 'user-1',
         purpose: 'test',
       });
+
+      send.mockResolvedValueOnce(SESSION);
 
       await engine.send(convo.id, 'Hello');
 
@@ -342,6 +350,7 @@ describe('ConversationEngine', () => {
       // send() with new promptParams triggers re-resolution
       const newResolvedPrompt = { slug: 'greet', version: 2, text: 'Updated prompt' };
       send
+        .mockResolvedValueOnce(SESSION) // FindSessionByIdQuery in loadState()
         .mockResolvedValueOnce(newResolvedPrompt) // ResolvePromptQuery
         .mockResolvedValueOnce(undefined); // UpdateSessionCommand
 
@@ -375,6 +384,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
+      send.mockResolvedValueOnce(SESSION);
+
       const toolsets = { myTools: { search: {} } };
       await engine.send(convo.id, 'Hello', undefined, undefined, toolsets);
 
@@ -402,6 +413,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
+      send.mockResolvedValueOnce(SESSION);
+
       await engine.send(convo.id, 'Hello');
 
       expect(agent.generate).toHaveBeenCalledWith('Hello', {
@@ -427,8 +440,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
-      // Allow the UpdateSessionLastMessageCommand call to succeed
-      send.mockResolvedValueOnce(undefined);
+      // Allow the FindSessionByIdQuery in loadState() and UpdateSessionLastMessageCommand call to succeed
+      send.mockResolvedValueOnce(SESSION).mockResolvedValueOnce(undefined);
 
       await engine.send(convo.id, 'Hello');
 
@@ -459,6 +472,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
+      send.mockResolvedValueOnce(SESSION);
+
       await engine.send(convo.id, 'Hello');
 
       const lastMessageCall = send.mock.calls.find(
@@ -483,8 +498,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
-      // Make the UpdateSessionLastMessageCommand call fail
-      send.mockRejectedValueOnce(new Error('DB write failed'));
+      // FindSessionByIdQuery in loadState(), then UpdateSessionLastMessageCommand fails
+      send.mockResolvedValueOnce(SESSION).mockRejectedValueOnce(new Error('DB write failed'));
 
       // send() should still return successfully — lastMessage update is best-effort
       const response = await engine.send(convo.id, 'Hello');
@@ -509,6 +524,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
         metricsContext,
       });
+
+      send.mockResolvedValueOnce({ ...SESSION, metadata: { metricsContext } });
 
       await engine.send(convo.id, 'Hello');
 
@@ -539,6 +556,8 @@ describe('ConversationEngine', () => {
         metricsContext: createContext,
       });
 
+      send.mockResolvedValueOnce({ ...SESSION, metadata: { metricsContext: createContext } });
+
       await engine.send(convo.id, 'Grade this', undefined, undefined, undefined, {
         metricsContext: sendContext,
       });
@@ -566,6 +585,8 @@ describe('ConversationEngine', () => {
         userId: 'user-1',
         purpose: 'test',
       });
+
+      send.mockResolvedValueOnce(SESSION);
 
       await engine.send(convo.id, 'Hello');
 
@@ -626,6 +647,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
+      send.mockResolvedValueOnce(SESSION);
+
       const collected = [];
       for await (const chunk of engine.stream(convo.id, 'Hello')) {
         collected.push(chunk);
@@ -675,7 +698,10 @@ describe('ConversationEngine', () => {
       });
 
       const newResolvedPrompt = { slug: 'greet', version: 2, text: 'Updated stream prompt' };
-      send.mockResolvedValueOnce(newResolvedPrompt).mockResolvedValueOnce(undefined);
+      send
+        .mockResolvedValueOnce(SESSION) // FindSessionByIdQuery in loadState()
+        .mockResolvedValueOnce(newResolvedPrompt)
+        .mockResolvedValueOnce(undefined);
 
       const collected = [];
       for await (const chunk of engine.stream(convo.id, 'Hello', undefined, { name: 'Updated' })) {
@@ -706,6 +732,8 @@ describe('ConversationEngine', () => {
         userId: 'user-1',
         purpose: 'test',
       });
+
+      send.mockResolvedValueOnce(SESSION);
 
       const toolsets = { myTools: { search: {} } };
       const collected = [];
@@ -738,6 +766,8 @@ describe('ConversationEngine', () => {
         userId: 'user-1',
         purpose: 'test',
       });
+
+      send.mockResolvedValueOnce(SESSION);
 
       for await (const _ of engine.stream(convo.id, 'Hello')) {
         // consume
@@ -774,8 +804,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
-      // Allow the UpdateSessionLastMessageCommand call to succeed
-      send.mockResolvedValueOnce(undefined);
+      // FindSessionByIdQuery in loadState(), then UpdateSessionLastMessageCommand
+      send.mockResolvedValueOnce(SESSION).mockResolvedValueOnce(undefined);
 
       const collected = [];
       for await (const chunk of engine.stream(convo.id, 'Hello')) {
@@ -814,6 +844,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
+      send.mockResolvedValueOnce(SESSION);
+
       for await (const _ of engine.stream(convo.id, 'Hello')) {
         // consume
       }
@@ -847,8 +879,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
       });
 
-      // Make the UpdateSessionLastMessageCommand call fail
-      send.mockRejectedValueOnce(new Error('DB write failed'));
+      // FindSessionByIdQuery in loadState(), then UpdateSessionLastMessageCommand fails
+      send.mockResolvedValueOnce(SESSION).mockRejectedValueOnce(new Error('DB write failed'));
 
       const collected = [];
       for await (const chunk of engine.stream(convo.id, 'Hello')) {
@@ -877,6 +909,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
         metricsContext,
       });
+
+      send.mockResolvedValueOnce({ ...SESSION, metadata: { metricsContext } });
 
       for await (const _ of engine.stream(convo.id, 'Hello')) {
         // consume
@@ -907,6 +941,8 @@ describe('ConversationEngine', () => {
         purpose: 'test',
         metricsContext: { 'ai.operation': 'ta_chat' },
       });
+
+      send.mockResolvedValueOnce({ ...SESSION, metadata: { metricsContext: { 'ai.operation': 'ta_chat' } } });
 
       const overrideContext = { 'ai.operation': 'ta_title_gen' };
       for await (const _ of engine.stream(convo.id, 'Hello', undefined, undefined, undefined, {
