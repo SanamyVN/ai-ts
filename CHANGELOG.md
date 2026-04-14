@@ -1,3 +1,9 @@
+## [1.25.2](https://github.com/SanamyVN/ai-ts/compare/v1.25.1...v1.25.2) (2026-04-14)
+
+### Bug Fixes
+
+* remove unbounded in-memory conversations Map to prevent OOM ([89f1f16](https://github.com/SanamyVN/ai-ts/commit/89f1f163d27aa6aad5349462d2bdf6bbc87ed45d))
+
 ## [1.25.1](https://github.com/SanamyVN/ai-ts/compare/v1.25.0...v1.25.1) (2026-04-14)
 
 ### Bug Fixes
