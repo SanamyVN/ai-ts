@@ -35,9 +35,9 @@ export const ListSessionsQuery = createQuery({
       startedAtGte: z.date().optional(),
       /** Half-open upper bound for session start time. Must be strictly greater than `startedAtGte`. (§2) */
       startedAtLt: z.date().optional(),
-      /** 1-based page number. Required. (§5) */
+      /** Required. 1-based page number. (§5) */
       page: z.number().int().min(1),
-      /** Items per page. Required. Hard cap at 500. (§5) */
+      /** Required. Capped at 500. Last page detected via `items.length < perPage`. (§5) */
       perPage: z.number().int().min(1).max(500),
     })
     .refine((v) => !(v.purpose && v.purposePrefix), {

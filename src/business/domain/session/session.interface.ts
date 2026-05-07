@@ -54,6 +54,9 @@ export interface ISessionService {
   /**
    * Lists sessions matching `filter`, paginated.
    *
+   * @param filter - Filter options including `purposePrefix`, `startedAtGte`,
+   *   and `startedAtLt`. Filters on session start time, not message send time
+   *   — for billing aggregates, use `countMessagesByTenant`.
    * @param pagination - 1-based `page`; `perPage` is required and capped
    *   at 500 by the mediator. Last page is detected via
    *   `result.length < perPage`. (§5)
