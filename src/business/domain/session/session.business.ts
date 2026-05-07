@@ -164,7 +164,7 @@ export class SessionService implements ISessionService {
   async appendMessageEvent(sessionId: string, sentAt: Date): Promise<void> {
     const session = await this.sessionRepo.findById(sessionId);
     if (!session) throw new SessionNotFoundError(sessionId);
-    if (session.tenantId == null) return;
+    if (session.tenantId === null) return;
     await this.sessionMessageRepo.append({
       id: randomUUID(),
       sessionId,
