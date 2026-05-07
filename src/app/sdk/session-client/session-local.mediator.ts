@@ -19,6 +19,8 @@ import type {
   UpdateSessionLastMessageCommand,
   DeleteSessionCommand,
   GetSessionMessagesQuery,
+  AppendSessionMessageEventCommand,
+  CountMessagesByTenantQuery,
 } from '@/business/domain/session/client/queries.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import { isSessionNotFoundError } from '@/business/domain/session/session.error.js';
@@ -49,21 +51,28 @@ export class SessionLocalMediator implements ISessionMediator {
     }
   }
 
-  async list(query: InstanceType<typeof ListSessionsQuery>): Promise<SessionSummaryClient[]> {
-    // TODO(Phase 3): ListSessionsQuery will gain page/perPage fields; remove the
-    // temporary default pagination once that query is updated.
+  async list(
+    query: InstanceType<typeof ListSessionsQuery>,
+  ): Promise<{ items: SessionSummaryClient[]; page: number; perPage: number }> {
     const results = await this.sessionService.list(
       {
         ...(query.userId !== undefined ? { userId: query.userId } : {}),
         ...(query.userIds !== undefined ? { userIds: query.userIds } : {}),
         ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
         ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
+        ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
         ...(query.status !== undefined ? { status: query.status } : {}),
         ...(query.search !== undefined ? { search: query.search } : {}),
+        ...(query.startedAtGte !== undefined ? { startedAtGte: query.startedAtGte } : {}),
+        ...(query.startedAtLt !== undefined ? { startedAtLt: query.startedAtLt } : {}),
       },
-      { page: 1, perPage: 100 },
+      { page: query.page, perPage: query.perPage },
     );
-    return results.map(toSessionSummaryClientFromBusiness);
+    return {
+      items: results.map(toSessionSummaryClientFromBusiness),
+      page: query.page,
+      perPage: query.perPage,
+    };
   }
 
   async create(command: InstanceType<typeof CreateSessionCommand>): Promise<SessionClientModel> {
@@ -136,5 +145,24 @@ export class SessionLocalMediator implements ISessionMediator {
       }
       throw error;
     }
+  }
+
+  async appendMessageEvent(
+    command: InstanceType<typeof AppendSessionMessageEventCommand>,
+  ): Promise<void> {
+    await this.sessionService.appendMessageEvent(command.sessionId, command.sentAt);
+  }
+
+  async countMessagesByTenant(
+    query: InstanceType<typeof CountMessagesByTenantQuery>,
+  ): Promise<{ count: number }> {
+    const count = await this.sessionService.countMessagesByTenant({
+      tenantId: query.tenantId,
+      ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
+      ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
+      ...(query.sentAtGte !== undefined ? { sentAtGte: query.sentAtGte } : {}),
+      ...(query.sentAtLt !== undefined ? { sentAtLt: query.sentAtLt } : {}),
+    });
+    return { count };
   }
 }
