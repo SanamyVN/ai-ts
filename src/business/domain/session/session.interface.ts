@@ -120,11 +120,14 @@ export interface ISessionService {
    * given session. Invoked only by `conversation.business` after a
    * successful `generate`/`stream` call. Not for general consumer use.
    *
+   * @param eventId - Caller-supplied UUID v4 used as the ledger row id.
+   *   The repository uses `ON CONFLICT (id) DO NOTHING`, so replaying the
+   *   same `eventId` is safe — only the first insert is persisted.
    * @param sessionId - Session to record the event against.
    * @param sentAt - Timestamp captured at hook entry (before the LLM call).
    * @throws {SessionNotFoundError} when no session exists with the given id.
    */
-  appendMessageEvent(sessionId: string, sentAt: Date): Promise<void>;
+  appendMessageEvent(eventId: string, sessionId: string, sentAt: Date): Promise<void>;
 
   /**
    * Billing aggregate — `COUNT(*)` over the `ai_session_messages` ledger

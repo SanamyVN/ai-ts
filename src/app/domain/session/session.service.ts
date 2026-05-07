@@ -88,9 +88,11 @@ export class SessionAppService {
     }
   }
 
-  async appendMessageEvent(sessionId: string, sentAt: Date): Promise<void> {
+  async appendMessageEvent(sessionId: string, eventId: string, sentAt: Date): Promise<void> {
     try {
-      await this.mediator.send(new AppendSessionMessageEventCommand({ sessionId, sentAt }));
+      await this.mediator.send(
+        new AppendSessionMessageEventCommand({ eventId, sessionId, sentAt }),
+      );
     } catch (error) {
       mapSessionError(error);
     }

@@ -159,12 +159,16 @@ describe('SessionRemoteMediator', () => {
       vi.mocked(http.post).mockResolvedValue({ ok: true, status: 204 });
 
       const sentAt = new Date('2026-04-01T10:00:00.000Z');
-      const command = new AppendSessionMessageEventCommand({ sessionId: 'session-1', sentAt });
+      const command = new AppendSessionMessageEventCommand({
+        eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
+        sessionId: 'session-1',
+        sentAt,
+      });
       await mediator.appendMessageEvent(command);
 
       expect(http.post).toHaveBeenCalledWith(
         'https://ai.example.com/ai/sessions/session-1/message-events',
-        { sentAt: sentAt.toISOString() },
+        { eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789', sentAt: sentAt.toISOString() },
       );
     });
 
@@ -172,6 +176,7 @@ describe('SessionRemoteMediator', () => {
       vi.mocked(http.post).mockResolvedValue({ ok: false, status: 500 });
 
       const command = new AppendSessionMessageEventCommand({
+        eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
         sessionId: 'session-1',
         sentAt: new Date(),
       });

@@ -96,14 +96,16 @@ describe('SessionAppService', () => {
     it('dispatches AppendSessionMessageEventCommand with sessionId and sentAt', async () => {
       mediator.send.mockResolvedValueOnce(undefined);
 
+      const eventId = 'a1b2c3d4-e5f6-4789-abcd-ef0123456789';
       const sentAt = new Date('2026-04-01T10:00:00.000Z');
-      await service.appendMessageEvent('session-1', sentAt);
+      await service.appendMessageEvent('session-1', eventId, sentAt);
 
       expect(mediator.send).toHaveBeenCalledWith(expect.any(AppendSessionMessageEventCommand));
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const sent = mediator.send.mock.calls[0]?.[0] as InstanceType<
         typeof AppendSessionMessageEventCommand
       >;
+      expect(sent.eventId).toBe(eventId);
       expect(sent.sessionId).toBe('session-1');
       expect(sent.sentAt).toEqual(sentAt);
     });
@@ -111,9 +113,9 @@ describe('SessionAppService', () => {
     it('maps client not found errors to HTTP errors', async () => {
       mediator.send.mockRejectedValueOnce(new SessionNotFoundClientError('missing'));
 
-      await expect(service.appendMessageEvent('missing', new Date())).rejects.toThrow(
-        SessionNotFoundHttpError,
-      );
+      await expect(
+        service.appendMessageEvent('missing', 'a1b2c3d4-e5f6-4789-abcd-ef0123456789', new Date()),
+      ).rejects.toThrow(SessionNotFoundHttpError);
     });
   });
 

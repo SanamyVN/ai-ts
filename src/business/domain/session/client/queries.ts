@@ -123,10 +123,16 @@ export const GetSessionMessagesQuery = createQuery({
  * Invoked only by `conversation.business` after a successful generate or
  * stream call. Not for general consumer use — the SDK exposes the type
  * for handler registration on the local mediator only. (§1, §6.7)
+ *
+ * `eventId` is caller-supplied (UUID v4) so that HTTP retries that replay
+ * the same request body hit the repository's `ON CONFLICT (id) DO NOTHING`
+ * guard rather than inserting a duplicate ledger row. (§idempotency)
  */
 export const AppendSessionMessageEventCommand = createCommand({
   type: 'ai.session.appendMessageEvent',
   payload: z.object({
+    /** Stable UUID v4 generated at the call site before the HTTP hop. Used for idempotency. */
+    eventId: z.uuid(),
     sessionId: z.string(),
     sentAt: z.date(), // captured at hook entry in conversation.business — see §1 "When sent_at is captured"
   }),

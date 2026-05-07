@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
 import { getLogger } from '@sanamyvn/foundation/logging/global';
@@ -240,6 +241,10 @@ export class ConversationEngine implements IConversationEngine {
    * level and swallowed — a ledger write failure must never break the user-facing
    * response. Under-count is tenant-favorable (§1).
    *
+   * The `eventId` is generated once per call here (not inside the service or repo)
+   * so that an HTTP retry replaying the same request body carries the same `eventId`
+   * and hits `ON CONFLICT (id) DO NOTHING`, preventing double-billing (§idempotency).
+   *
    * @param sessionId - The session that received the user message.
    * @param sentAt - Timestamp captured at hook entry (start of `send()` or `stream()`),
    *   not at dispatch time. A long-running stream must bill against the period
@@ -247,8 +252,11 @@ export class ConversationEngine implements IConversationEngine {
    *   (§1 "When sent_at is captured").
    */
   private async appendMessageEventBestEffort(sessionId: string, sentAt: Date): Promise<void> {
+    const eventId = randomUUID();
     try {
-      await this.mediator.send(new AppendSessionMessageEventCommand({ sessionId, sentAt }));
+      await this.mediator.send(
+        new AppendSessionMessageEventCommand({ eventId, sessionId, sentAt }),
+      );
     } catch (err) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       logger.warn('appendMessageEventBestEffort failed', { sessionId, err: err as Error });

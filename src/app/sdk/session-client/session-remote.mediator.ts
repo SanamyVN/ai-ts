@@ -197,7 +197,7 @@ export class SessionRemoteMediator implements ISessionMediator {
   ): Promise<void> {
     const response = await this.http.post(
       `${this.config.baseUrl}/ai/sessions/${command.sessionId}/message-events`,
-      { sentAt: command.sentAt.toISOString() },
+      { eventId: command.eventId, sentAt: command.sentAt.toISOString() },
     );
     if (!response.ok) {
       throw new Error(`Failed to append message event: ${response.status}`);

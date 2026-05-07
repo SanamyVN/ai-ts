@@ -77,27 +77,57 @@ describe('SessionRouter', () => {
     it('returns 204 and calls appendMessageEvent with parsed Date on valid sentAt', async () => {
       service.appendMessageEvent.mockResolvedValue(undefined);
 
+      const eventId = 'a1b2c3d4-e5f6-4789-abcd-ef0123456789';
       const sentAtIso = '2026-04-01T10:00:00.000Z';
-      const res = await app.post('/ai/sessions/session-1/message-events', { sentAt: sentAtIso });
+      const res = await app.post('/ai/sessions/session-1/message-events', {
+        eventId,
+        sentAt: sentAtIso,
+      });
 
       expect(res.status).toBe(204);
       expect(service.appendMessageEvent).toHaveBeenCalledOnce();
-      expect(service.appendMessageEvent).toHaveBeenCalledWith('session-1', new Date(sentAtIso));
+      expect(service.appendMessageEvent).toHaveBeenCalledWith(
+        'session-1',
+        eventId,
+        new Date(sentAtIso),
+      );
     });
 
     it('returns 204 with timezone-offset sentAt', async () => {
       service.appendMessageEvent.mockResolvedValue(undefined);
 
+      const eventId = 'b2c3d4e5-f6a7-4890-bcde-f01234567890';
       const sentAtWithOffset = '2026-04-01T12:00:00.000+02:00';
       const res = await app.post('/ai/sessions/session-2/message-events', {
+        eventId,
         sentAt: sentAtWithOffset,
       });
 
       expect(res.status).toBe(204);
       expect(service.appendMessageEvent).toHaveBeenCalledWith(
         'session-2',
+        eventId,
         new Date(sentAtWithOffset),
       );
+    });
+
+    it('returns 422 when eventId is missing', async () => {
+      const res = await app.post('/ai/sessions/session-1/message-events', {
+        sentAt: '2026-04-01T10:00:00.000Z',
+      });
+
+      expect(res.status).toBe(422);
+      expect(service.appendMessageEvent).not.toHaveBeenCalled();
+    });
+
+    it('returns 422 when eventId is not a valid UUID', async () => {
+      const res = await app.post('/ai/sessions/session-1/message-events', {
+        eventId: 'not-a-uuid',
+        sentAt: '2026-04-01T10:00:00.000Z',
+      });
+
+      expect(res.status).toBe(422);
+      expect(service.appendMessageEvent).not.toHaveBeenCalled();
     });
 
     it('returns 422 when sentAt is missing', async () => {
@@ -109,6 +139,7 @@ describe('SessionRouter', () => {
 
     it('returns 422 when sentAt is an epoch number string', async () => {
       const res = await app.post('/ai/sessions/session-1/message-events', {
+        eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
         sentAt: '1730419200',
       });
 
@@ -118,6 +149,7 @@ describe('SessionRouter', () => {
 
     it('returns 422 when sentAt is a locale date string', async () => {
       const res = await app.post('/ai/sessions/session-1/message-events', {
+        eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
         sentAt: '4/1/2026',
       });
 
@@ -127,6 +159,7 @@ describe('SessionRouter', () => {
 
     it('returns 422 when sentAt is not a valid date string', async () => {
       const res = await app.post('/ai/sessions/session-1/message-events', {
+        eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
         sentAt: 'not-a-date',
       });
 
@@ -137,6 +170,7 @@ describe('SessionRouter', () => {
     it('returns 422 when sentAt is a raw ISO date without time (no offset)', async () => {
       // z.iso.datetime({ offset: true }) requires a time component with offset
       const res = await app.post('/ai/sessions/session-1/message-events', {
+        eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
         sentAt: '2026-04-01',
       });
 

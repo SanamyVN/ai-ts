@@ -144,20 +144,42 @@ describe('SessionLocalMediator', () => {
   });
 
   describe('appendMessageEvent', () => {
-    it('delegates to sessionService.appendMessageEvent with sessionId and sentAt', async () => {
+    it('delegates to sessionService.appendMessageEvent with eventId, sessionId, and sentAt', async () => {
       sessionService.appendMessageEvent.mockResolvedValue(undefined);
 
+      const eventId = 'a1b2c3d4-e5f6-4789-abcd-ef0123456789';
       const sentAt = new Date('2026-04-01T10:00:00.000Z');
-      const command = new AppendSessionMessageEventCommand({ sessionId: 'session-1', sentAt });
+      const command = new AppendSessionMessageEventCommand({
+        eventId,
+        sessionId: 'session-1',
+        sentAt,
+      });
       await mediator.appendMessageEvent(command);
 
-      expect(sessionService.appendMessageEvent).toHaveBeenCalledWith('session-1', sentAt);
+      expect(sessionService.appendMessageEvent).toHaveBeenCalledWith(eventId, 'session-1', sentAt);
     });
 
-    it('re-throws errors from the service', async () => {
+    it('maps SessionNotFoundError to SessionNotFoundClientError', async () => {
+      sessionService.appendMessageEvent.mockRejectedValue(
+        new SessionNotFoundError('session-missing'),
+      );
+
+      const command = new AppendSessionMessageEventCommand({
+        eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
+        sessionId: 'session-missing',
+        sentAt: new Date(),
+      });
+
+      await expect(mediator.appendMessageEvent(command)).rejects.toThrow(
+        SessionNotFoundClientError,
+      );
+    });
+
+    it('re-throws unknown errors from the service', async () => {
       sessionService.appendMessageEvent.mockRejectedValue(new Error('DB failure'));
 
       const command = new AppendSessionMessageEventCommand({
+        eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
         sessionId: 'session-1',
         sentAt: new Date(),
       });

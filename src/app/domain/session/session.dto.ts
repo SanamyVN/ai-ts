@@ -8,8 +8,8 @@ export const sessionListQueryDto = z
     purposePrefix: z.string().min(1).optional(),
     status: z.string().optional(),
     search: z.string().max(200).optional(),
-    startedAtGte: z.iso.datetime().optional(),
-    startedAtLt: z.iso.datetime().optional(),
+    startedAtGte: z.iso.datetime({ offset: true }).optional(),
+    startedAtLt: z.iso.datetime({ offset: true }).optional(),
     page: z.coerce.number().int().min(1),
     perPage: z.coerce.number().int().min(1).max(500),
   })
@@ -76,8 +76,8 @@ export const countMessagesQueryDto = z
     tenantId: z.string(),
     purpose: z.string().optional(),
     purposePrefix: z.string().min(1).optional(),
-    sentAtGte: z.iso.datetime().optional(),
-    sentAtLt: z.iso.datetime().optional(),
+    sentAtGte: z.iso.datetime({ offset: true }).optional(),
+    sentAtLt: z.iso.datetime({ offset: true }).optional(),
   })
   .refine((q) => !(q.purpose !== undefined && q.purposePrefix !== undefined), {
     message: 'purpose and purposePrefix are mutually exclusive',

@@ -32,9 +32,14 @@ function expectRefineMessage(fn: () => unknown, refinementMessage: string): void
 // ─── AppendSessionMessageEventCommand ────────────────────────────────────────
 
 describe('AppendSessionMessageEventCommand', () => {
-  it('constructs successfully with sessionId and sentAt', () => {
+  it('constructs successfully with eventId, sessionId and sentAt', () => {
     expect(
-      () => new AppendSessionMessageEventCommand({ sessionId: 'session-1', sentAt: new Date() }),
+      () =>
+        new AppendSessionMessageEventCommand({
+          eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
+          sessionId: 'session-1',
+          sentAt: new Date(),
+        }),
     ).not.toThrow();
   });
 
@@ -54,6 +59,7 @@ describe('AppendSessionMessageEventCommand', () => {
     expect(
       () =>
         new AppendSessionMessageEventCommand({
+          eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
           sessionId: 'session-1',
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           sentAt: '2026-04-01T00:00:00Z' as unknown as Date,

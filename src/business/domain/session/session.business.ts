@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import {
   SESSION_REPOSITORY,
@@ -161,12 +160,12 @@ export class SessionService implements ISessionService {
    * best-effort wrapper in `conversation.business` can log and swallow cleanly.
    * (§1 "Service surface")
    */
-  async appendMessageEvent(sessionId: string, sentAt: Date): Promise<void> {
+  async appendMessageEvent(eventId: string, sessionId: string, sentAt: Date): Promise<void> {
     const session = await this.sessionRepo.findById(sessionId);
     if (!session) throw new SessionNotFoundError(sessionId);
     if (session.tenantId === null) return;
     await this.sessionMessageRepo.append({
-      id: randomUUID(),
+      id: eventId,
       sessionId,
       tenantId: session.tenantId,
       purpose: session.purpose,

@@ -401,7 +401,7 @@ describe('SessionService', () => {
       });
       sessionMessageRepo.append.mockResolvedValue(undefined);
 
-      await service.appendMessageEvent('session-1', sentAt);
+      await service.appendMessageEvent('a1b2c3d4-e5f6-4789-abcd-ef0123456789', 'session-1', sentAt);
 
       expect(sessionRepo.findById).toHaveBeenCalledWith('session-1');
       expect(sessionMessageRepo.append).toHaveBeenCalledWith(
@@ -417,9 +417,13 @@ describe('SessionService', () => {
     it('throws SessionNotFoundError when the session does not exist', async () => {
       sessionRepo.findById.mockResolvedValue(undefined);
 
-      await expect(service.appendMessageEvent('missing-session', new Date())).rejects.toThrow(
-        SessionNotFoundError,
-      );
+      await expect(
+        service.appendMessageEvent(
+          'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
+          'missing-session',
+          new Date(),
+        ),
+      ).rejects.toThrow(SessionNotFoundError);
 
       expect(sessionMessageRepo.append).not.toHaveBeenCalled();
     });
@@ -444,16 +448,20 @@ describe('SessionService', () => {
         lastMessageAt: null,
       });
 
-      await service.appendMessageEvent('session-tenantless', new Date());
+      await service.appendMessageEvent(
+        'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
+        'session-tenantless',
+        new Date(),
+      );
 
       expect(sessionMessageRepo.append).not.toHaveBeenCalled();
     });
 
-    it('generates a valid UUID v4 for the event row id', async () => {
-      // randomUUID() from node:crypto always produces a standard UUID v4.
-      // We cannot pin to a specific value since it is non-deterministic, so we
-      // match against the UUID v4 regex pattern instead.
-      const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    it('uses the caller-supplied eventId as the repo row id', async () => {
+      // The business service forwards the caller-supplied eventId directly to
+      // sessionMessageRepository.append as `id`. The caller (conversation.business)
+      // is responsible for generating an idempotent UUID v4.
+      const eventId = 'a1b2c3d4-e5f6-4789-abcd-ef0123456789';
 
       sessionRepo.findById.mockResolvedValue({
         id: 'session-uuid-check',
@@ -473,10 +481,10 @@ describe('SessionService', () => {
       });
       sessionMessageRepo.append.mockResolvedValue(undefined);
 
-      await service.appendMessageEvent('session-uuid-check', new Date());
+      await service.appendMessageEvent(eventId, 'session-uuid-check', new Date());
 
       const appendArg = sessionMessageRepo.append.mock.calls[0]?.[0];
-      expect(appendArg?.id).toMatch(uuidV4Regex);
+      expect(appendArg?.id).toBe(eventId);
     });
   });
 

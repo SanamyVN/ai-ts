@@ -150,7 +150,18 @@ export class SessionLocalMediator implements ISessionMediator {
   async appendMessageEvent(
     command: InstanceType<typeof AppendSessionMessageEventCommand>,
   ): Promise<void> {
-    await this.sessionService.appendMessageEvent(command.sessionId, command.sentAt);
+    try {
+      await this.sessionService.appendMessageEvent(
+        command.eventId,
+        command.sessionId,
+        command.sentAt,
+      );
+    } catch (error) {
+      if (isSessionNotFoundError(error)) {
+        throw new SessionNotFoundClientError(command.sessionId, error);
+      }
+      throw error;
+    }
   }
 
   async countMessagesByTenant(
