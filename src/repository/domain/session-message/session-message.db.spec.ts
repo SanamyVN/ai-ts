@@ -46,7 +46,7 @@ describe('SessionMessageRepoFilter shape', () => {
  *
  * append  → insert → values → onConflictDoNothing → execute
  * count   → select → from → where → (resolves to [{total}])
- * countBySession → select → from → where → (resolves to [{sessionId, total}[]])
+ * countBySession → select → from → where → groupBy → (resolves to [{sessionId, total}[]])
  */
 function createMockSessionMessageClient(options?: {
   countRow?: { total: number };
@@ -67,7 +67,8 @@ function createMockSessionMessageClient(options?: {
   const countSelectFn = vi.fn(() => ({ from: countFromFn }));
 
   // ── countBySession chain ──────────────────────────────────────────────────
-  const countBySessionWhereFn = vi.fn().mockResolvedValue(options?.countBySessionRows ?? []);
+  const countBySessionGroupByFn = vi.fn().mockResolvedValue(options?.countBySessionRows ?? []);
+  const countBySessionWhereFn = vi.fn(() => ({ groupBy: countBySessionGroupByFn }));
   const countBySessionFromFn = vi.fn(() => ({ where: countBySessionWhereFn }));
   const countBySessionSelectFn = vi.fn(() => ({ from: countBySessionFromFn }));
 
@@ -113,6 +114,7 @@ function createMockSessionMessageClient(options?: {
     countBySessionSelectFn,
     countBySessionFromFn,
     countBySessionWhereFn,
+    countBySessionGroupByFn,
   };
 }
 
@@ -321,5 +323,19 @@ describe('SessionMessageDrizzleRepository.countBySession', () => {
 
     expect(result.size).toBe(1);
     expect(result.has('sess-no-events')).toBe(false);
+  });
+
+  it('calls groupBy(sessionId) so PostgreSQL does not reject the aggregate query', async () => {
+    const mock = createMockSessionMessageClient({
+      countBySessionRows: [{ sessionId: 'sess-x', total: 7 }],
+      firstSelectChain: 'countBySession',
+    });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionMessageDrizzleRepository(mock.client);
+
+    await repo.countBySession(['sess-x']);
+
+    expect(mock.countBySessionGroupByFn).toHaveBeenCalledTimes(1);
+    expect(mock.countBySessionGroupByFn).toHaveBeenCalledWith(aiSessionMessages.sessionId);
   });
 });

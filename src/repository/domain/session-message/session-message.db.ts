@@ -77,7 +77,8 @@ export class SessionMessageDrizzleRepository implements ISessionMessageRepositor
         total: sql<number>`COUNT(*)::int`,
       })
       .from(aiSessionMessages)
-      .where(inArray(aiSessionMessages.sessionId, [...sessionIds]));
+      .where(inArray(aiSessionMessages.sessionId, [...sessionIds]))
+      .groupBy(aiSessionMessages.sessionId);
     const map = new Map<string, number>();
     for (const row of rows) {
       map.set(row.sessionId, row.total);
