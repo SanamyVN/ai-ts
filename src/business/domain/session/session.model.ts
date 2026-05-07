@@ -32,10 +32,9 @@ export interface SessionSummary {
   readonly lastMessage: string | null;
   readonly lastMessageAt: Date | null;
   /**
-   * Total user-submitted messages persisted against this session over its lifetime.
-   * Excludes seed messages, system prompts, and assistant replies.
-   * Sourced from the append-only `ai_session_messages` ledger via a per-page
-   * `countBySession` query; reflects the count at query time. (§1)
+   * User-submitted messages only — excludes seed messages, system prompts,
+   * and assistant replies. Sourced from the append-only `ai_session_messages`
+   * ledger; reflects the lifetime count for this session at query time. (§1)
    */
   readonly messageCount: number;
 }
@@ -58,53 +57,42 @@ export interface SessionFilter {
   readonly tenantId?: string;
   readonly purpose?: string;
   /**
-   * Case-sensitive prefix match against the session purpose.
-   * Translates to `WHERE purpose LIKE $prefix || '%'`.
-   * Cannot be an empty string. Mutually exclusive with `purpose`. (§3)
+   * Match sessions whose `purpose` starts with this string. Case-sensitive.
+   * Mutually exclusive with `purpose`. Cannot be empty. (§3)
    */
   readonly purposePrefix?: string;
   readonly status?: string;
   /** Case-insensitive substring match against the session title. */
   readonly search?: string;
   /**
-   * Half-open lower bound for session start time: include sessions where
-   * `started_at >= startedAtGte`. Combine with `startedAtLt` to express a
-   * display window `[Gte, Lt)`.
-   *
-   * Note: this filters on session start time, not message send time. For
-   * billing, use `CountMessagesByTenantQuery` which scopes on `sentAt`. (§2)
+   * Lower bound (inclusive) on session `started_at`. Together with
+   * `startedAtLt` forms the half-open interval `[Gte, Lt)` over session
+   * start time. Use `CountMessagesByTenantQuery` for billing — it scopes
+   * on message **send** time, not session start time. (§2)
    */
   readonly startedAtGte?: Date;
   /**
-   * Half-open upper bound for session start time: exclude sessions where
-   * `started_at >= startedAtLt`. Must be strictly greater than `startedAtGte`
-   * when both are provided. (§2)
+   * Upper bound (exclusive) on session `started_at`. See `startedAtGte`. (§2)
    */
   readonly startedAtLt?: Date;
 }
 
 /**
- * Filter for the `countMessagesByTenant` aggregate.
- * `tenantId` is required — billing is always per-tenant (§4).
- * Time fields scope on **message send time** (`sentAt`), not session start time.
+ * Filter for `CountMessagesByTenantQuery` — counts messages in the
+ * `ai_session_messages` ledger whose `sent_at` falls in the half-open
+ * interval `[sentAtGte, sentAtLt)`, regardless of session status.
+ * `tenantId` is required to prevent cross-tenant aggregation. (§4)
  */
 export interface CountMessagesFilter {
+  /** Tenant scope — required. */
   readonly tenantId: string;
+  /** Exact-match `purpose`. Mutually exclusive with `purposePrefix`. */
   readonly purpose?: string;
-  /**
-   * Case-sensitive prefix match on purpose. Mutually exclusive with `purpose`.
-   * Cannot be an empty string. (§3, §4)
-   */
+  /** Prefix-match `purpose` (case-sensitive). Cannot be empty. (§3) */
   readonly purposePrefix?: string;
-  /**
-   * Half-open lower bound: count events where `sent_at >= sentAtGte`.
-   * Combine with `sentAtLt` for a billing period `[Gte, Lt)`. (§4)
-   */
+  /** Lower bound (inclusive) on message `sent_at`. */
   readonly sentAtGte?: Date;
-  /**
-   * Half-open upper bound: exclude events where `sent_at >= sentAtLt`.
-   * Must be strictly greater than `sentAtGte` when both are provided. (§4)
-   */
+  /** Upper bound (exclusive) on message `sent_at`. */
   readonly sentAtLt?: Date;
 }
 
