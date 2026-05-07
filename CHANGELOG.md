@@ -1,3 +1,37 @@
+## [1.26.0](https://github.com/SanamyVN/ai-ts/compare/v1.25.3...v1.26.0) (2026-05-07)
+
+### Features
+
+* add aiSessionMessages Drizzle schema ([f749c6d](https://github.com/SanamyVN/ai-ts/commit/f749c6dd2612915325de8beb4a7aa207c2228f5f))
+* add appendMessageEvent and countMessagesByTenant handlers to SessionLocalMediator; update list to return paginated shape ([ae2861c](https://github.com/SanamyVN/ai-ts/commit/ae2861c79da5f4937a3f8d87b398d12b2a245abe))
+* add appendMessageEvent and countMessagesByTenant HTTP handlers to SessionRemoteMediator; update list to paginated shape ([8e9e0b2](https://github.com/SanamyVN/ai-ts/commit/8e9e0b26ead241d214677a7d9be84a17a9ddc3f9))
+* add appendMessageEvent and countMessagesByTenant stubs to createMockSessionService ([d2c1660](https://github.com/SanamyVN/ai-ts/commit/d2c16604a637d7f433d197a42c57d258e83705b4))
+* add AppendSessionMessageEventCommand and CountMessagesByTenantQuery; extend ListSessionsQuery with pagination and filters ([1ea482e](https://github.com/SanamyVN/ai-ts/commit/1ea482e12e46fdc4879290f71d48de82e1b7fcfd))
+* add foundation logger and retrofit updateLastMessageBestEffort warn logging ([f42c2c3](https://github.com/SanamyVN/ai-ts/commit/f42c2c3e3e0325acd655011ea244667bd071d373))
+* add ISessionMessageRepository interface, DI token, providers, and mock factory ([76fdd9e](https://github.com/SanamyVN/ai-ts/commit/76fdd9e5962b647488a111d015982470c33afc23))
+* add messageCount to SessionSummary, filter fields to SessionFilter, CountMessagesFilter type ([5e69c5b](https://github.com/SanamyVN/ai-ts/commit/5e69c5b1c7e6e937786fbedeafabd2ddd8165895))
+* add messageCount to sessionSummaryClientSchema ([d5c7e9b](https://github.com/SanamyVN/ai-ts/commit/d5c7e9b1e425ffd49e929a8a47ad930dedf81edd))
+* add messageCount to sessionSummaryResponseDto; update SessionAppService.list to paginated shape; add appendMessageEvent and countMessagesByTenant ([2ea1317](https://github.com/SanamyVN/ai-ts/commit/2ea1317066b323f3f583ccfb83b67bf8a3db28fe))
+* add POST /:id/message-events and GET /message-events/count routes; update GET / to paginated shape; fix lint ([93e0e26](https://github.com/SanamyVN/ai-ts/commit/93e0e26866d3c779ca08be0f12c71c97717d50d5))
+* extend ISessionService with appendMessageEvent(sentAt), countMessagesByTenant, paginated list ([8637c7e](https://github.com/SanamyVN/ai-ts/commit/8637c7eec560bb1b30d58dc43915e93e82fc9df9))
+* extend SessionRepoFilter with purposePrefix, startedAtGte, startedAtLt; update list signature ([bec0db2](https://github.com/SanamyVN/ai-ts/commit/bec0db2c809931a99a4d6db06d6af946c33b41f4))
+* extract buildListConditions, add purposePrefix/startedAt filters, deterministic pagination to SessionDrizzleRepository.list ([e7f7621](https://github.com/SanamyVN/ai-ts/commit/e7f762194b8f0540a8e2a648c2801f39e1fe5dc2))
+* implement appendMessageEvent(sentAt), countMessagesByTenant, and paginated list in SessionService ([b1add1d](https://github.com/SanamyVN/ai-ts/commit/b1add1db528037e3e7f3e7802a93a6cfc097c17d))
+* implement SessionMessageDrizzleRepository with append, count, countBySession ([9a80036](https://github.com/SanamyVN/ai-ts/commit/9a8003619a370047e0cb6061aecb3480beb520cc))
+* project messageCount in toSessionSummaryClientFromBusiness ([23a89b2](https://github.com/SanamyVN/ai-ts/commit/23a89b29b79cfc53c77b72434c405c3039d0d25b))
+* register aiSessionMessages in shared AiSchema ([a9d3044](https://github.com/SanamyVN/ai-ts/commit/a9d3044a1b539d5a5cc5b40124dca8a18a14ce90))
+* register AppendSessionMessageEventCommand and CountMessagesByTenantQuery in SESSION_MEDIATOR; update list return type ([6688d10](https://github.com/SanamyVN/ai-ts/commit/6688d10e30198be8d697ffe56272334f8ff9fdf0))
+* update createMockSessionRepository list stub to match new pagination signature ([56f9487](https://github.com/SanamyVN/ai-ts/commit/56f94873f2d5d34f31162aa5284519f72a63a287))
+* update toSessionSummaryFromRecord to accept messageCount as second argument ([8e96c2f](https://github.com/SanamyVN/ai-ts/commit/8e96c2f6a22df14c44939350492e323f0b0bedba))
+
+### Bug Fixes
+
+* add DTO mutual-exclusion refinements, error wrapping, and dead branch cleanup ([cc5356e](https://github.com/SanamyVN/ai-ts/commit/cc5356ec30b2625e58dca1800a50e00ee4df1f2a))
+* **business:** use strict equality === null for tenantId guard ([4093c0f](https://github.com/SanamyVN/ai-ts/commit/4093c0f42704d9e87fc951e6e01dd638f05a8d7f))
+* replace type assertions with toHaveBeenCalledWith matchers to satisfy lint rules ([bad1336](https://github.com/SanamyVN/ai-ts/commit/bad1336a714c3b599fe9637bcf7b544f6cf6544f))
+* **repo:** add groupBy to countBySession query ([4b6b636](https://github.com/SanamyVN/ai-ts/commit/4b6b6363f124386dc065eb268d9f3648aa136681))
+* **session:** add eventId for idempotency and 404 mapping per Codex review ([2c75ce6](https://github.com/SanamyVN/ai-ts/commit/2c75ce64e5551640257a30596279773c5df61692))
+
 ## [1.25.3](https://github.com/SanamyVN/ai-ts/compare/v1.25.2...v1.25.3) (2026-04-14)
 
 ### Bug Fixes
