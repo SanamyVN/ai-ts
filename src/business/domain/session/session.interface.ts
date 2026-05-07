@@ -4,6 +4,7 @@ import type {
   SessionSummary,
   StartSessionInput,
   SessionFilter,
+  CountMessagesFilter,
   Transcript,
 } from './session.model.js';
 import type { MessageList, Pagination } from '@/business/sdk/mastra/mastra.interface.js';
@@ -51,11 +52,19 @@ export interface ISessionService {
   get(sessionId: string): Promise<Session>;
 
   /**
-   * Lists sessions matching the given filter criteria.
-   * @param filter - Criteria to narrow results.
-   * @returns Array of session summaries.
+   * Lists sessions matching the given filter criteria, newest first.
+   * Pagination is required — there are no defaults (§5).
+   *
+   * @param filter - Criteria to narrow results. Supports `purposePrefix`,
+   *   `startedAtGte`, and `startedAtLt` in addition to existing fields.
+   * @param pagination - 1-based page number and page size (max 500 per page).
+   * @returns Array of session summaries for the requested page, each with
+   *   `messageCount` projected from the `ai_session_messages` ledger. (§1, §5)
    */
-  list(filter: SessionFilter): Promise<SessionSummary[]>;
+  list(
+    filter: SessionFilter,
+    pagination: { page: number; perPage: number },
+  ): Promise<SessionSummary[]>;
 
   /**
    * Retrieves paginated messages for a session.
@@ -105,6 +114,40 @@ export interface ISessionService {
    * @throws {SessionNotFoundError} If the session does not exist.
    */
   delete(sessionId: string): Promise<void>;
+
+  /**
+   * Appends one event row to the `ai_session_messages` ledger for the given
+   * session. Loads the session to read `tenantId` and `purpose` for
+   * denormalization. Returns silently when `session.tenantId` is null —
+   * tenantless sessions are not billable and must not pollute aggregates.
+   * Throws `SessionNotFoundError` when the session does not exist.
+   *
+   * `sentAt` is captured at hook entry in Phase 4 and threaded through the
+   * mediator command payload so the recorded timestamp reflects when the user
+   * sent the message, not when the DB write completes (§1 "Service surface",
+   * §1 "When sent_at is captured").
+   *
+   * Intended to be called best-effort from `conversation.business` after a
+   * successful LLM call — not for general consumer use. (§1)
+   *
+   * @param sessionId - Session to record the event against.
+   * @param sentAt - Timestamp captured at hook entry (before the LLM call).
+   * @throws {SessionNotFoundError} If the session does not exist.
+   */
+  appendMessageEvent(sessionId: string, sentAt: Date): Promise<void>;
+
+  /**
+   * Returns the total count of user-submitted messages across all sessions
+   * matching `filter`. Delegates to `sessionMessageRepository.count` — which
+   * filters on **message send time** (`sentAt`), not session start time.
+   *
+   * Returns a bare `number`; the mediator wraps it as `{ count }` for the wire
+   * format in Phase 3 (§4).
+   *
+   * @param filter - `tenantId` is required. All other fields are optional.
+   * @returns Non-negative integer.
+   */
+  countMessagesByTenant(filter: CountMessagesFilter): Promise<number>;
 }
 
 /** Dependency-injection token for {@link ISessionService}. */
