@@ -10,11 +10,17 @@ import {
   UpdateSessionLastMessageCommand,
   DeleteSessionCommand,
   GetSessionMessagesQuery,
+  AppendSessionMessageEventCommand,
+  CountMessagesByTenantQuery,
 } from './queries.js';
 
 export interface ISessionMediator {
   findById(query: InstanceType<typeof FindSessionByIdQuery>): Promise<SessionClientModel>;
-  list(query: InstanceType<typeof ListSessionsQuery>): Promise<SessionSummaryClient[]>;
+  list(query: InstanceType<typeof ListSessionsQuery>): Promise<{
+    items: SessionSummaryClient[];
+    page: number;
+    perPage: number;
+  }>;
   create(command: InstanceType<typeof CreateSessionCommand>): Promise<SessionClientModel>;
   end(command: InstanceType<typeof EndSessionCommand>): Promise<void>;
   update(command: InstanceType<typeof UpdateSessionCommand>): Promise<void>;
@@ -22,6 +28,10 @@ export interface ISessionMediator {
   updateLastMessage(command: InstanceType<typeof UpdateSessionLastMessageCommand>): Promise<void>;
   delete(command: InstanceType<typeof DeleteSessionCommand>): Promise<void>;
   getMessages(query: InstanceType<typeof GetSessionMessagesQuery>): Promise<MessageListClient>;
+  appendMessageEvent(command: InstanceType<typeof AppendSessionMessageEventCommand>): Promise<void>;
+  countMessagesByTenant(
+    query: InstanceType<typeof CountMessagesByTenantQuery>,
+  ): Promise<{ count: number }>;
 }
 
 export const SESSION_MEDIATOR = createMediatorToken<ISessionMediator>('SESSION_MEDIATOR', {
@@ -34,4 +44,6 @@ export const SESSION_MEDIATOR = createMediatorToken<ISessionMediator>('SESSION_M
   updateLastMessage: UpdateSessionLastMessageCommand,
   delete: DeleteSessionCommand,
   getMessages: GetSessionMessagesQuery,
+  appendMessageEvent: AppendSessionMessageEventCommand,
+  countMessagesByTenant: CountMessagesByTenantQuery,
 });
