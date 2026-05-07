@@ -47,7 +47,7 @@ export interface ISessionRepository {
   list(
     filter: SessionRepoFilter,
     pagination: { page: number; perPage: number },
-  ): Promise<SessionRecord[]>;
+  ): Promise<readonly SessionRecord[]>;
 
   /**
    * Transition a session to a new status.

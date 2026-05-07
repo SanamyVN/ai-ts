@@ -61,7 +61,7 @@ export interface ISessionService {
   list(
     filter: SessionFilter,
     pagination: { page: number; perPage: number },
-  ): Promise<SessionSummary[]>;
+  ): Promise<readonly SessionSummary[]>;
 
   /**
    * Retrieves paginated messages for a session.
