@@ -29,6 +29,7 @@ export const sessionSummaryClientSchema = z.object({
   startedAt: z.date(),
   lastMessage: z.string().nullable(),
   lastMessageAt: z.date().nullable(),
+  messageCount: z.number().int().nonnegative(),
 });
 
 export type SessionSummaryClient = z.infer<typeof sessionSummaryClientSchema>;
