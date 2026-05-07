@@ -52,14 +52,11 @@ export interface ISessionService {
   get(sessionId: string): Promise<Session>;
 
   /**
-   * Lists sessions matching the given filter criteria, newest first.
-   * Pagination is required — there are no defaults (§5).
+   * Lists sessions matching `filter`, paginated.
    *
-   * @param filter - Criteria to narrow results. Supports `purposePrefix`,
-   *   `startedAtGte`, and `startedAtLt` in addition to existing fields.
-   * @param pagination - 1-based page number and page size (max 500 per page).
-   * @returns Array of session summaries for the requested page, each with
-   *   `messageCount` projected from the `ai_session_messages` ledger. (§1, §5)
+   * @param pagination - 1-based `page`; `perPage` is required and capped
+   *   at 500 by the mediator. Last page is detected via
+   *   `result.length < perPage`. (§5)
    */
   list(
     filter: SessionFilter,
@@ -116,36 +113,24 @@ export interface ISessionService {
   delete(sessionId: string): Promise<void>;
 
   /**
-   * Appends one event row to the `ai_session_messages` ledger for the given
-   * session. Loads the session to read `tenantId` and `purpose` for
-   * denormalization. Returns silently when `session.tenantId` is null —
-   * tenantless sessions are not billable and must not pollute aggregates.
-   * Throws `SessionNotFoundError` when the session does not exist.
-   *
-   * `sentAt` is captured at hook entry in Phase 4 and threaded through the
-   * mediator command payload so the recorded timestamp reflects when the user
-   * sent the message, not when the DB write completes (§1 "Service surface",
-   * §1 "When sent_at is captured").
-   *
-   * Intended to be called best-effort from `conversation.business` after a
-   * successful LLM call — not for general consumer use. (§1)
+   * Appends one row to the `ai_session_messages` event ledger for the
+   * given session. Invoked only by `conversation.business` after a
+   * successful `generate`/`stream` call. Not for general consumer use.
    *
    * @param sessionId - Session to record the event against.
    * @param sentAt - Timestamp captured at hook entry (before the LLM call).
-   * @throws {SessionNotFoundError} If the session does not exist.
+   * @throws {SessionNotFoundError} when no session exists with the given id.
    */
   appendMessageEvent(sessionId: string, sentAt: Date): Promise<void>;
 
   /**
-   * Returns the total count of user-submitted messages across all sessions
-   * matching `filter`. Delegates to `sessionMessageRepository.count` — which
-   * filters on **message send time** (`sentAt`), not session start time.
+   * Billing aggregate — `COUNT(*)` over the `ai_session_messages` ledger
+   * filtered by `tenantId`, optional `purpose`/`purposePrefix`, and the
+   * half-open interval `[sentAtGte, sentAtLt)` on message `sent_at`.
+   * Counts across all session statuses.
    *
-   * Returns a bare `number`; the mediator wraps it as `{ count }` for the wire
-   * format in Phase 3 (§4).
-   *
-   * @param filter - `tenantId` is required. All other fields are optional.
-   * @returns Non-negative integer.
+   * @returns the bare count; the wire format `{ count }` wrapping happens
+   * in the local mediator. (§4)
    */
   countMessagesByTenant(filter: CountMessagesFilter): Promise<number>;
 }
