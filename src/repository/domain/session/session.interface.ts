@@ -7,24 +7,14 @@ export interface SessionRepoFilter {
   userIds?: string[];
   tenantId?: string;
   purpose?: string;
-  /**
-   * Case-sensitive prefix match against the session purpose.
-   * Translates to `WHERE purpose LIKE $prefix || '%'`.
-   * Cannot be an empty string. Mutually exclusive with `purpose`. (§3)
-   */
+  /** Prefix-match `purpose`. Case-sensitive. Mutually exclusive with `purpose`. (§3) */
   purposePrefix?: string;
   status?: string;
   /** Case-insensitive substring match against the session title. */
   search?: string;
-  /**
-   * Half-open lower bound: include sessions where `started_at >= startedAtGte`.
-   * Combine with `startedAtLt` for a billing-period window `[Gte, Lt)`. (§2)
-   */
+  /** Lower bound (inclusive) on session `started_at`. (§2) */
   startedAtGte?: Date;
-  /**
-   * Half-open upper bound: exclude sessions where `started_at >= startedAtLt`.
-   * Must be strictly greater than `startedAtGte` when both are provided. (§2)
-   */
+  /** Upper bound (exclusive) on session `started_at`. (§2) */
   startedAtLt?: Date;
 }
 
@@ -45,9 +35,9 @@ export interface ISessionRepository {
   findById(id: string): Promise<SessionRecord | undefined>;
 
   /**
-   * List sessions matching the provided filter, newest first.
-   * Ordered `started_at DESC, id DESC` for deterministic pagination across
-   * pages with tied `started_at` values. (§5)
+   * Lists session records matching `filter`, ordered by
+   * `started_at DESC, id DESC` (deterministic for pagination).
+   * `pagination.page` is 1-based; `pagination.perPage` is required. (§5)
    *
    * @param filter - Filter options.
    * @param pagination - 1-based `page` and `perPage` (max 500). Required — no
