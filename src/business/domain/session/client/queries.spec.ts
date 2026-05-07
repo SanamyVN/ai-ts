@@ -22,7 +22,9 @@ function expectRefineMessage(fn: () => unknown, refinementMessage: string): void
     caughtError = e;
   }
   expect(caughtError).toBeDefined();
-  const err = caughtError as { cause?: { issues?: Array<{ message: string }> } };
+  // SchemaValidationError wraps ZodError as cause; refinement messages are in cause.issues.
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const err = caughtError as { cause?: { issues?: { message: string }[] } };
   const messages = err.cause?.issues?.map((i) => i.message) ?? [];
   expect(messages).toContain(refinementMessage);
 }
@@ -42,8 +44,8 @@ describe('AppendSessionMessageEventCommand', () => {
   });
 
   it('rejects missing sentAt', () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     expect(
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       () => new AppendSessionMessageEventCommand({ sessionId: 'session-1' } as never),
     ).toThrow();
   });

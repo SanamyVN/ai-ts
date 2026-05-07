@@ -9,6 +9,8 @@ export interface SessionMiddlewareConfig {
   readonly end?: MiddlewareInput[];
   readonly updateTitle?: MiddlewareInput[];
   readonly delete?: MiddlewareInput[];
+  readonly appendMessageEvent?: MiddlewareInput[];
+  readonly countMessagesByTenant?: MiddlewareInput[];
 }
 
 export const SESSION_MIDDLEWARE_CONFIG = createToken<SessionMiddlewareConfig>(

@@ -233,7 +233,7 @@ describe('SessionLocalMediator', () => {
       expect(result.page).toBe(2);
       expect(result.perPage).toBe(10);
       expect(result.items).toHaveLength(1);
-      expect(result.items[0].messageCount).toBe(5);
+      expect(result.items[0]?.messageCount).toBe(5);
       expect(sessionService.list).toHaveBeenCalledWith(
         expect.objectContaining({ tenantId: 'tenant-1' }),
         { page: 2, perPage: 10 },

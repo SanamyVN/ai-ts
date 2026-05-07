@@ -214,7 +214,8 @@ describe('SessionRemoteMediator', () => {
       });
       await mediator.countMessagesByTenant(query);
 
-      const call = vi.mocked(http.get).mock.calls[0][0] as string;
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const call = vi.mocked(http.get).mock.calls[0]?.[0] as string;
       expect(call).toContain('tenantId=tenant-1');
       expect(call).toContain('purposePrefix=ta-');
       expect(call).toContain(`sentAtGte=${encodeURIComponent(sentAtGte.toISOString())}`);
@@ -264,9 +265,10 @@ describe('SessionRemoteMediator', () => {
       expect(result.page).toBe(2);
       expect(result.perPage).toBe(10);
       expect(result.items).toHaveLength(1);
-      expect(result.items[0].messageCount).toBe(5);
+      expect(result.items[0]?.messageCount).toBe(5);
 
-      const call = vi.mocked(http.get).mock.calls[0][0] as string;
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const call = vi.mocked(http.get).mock.calls[0]?.[0] as string;
       expect(call).toContain('page=2');
       expect(call).toContain('perPage=10');
       expect(call).toContain('tenantId=tenant-1');
@@ -288,7 +290,8 @@ describe('SessionRemoteMediator', () => {
       });
       await mediator.list(query);
 
-      const call = vi.mocked(http.get).mock.calls[0][0] as string;
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const call = vi.mocked(http.get).mock.calls[0]?.[0] as string;
       expect(call).toContain(`startedAtGte=${encodeURIComponent(startedAtGte.toISOString())}`);
       expect(call).toContain(`startedAtLt=${encodeURIComponent(startedAtLt.toISOString())}`);
     });

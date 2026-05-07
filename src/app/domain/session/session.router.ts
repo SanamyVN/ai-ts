@@ -11,6 +11,8 @@ import {
   transcriptResponseDto,
   messageResponseDto,
   updateTitleBodyDto,
+  countMessagesQueryDto,
+  countMessagesResponseDto,
 } from './session.dto.js';
 import { SESSION_APP_SERVICE, type SessionAppService } from './session.service.js';
 import { SESSION_MIDDLEWARE_CONFIG, type SessionMiddlewareConfig } from './session.tokens.js';
@@ -30,19 +32,45 @@ export class SessionRouter implements IRouter {
     app
       .get('/')
       .middleware(...(this.middlewareConfig.list ?? []))
-      .schema({ query: sessionListQueryDto, response: z.array(sessionSummaryResponseDto) })
+      .schema({
+        query: sessionListQueryDto,
+        response: z.object({
+          items: z.array(sessionSummaryResponseDto),
+          page: z.number(),
+          perPage: z.number(),
+        }),
+      })
       .handle(async ({ query }) =>
-        this.service.list(
-          query !== undefined
-            ? {
-                ...(query.userId !== undefined ? { userId: query.userId } : {}),
-                ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
-                ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
-                ...(query.status !== undefined ? { status: query.status } : {}),
-                ...(query.search !== undefined ? { search: query.search } : {}),
-              }
-            : undefined,
-        ),
+        this.service.list({
+          ...(query.userId !== undefined ? { userId: query.userId } : {}),
+          ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
+          ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
+          ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
+          ...(query.status !== undefined ? { status: query.status } : {}),
+          ...(query.search !== undefined ? { search: query.search } : {}),
+          ...(query.startedAtGte !== undefined
+            ? { startedAtGte: new Date(query.startedAtGte) }
+            : {}),
+          ...(query.startedAtLt !== undefined ? { startedAtLt: new Date(query.startedAtLt) } : {}),
+          page: query.page,
+          perPage: query.perPage,
+        }),
+      );
+
+    // NOTE: GET /message-events/count MUST be registered before GET /:id to
+    // prevent the router from treating 'message-events' as the :id param.
+    app
+      .get('/message-events/count')
+      .middleware(...(this.middlewareConfig.countMessagesByTenant ?? []))
+      .schema({ query: countMessagesQueryDto, response: countMessagesResponseDto })
+      .handle(async ({ query }) =>
+        this.service.countMessagesByTenant({
+          tenantId: query.tenantId,
+          ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
+          ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
+          ...(query.sentAtGte !== undefined ? { sentAtGte: new Date(query.sentAtGte) } : {}),
+          ...(query.sentAtLt !== undefined ? { sentAtLt: new Date(query.sentAtLt) } : {}),
+        }),
       );
 
     app
@@ -93,6 +121,25 @@ export class SessionRouter implements IRouter {
       .schema({ params: idParams })
       .handle(async ({ params, ctx }) => {
         await this.service.end(params.id);
+        return ctx.response(204);
+      });
+
+    app
+      .post('/:id/message-events')
+      .middleware(...(this.middlewareConfig.appendMessageEvent ?? []))
+      .schema({
+        params: idParams,
+        // ISO 8601 only — reject epoch numbers and locale strings.
+        // `z.coerce.date()` would happily parse `1730419200` and `"4/1/2026"`.
+        body: z.object({
+          sentAt: z
+            .string()
+            .datetime({ offset: true })
+            .transform((s) => new Date(s)),
+        }),
+      })
+      .handle(async ({ params, body, ctx }) => {
+        await this.service.appendMessageEvent(params.id, body.sentAt);
         return ctx.response(204);
       });
 

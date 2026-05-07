@@ -100,6 +100,7 @@ describe('SessionAppService', () => {
       await service.appendMessageEvent('session-1', sentAt);
 
       expect(mediator.send).toHaveBeenCalledWith(expect.any(AppendSessionMessageEventCommand));
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const sent = mediator.send.mock.calls[0]?.[0] as InstanceType<
         typeof AppendSessionMessageEventCommand
       >;
