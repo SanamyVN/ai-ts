@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
 import { aiSessions } from './session.schema.js';
 import type { SessionRecord } from './session.model.js';
+import type { SessionRepoFilter } from './session.interface.js';
 import { SessionDrizzleRepository } from './session.db.js';
 import { SessionNotFoundRepoError } from './session.error.js';
 import { createMockSessionRepository } from './session.testing.js';
@@ -144,5 +145,17 @@ describe('SessionDrizzleRepository', () => {
     const repo = new SessionDrizzleRepository(db.client);
 
     await expect(repo.deleteById('missing-session')).rejects.toThrow(SessionNotFoundRepoError);
+  });
+});
+
+describe('SessionRepoFilter new fields — compile-time shape check', () => {
+  it('accepts purposePrefix, startedAtGte, and startedAtLt without type error', () => {
+    const filter: SessionRepoFilter = {
+      tenantId: 'tenant-1',
+      purposePrefix: 'ta-chat:',
+      startedAtGte: new Date('2026-01-01T00:00:00.000Z'),
+      startedAtLt: new Date('2026-02-01T00:00:00.000Z'),
+    };
+    expect(filter).toBeDefined();
   });
 });
