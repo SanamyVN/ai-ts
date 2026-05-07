@@ -146,7 +146,7 @@ describe('SessionMessageDrizzleRepository.append', () => {
     // The implementation must pass the caller-supplied sentAt directly to
     // drizzle's values() — it must not call NOW() server-side or omit the field.
     // (§1 "Data model", §1 "When sent_at is captured")
-    const [valuesArg] = mock.valuesFn.mock.calls[0] as [{ sentAt?: Date }];
+    const [valuesArg] = mock.valuesFn.mock.calls[0] as unknown as [{ sentAt?: Date }];
     expect(valuesArg.sentAt).toBe(explicitSentAt);
   });
 
