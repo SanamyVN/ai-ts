@@ -220,8 +220,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
 
     await repo.list({ purposePrefix: 'ta-chat:' }, { page: 1, perPage: 10 });
 
-    const [whereArg] = mock.whereFn.mock.calls[0] as unknown as [unknown];
-    expect(whereArg).toBeDefined();
+    expect(mock.whereFn).toHaveBeenCalledWith(expect.anything());
   });
 
   it('applies startedAtGte filter (WHERE clause is defined)', async () => {
@@ -234,8 +233,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
       { page: 1, perPage: 10 },
     );
 
-    const [whereArg] = mock.whereFn.mock.calls[0] as unknown as [unknown];
-    expect(whereArg).toBeDefined();
+    expect(mock.whereFn).toHaveBeenCalledWith(expect.anything());
   });
 
   it('applies startedAtLt filter (WHERE clause is defined)', async () => {
@@ -248,8 +246,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
       { page: 1, perPage: 10 },
     );
 
-    const [whereArg] = mock.whereFn.mock.calls[0] as unknown as [unknown];
-    expect(whereArg).toBeDefined();
+    expect(mock.whereFn).toHaveBeenCalledWith(expect.anything());
   });
 
   it('composes tenantId + purposePrefix + startedAtGte + startedAtLt into one WHERE', async () => {
@@ -268,8 +265,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
     );
 
     expect(mock.whereFn).toHaveBeenCalledTimes(1);
-    const [whereArg] = mock.whereFn.mock.calls[0] as unknown as [unknown];
-    expect(whereArg).toBeDefined();
+    expect(mock.whereFn).toHaveBeenCalledWith(expect.anything());
   });
 
   it('passes undefined to WHERE when filter is empty (no conditions)', async () => {
@@ -279,8 +275,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
 
     await repo.list({}, { page: 1, perPage: 10 });
 
-    const [whereArg] = mock.whereFn.mock.calls[0] as unknown as [unknown];
-    expect(whereArg).toBeUndefined();
+    expect(mock.whereFn).toHaveBeenCalledWith(undefined);
   });
 
   it('calls orderBy exactly once for deterministic ordering', async () => {
@@ -300,8 +295,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
 
     await repo.list({}, { page: 1, perPage: 10 });
 
-    const args = mock.orderByFn.mock.calls[0] as unknown[];
-    expect(args).toHaveLength(2);
+    expect(mock.orderByFn.mock.calls[0]).toHaveLength(2);
   });
 
   it('applies limit = perPage', async () => {

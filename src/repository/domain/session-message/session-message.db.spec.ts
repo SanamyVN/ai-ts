@@ -50,7 +50,7 @@ describe('SessionMessageRepoFilter shape', () => {
  */
 function createMockSessionMessageClient(options?: {
   countRow?: { total: number };
-  countBySessionRows?: Array<{ sessionId: string; total: number }>;
+  countBySessionRows?: { sessionId: string; total: number }[];
   appendConflict?: boolean; // unused at runtime; controls mock setup semantics only
   /** Controls which chain the first select() call routes to. Default: 'count'. */
   firstSelectChain?: 'count' | 'countBySession';
@@ -146,8 +146,7 @@ describe('SessionMessageDrizzleRepository.append', () => {
     // The implementation must pass the caller-supplied sentAt directly to
     // drizzle's values() — it must not call NOW() server-side or omit the field.
     // (§1 "Data model", §1 "When sent_at is captured")
-    const [valuesArg] = mock.valuesFn.mock.calls[0] as unknown as [{ sentAt?: Date }];
-    expect(valuesArg.sentAt).toBe(explicitSentAt);
+    expect(mock.valuesFn).toHaveBeenCalledWith(expect.objectContaining({ sentAt: explicitSentAt }));
   });
 
   it('resolves void on a duplicate id (idempotent — ON CONFLICT DO NOTHING)', async () => {
@@ -213,10 +212,9 @@ describe('SessionMessageDrizzleRepository.count', () => {
 
     await repo.count({ tenantId: 'tenant-z' });
 
-    expect(mock.countWhereFn).toHaveBeenCalledTimes(1);
-    const [whereArg] = mock.countWhereFn.mock.calls[0] as [unknown];
     // A truthy drizzle SQL node was passed — not undefined.
-    expect(whereArg).toBeDefined();
+    expect(mock.countWhereFn).toHaveBeenCalledTimes(1);
+    expect(mock.countWhereFn).toHaveBeenCalledWith(expect.anything());
   });
 
   it('passes undefined to WHERE when filter is empty (no conditions)', async () => {
@@ -226,8 +224,7 @@ describe('SessionMessageDrizzleRepository.count', () => {
 
     await repo.count({});
 
-    const [whereArg] = mock.countWhereFn.mock.calls[0] as [unknown];
-    expect(whereArg).toBeUndefined();
+    expect(mock.countWhereFn).toHaveBeenCalledWith(undefined);
   });
 
   it('composes tenantId + purposePrefix + sentAtGte + sentAtLt into one WHERE', async () => {
@@ -243,8 +240,7 @@ describe('SessionMessageDrizzleRepository.count', () => {
     });
 
     expect(mock.countWhereFn).toHaveBeenCalledTimes(1);
-    const [whereArg] = mock.countWhereFn.mock.calls[0] as [unknown];
-    expect(whereArg).toBeDefined();
+    expect(mock.countWhereFn).toHaveBeenCalledWith(expect.anything());
   });
 
   it('applies purpose exact-match filter', async () => {
@@ -254,8 +250,7 @@ describe('SessionMessageDrizzleRepository.count', () => {
 
     await repo.count({ tenantId: 'tenant-1', purpose: 'ta-chat:exact-id' });
 
-    const [whereArg] = mock.countWhereFn.mock.calls[0] as [unknown];
-    expect(whereArg).toBeDefined();
+    expect(mock.countWhereFn).toHaveBeenCalledWith(expect.anything());
   });
 
   it('applies sentAtGte filter alone', async () => {
@@ -265,8 +260,7 @@ describe('SessionMessageDrizzleRepository.count', () => {
 
     await repo.count({ sentAtGte: new Date('2026-04-01T00:00:00.000Z') });
 
-    const [whereArg] = mock.countWhereFn.mock.calls[0] as [unknown];
-    expect(whereArg).toBeDefined();
+    expect(mock.countWhereFn).toHaveBeenCalledWith(expect.anything());
   });
 
   it('applies sentAtLt filter alone', async () => {
@@ -276,8 +270,7 @@ describe('SessionMessageDrizzleRepository.count', () => {
 
     await repo.count({ sentAtLt: new Date('2026-05-01T00:00:00.000Z') });
 
-    const [whereArg] = mock.countWhereFn.mock.calls[0] as [unknown];
-    expect(whereArg).toBeDefined();
+    expect(mock.countWhereFn).toHaveBeenCalledWith(expect.anything());
   });
 });
 
