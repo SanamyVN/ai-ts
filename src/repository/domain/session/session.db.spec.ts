@@ -159,3 +159,188 @@ describe('SessionRepoFilter new fields — compile-time shape check', () => {
     expect(filter).toBeDefined();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Extended mock for list() tests
+// ---------------------------------------------------------------------------
+
+function createListMockClient(options?: { rows?: SessionRecord[] }) {
+  const offsetFn = vi.fn().mockResolvedValue(options?.rows ?? []);
+  const limitFn = vi.fn(() => ({ offset: offsetFn }));
+  const orderByFn = vi.fn(() => ({ limit: limitFn }));
+  const whereFn = vi.fn(() => ({ orderBy: orderByFn }));
+  const fromFn = vi.fn(() => ({ where: whereFn }));
+  const selectFn = vi.fn(() => ({ from: fromFn }));
+
+  const db = {
+    select: selectFn,
+    // Stubs for existing tests that use other chains
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({ where: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([]) })) })),
+    })),
+    delete: vi.fn(() => ({
+      where: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([]) })),
+    })),
+    insert: vi.fn(() => ({
+      values: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([]) })),
+    })),
+  };
+
+  return {
+    client: {
+      db,
+      connect: async () => {
+        return;
+      },
+      disconnect: async () => {
+        return;
+      },
+      isHealthy: async () => true,
+    },
+    selectFn,
+    fromFn,
+    whereFn,
+    orderByFn,
+    limitFn,
+    offsetFn,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// list() — new filters
+// ---------------------------------------------------------------------------
+
+describe('SessionDrizzleRepository.list — new filters and pagination', () => {
+  const baseRecord = createSessionRecord();
+
+  it('applies purposePrefix as a LIKE predicate (WHERE clause is defined)', async () => {
+    const mock = createListMockClient({ rows: [baseRecord] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list({ purposePrefix: 'ta-chat:' }, { page: 1, perPage: 10 });
+
+    const [whereArg] = mock.whereFn.mock.calls[0] as [unknown];
+    expect(whereArg).toBeDefined();
+  });
+
+  it('applies startedAtGte filter (WHERE clause is defined)', async () => {
+    const mock = createListMockClient({ rows: [baseRecord] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list(
+      { startedAtGte: new Date('2026-01-01T00:00:00.000Z') },
+      { page: 1, perPage: 10 },
+    );
+
+    const [whereArg] = mock.whereFn.mock.calls[0] as [unknown];
+    expect(whereArg).toBeDefined();
+  });
+
+  it('applies startedAtLt filter (WHERE clause is defined)', async () => {
+    const mock = createListMockClient({ rows: [baseRecord] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list(
+      { startedAtLt: new Date('2026-02-01T00:00:00.000Z') },
+      { page: 1, perPage: 10 },
+    );
+
+    const [whereArg] = mock.whereFn.mock.calls[0] as [unknown];
+    expect(whereArg).toBeDefined();
+  });
+
+  it('composes tenantId + purposePrefix + startedAtGte + startedAtLt into one WHERE', async () => {
+    const mock = createListMockClient({ rows: [baseRecord] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list(
+      {
+        tenantId: 'tenant-1',
+        purposePrefix: 'ta-chat:',
+        startedAtGte: new Date('2026-01-01T00:00:00.000Z'),
+        startedAtLt: new Date('2026-02-01T00:00:00.000Z'),
+      },
+      { page: 1, perPage: 10 },
+    );
+
+    expect(mock.whereFn).toHaveBeenCalledTimes(1);
+    const [whereArg] = mock.whereFn.mock.calls[0] as [unknown];
+    expect(whereArg).toBeDefined();
+  });
+
+  it('passes undefined to WHERE when filter is empty (no conditions)', async () => {
+    const mock = createListMockClient({ rows: [] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list({}, { page: 1, perPage: 10 });
+
+    const [whereArg] = mock.whereFn.mock.calls[0] as [unknown];
+    expect(whereArg).toBeUndefined();
+  });
+
+  it('calls orderBy exactly once for deterministic ordering', async () => {
+    const mock = createListMockClient({ rows: [] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list({}, { page: 1, perPage: 10 });
+
+    expect(mock.orderByFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('orderBy receives two column expressions (started_at DESC, id DESC)', async () => {
+    const mock = createListMockClient({ rows: [] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list({}, { page: 1, perPage: 10 });
+
+    const args = mock.orderByFn.mock.calls[0] as unknown[];
+    expect(args).toHaveLength(2);
+  });
+
+  it('applies limit = perPage', async () => {
+    const mock = createListMockClient({ rows: [] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list({}, { page: 1, perPage: 25 });
+
+    expect(mock.limitFn).toHaveBeenCalledWith(25);
+  });
+
+  it('applies offset 0 for page 1', async () => {
+    const mock = createListMockClient({ rows: [] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list({}, { page: 1, perPage: 10 });
+
+    expect(mock.offsetFn).toHaveBeenCalledWith(0);
+  });
+
+  it('applies offset 20 for page 3 with perPage 10', async () => {
+    const mock = createListMockClient({ rows: [] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list({}, { page: 3, perPage: 10 });
+
+    expect(mock.offsetFn).toHaveBeenCalledWith(20);
+  });
+
+  it('returns empty array on last page (items.length < perPage sentinel)', async () => {
+    const mock = createListMockClient({ rows: [] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    const result = await repo.list({}, { page: 99, perPage: 10 });
+
+    expect(result).toEqual([]);
+  });
+});

@@ -1,4 +1,4 @@
-import { and, eq, ilike, inArray } from 'drizzle-orm';
+import { and, desc, eq, gte, ilike, inArray, like, lt } from 'drizzle-orm';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
 import type { AiSchema } from '@/shared/schema.js';
@@ -25,20 +25,40 @@ export class SessionDrizzleRepository implements ISessionRepository {
     return record;
   }
 
-  async list(filter: SessionRepoFilter): Promise<SessionRecord[]> {
+  /**
+   * Builds WHERE-clause conditions from `filter`. Used by `list()` so
+   * predicate translation has one source of truth. (§2, §3, §5)
+   */
+  private buildListConditions(filter: SessionRepoFilter) {
     const conditions = [];
     if (filter.userId) conditions.push(eq(aiSessions.userId, filter.userId));
     if (filter.userIds?.length) conditions.push(inArray(aiSessions.userId, filter.userIds));
     if (filter.tenantId) conditions.push(eq(aiSessions.tenantId, filter.tenantId));
     if (filter.purpose) conditions.push(eq(aiSessions.purpose, filter.purpose));
+    if (filter.purposePrefix) conditions.push(like(aiSessions.purpose, `${filter.purposePrefix}%`));
     if (filter.status) conditions.push(eq(aiSessions.status, filter.status));
     if (filter.search) conditions.push(ilike(aiSessions.title, `%${filter.search}%`));
+    if (filter.startedAtGte) conditions.push(gte(aiSessions.startedAt, filter.startedAtGte));
+    if (filter.startedAtLt) conditions.push(lt(aiSessions.startedAt, filter.startedAtLt));
+    return conditions;
+  }
 
-    const query = this.db.db.select().from(aiSessions);
-    if (conditions.length > 0) {
-      return query.where(and(...conditions));
-    }
-    return query;
+  /**
+   * List sessions ordered `started_at DESC, id DESC` (deterministic across tied
+   * timestamps) with offset pagination. (§5)
+   */
+  async list(
+    filter: SessionRepoFilter,
+    pagination: { page: number; perPage: number },
+  ): Promise<SessionRecord[]> {
+    const conditions = this.buildListConditions(filter);
+    return this.db.db
+      .select()
+      .from(aiSessions)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(aiSessions.startedAt), desc(aiSessions.id))
+      .limit(pagination.perPage)
+      .offset((pagination.page - 1) * pagination.perPage);
   }
 
   async updateStatus(id: string, status: string, endedAt?: Date): Promise<SessionRecord> {
