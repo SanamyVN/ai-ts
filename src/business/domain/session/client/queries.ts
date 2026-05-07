@@ -118,9 +118,11 @@ export const GetSessionMessagesQuery = createQuery({
 });
 
 /**
- * Appends a message event to the ledger for a session.
- * Invoked only by `conversation.business` after a successful LLM generate/stream call.
- * Not for general consumer use. (§1, §6.7)
+ * Appends one row to the `ai_session_messages` event ledger.
+ *
+ * Invoked only by `conversation.business` after a successful generate or
+ * stream call. Not for general consumer use — the SDK exposes the type
+ * for handler registration on the local mediator only. (§1, §6.7)
  */
 export const AppendSessionMessageEventCommand = createCommand({
   type: 'ai.session.appendMessageEvent',
@@ -133,9 +135,14 @@ export const AppendSessionMessageEventCommand = createCommand({
 
 /**
  * Billing aggregate over the `ai_session_messages` ledger.
- * `tenantId` is required — billing is always per-tenant.
- * Counts every message whose `sent_at` falls in the half-open interval
- * `[sentAtGte, sentAtLt)`, regardless of session status. (§4, §6.7)
+ *
+ * - `tenantId` is required (prevents cross-tenant aggregation).
+ * - Counts every message whose `sent_at` falls in the half-open interval
+ *   `[sentAtGte, sentAtLt)`, regardless of session status.
+ * - `purpose` and `purposePrefix` are mutually exclusive; `purposePrefix`
+ *   is case-sensitive and cannot be empty.
+ * - Response is `{ count }` so future breakdown fields can be added
+ *   additively. (§4, §6.7)
  */
 export const CountMessagesByTenantQuery = createQuery({
   type: 'ai.session.countMessagesByTenant',
