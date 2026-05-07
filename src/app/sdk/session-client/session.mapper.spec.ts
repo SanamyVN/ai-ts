@@ -101,6 +101,44 @@ describe('toSessionSummaryClientFromBusiness', () => {
     expect(result.lastMessage).toBeNull();
     expect(result.lastMessageAt).toBeNull();
   });
+
+  it('projects messageCount onto the client summary', () => {
+    const summary: SessionSummary = {
+      id: 'session-1',
+      userId: 'user-1',
+      promptSlug: 'test-prompt',
+      purpose: 'test',
+      status: 'active',
+      title: null,
+      startedAt: new Date('2026-01-01T00:00:00Z'),
+      lastMessage: null,
+      lastMessageAt: null,
+      messageCount: 42,
+    };
+
+    const result = toSessionSummaryClientFromBusiness(summary);
+
+    expect(result.messageCount).toBe(42);
+  });
+
+  it('projects messageCount of 0 correctly', () => {
+    const summary: SessionSummary = {
+      id: 'session-2',
+      userId: 'user-1',
+      promptSlug: 'test-prompt',
+      purpose: 'test',
+      status: 'active',
+      title: null,
+      startedAt: new Date('2026-01-01T00:00:00Z'),
+      lastMessage: null,
+      lastMessageAt: null,
+      messageCount: 0,
+    };
+
+    const result = toSessionSummaryClientFromBusiness(summary);
+
+    expect(result.messageCount).toBe(0);
+  });
 });
 
 describe('toMessageListClient', () => {

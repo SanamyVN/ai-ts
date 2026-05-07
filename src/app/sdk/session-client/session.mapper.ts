@@ -44,6 +44,7 @@ export function toSessionSummaryClientFromBusiness(summary: SessionSummary): Ses
     startedAt: summary.startedAt,
     lastMessage: summary.lastMessage,
     lastMessageAt: summary.lastMessageAt,
+    messageCount: summary.messageCount,
   };
 }
 
