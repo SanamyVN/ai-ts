@@ -2,8 +2,11 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { SessionRemoteMediator, type HttpClient } from './session-remote.mediator.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import {
+  AppendSessionMessageEventCommand,
+  CountMessagesByTenantQuery,
   DeleteSessionCommand,
   GetSessionMessagesQuery,
+  ListSessionsQuery,
   UpdateSessionTitleCommand,
 } from '@/business/domain/session/client/queries.js';
 
@@ -116,7 +119,9 @@ describe('SessionRemoteMediator', () => {
       vi.mocked(http.patch).mockResolvedValue({ ok: false, status: 500 });
 
       await expect(
-        mediator.updateTitle(new UpdateSessionTitleCommand({ sessionId: 'session-1', title: 'Renamed' })),
+        mediator.updateTitle(
+          new UpdateSessionTitleCommand({ sessionId: 'session-1', title: 'Renamed' }),
+        ),
       ).rejects.toThrow('Failed to update session title: 500');
     });
   });
@@ -143,9 +148,149 @@ describe('SessionRemoteMediator', () => {
     it('throws generic error on non-404 failure', async () => {
       vi.mocked(http.delete).mockResolvedValue({ ok: false, status: 500 });
 
-      await expect(mediator.delete(new DeleteSessionCommand({ sessionId: 'session-1' }))).rejects.toThrow(
-        'Failed to delete session: 500',
+      await expect(
+        mediator.delete(new DeleteSessionCommand({ sessionId: 'session-1' })),
+      ).rejects.toThrow('Failed to delete session: 500');
+    });
+  });
+
+  describe('appendMessageEvent', () => {
+    it('sends POST to /ai/sessions/:id/message-events with sentAt body and returns void on 204', async () => {
+      vi.mocked(http.post).mockResolvedValue({ ok: true, status: 204 });
+
+      const sentAt = new Date('2026-04-01T10:00:00.000Z');
+      const command = new AppendSessionMessageEventCommand({ sessionId: 'session-1', sentAt });
+      await mediator.appendMessageEvent(command);
+
+      expect(http.post).toHaveBeenCalledWith(
+        'https://ai.example.com/ai/sessions/session-1/message-events',
+        { sentAt: sentAt.toISOString() },
       );
+    });
+
+    it('throws generic error on non-204 failure', async () => {
+      vi.mocked(http.post).mockResolvedValue({ ok: false, status: 500 });
+
+      const command = new AppendSessionMessageEventCommand({
+        sessionId: 'session-1',
+        sentAt: new Date(),
+      });
+
+      await expect(mediator.appendMessageEvent(command)).rejects.toThrow(
+        'Failed to append message event: 500',
+      );
+    });
+  });
+
+  describe('countMessagesByTenant', () => {
+    it('sends GET to /ai/sessions/message-events/count with tenantId query param', async () => {
+      vi.mocked(http.get).mockResolvedValue({
+        ok: true,
+        body: { data: { count: 42 } },
+      });
+
+      const query = new CountMessagesByTenantQuery({ tenantId: 'tenant-1' });
+      const result = await mediator.countMessagesByTenant(query);
+
+      expect(http.get).toHaveBeenCalledWith(
+        'https://ai.example.com/ai/sessions/message-events/count?tenantId=tenant-1',
+      );
+      expect(result).toEqual({ count: 42 });
+    });
+
+    it('serializes Date fields as ISO 8601 strings in the query string', async () => {
+      vi.mocked(http.get).mockResolvedValue({
+        ok: true,
+        body: { data: { count: 3 } },
+      });
+
+      const sentAtGte = new Date('2026-04-01T00:00:00.000Z');
+      const sentAtLt = new Date('2026-05-01T00:00:00.000Z');
+      const query = new CountMessagesByTenantQuery({
+        tenantId: 'tenant-1',
+        purposePrefix: 'ta-',
+        sentAtGte,
+        sentAtLt,
+      });
+      await mediator.countMessagesByTenant(query);
+
+      const call = vi.mocked(http.get).mock.calls[0][0] as string;
+      expect(call).toContain('tenantId=tenant-1');
+      expect(call).toContain('purposePrefix=ta-');
+      expect(call).toContain(`sentAtGte=${encodeURIComponent(sentAtGte.toISOString())}`);
+      expect(call).toContain(`sentAtLt=${encodeURIComponent(sentAtLt.toISOString())}`);
+    });
+
+    it('throws generic error on failure', async () => {
+      vi.mocked(http.get).mockResolvedValue({ ok: false, status: 400 });
+
+      const query = new CountMessagesByTenantQuery({ tenantId: 'tenant-1' });
+
+      await expect(mediator.countMessagesByTenant(query)).rejects.toThrow(
+        'Failed to count messages by tenant: 400',
+      );
+    });
+  });
+
+  describe('list (paginated)', () => {
+    it('sends GET with page and perPage params and returns { items, page, perPage }', async () => {
+      vi.mocked(http.get).mockResolvedValue({
+        ok: true,
+        body: {
+          data: {
+            items: [
+              {
+                id: 'session-1',
+                userId: 'user-1',
+                promptSlug: 'prompt',
+                purpose: 'test',
+                status: 'active',
+                title: null,
+                startedAt: new Date('2026-01-01T00:00:00Z'),
+                lastMessage: null,
+                lastMessageAt: null,
+                messageCount: 5,
+              },
+            ],
+            page: 2,
+            perPage: 10,
+          },
+        },
+      });
+
+      const query = new ListSessionsQuery({ page: 2, perPage: 10, tenantId: 'tenant-1' });
+      const result = await mediator.list(query);
+
+      expect(result.page).toBe(2);
+      expect(result.perPage).toBe(10);
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].messageCount).toBe(5);
+
+      const call = vi.mocked(http.get).mock.calls[0][0] as string;
+      expect(call).toContain('page=2');
+      expect(call).toContain('perPage=10');
+      expect(call).toContain('tenantId=tenant-1');
+    });
+
+    it('serializes startedAtGte and startedAtLt as ISO 8601 in the query string', async () => {
+      vi.mocked(http.get).mockResolvedValue({
+        ok: true,
+        body: { data: { items: [], page: 1, perPage: 20 } },
+      });
+
+      const startedAtGte = new Date('2026-04-01T00:00:00.000Z');
+      const startedAtLt = new Date('2026-05-01T00:00:00.000Z');
+      const query = new ListSessionsQuery({
+        page: 1,
+        perPage: 20,
+        startedAtGte,
+        startedAtLt,
+      });
+      await mediator.list(query);
+
+      const call = vi.mocked(http.get).mock.calls[0][0] as string;
+      expect(call).toContain(`startedAtGte=${encodeURIComponent(startedAtGte.toISOString())}`);
+      expect(call).toContain(`startedAtLt=${encodeURIComponent(startedAtLt.toISOString())}`);
     });
   });
 });

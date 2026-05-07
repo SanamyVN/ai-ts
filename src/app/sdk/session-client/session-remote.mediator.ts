@@ -21,6 +21,8 @@ import type {
   UpdateSessionLastMessageCommand,
   DeleteSessionCommand,
   GetSessionMessagesQuery,
+  AppendSessionMessageEventCommand,
+  CountMessagesByTenantQuery,
 } from '@/business/domain/session/client/queries.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import { z } from 'zod';
@@ -76,19 +78,34 @@ export class SessionRemoteMediator implements ISessionMediator {
     return sessionClientModelSchema.parse(response.body?.data);
   }
 
-  async list(query: InstanceType<typeof ListSessionsQuery>): Promise<SessionSummaryClient[]> {
+  async list(
+    query: InstanceType<typeof ListSessionsQuery>,
+  ): Promise<{ items: SessionSummaryClient[]; page: number; perPage: number }> {
     const params = new URLSearchParams();
     if (query.userId) params.set('userId', query.userId);
+    if (query.userIds) query.userIds.forEach((id) => params.append('userIds', id));
     if (query.tenantId) params.set('tenantId', query.tenantId);
     if (query.purpose) params.set('purpose', query.purpose);
+    if (query.purposePrefix) params.set('purposePrefix', query.purposePrefix);
     if (query.status) params.set('status', query.status);
     if (query.search) params.set('search', query.search);
+    if (query.startedAtGte) params.set('startedAtGte', query.startedAtGte.toISOString());
+    if (query.startedAtLt) params.set('startedAtLt', query.startedAtLt.toISOString());
+    params.set('page', String(query.page));
+    params.set('perPage', String(query.perPage));
     const qs = params.toString() ? `?${params.toString()}` : '';
     const response = await this.http.get(`${this.config.baseUrl}/ai/sessions${qs}`);
     if (!response.ok) {
       throw new Error(`Failed to list sessions: ${response.status}`);
     }
-    return z.array(sessionSummaryClientSchema).parse(response.body?.data ?? []);
+    const parsed = z
+      .object({
+        items: z.array(sessionSummaryClientSchema),
+        page: z.number(),
+        perPage: z.number(),
+      })
+      .parse(response.body?.data);
+    return parsed;
   }
 
   async create(command: InstanceType<typeof CreateSessionCommand>): Promise<SessionClientModel> {
@@ -174,5 +191,35 @@ export class SessionRemoteMediator implements ISessionMediator {
       throw new Error(`Failed to fetch session messages: ${response.status}`);
     }
     return messageListClientSchema.parse(response.body?.data);
+  }
+
+  async appendMessageEvent(
+    command: InstanceType<typeof AppendSessionMessageEventCommand>,
+  ): Promise<void> {
+    const response = await this.http.post(
+      `${this.config.baseUrl}/ai/sessions/${command.sessionId}/message-events`,
+      { sentAt: command.sentAt.toISOString() },
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to append message event: ${response.status}`);
+    }
+  }
+
+  async countMessagesByTenant(
+    query: InstanceType<typeof CountMessagesByTenantQuery>,
+  ): Promise<{ count: number }> {
+    const params = new URLSearchParams();
+    params.set('tenantId', query.tenantId);
+    if (query.purpose) params.set('purpose', query.purpose);
+    if (query.purposePrefix) params.set('purposePrefix', query.purposePrefix);
+    if (query.sentAtGte) params.set('sentAtGte', query.sentAtGte.toISOString());
+    if (query.sentAtLt) params.set('sentAtLt', query.sentAtLt.toISOString());
+    const response = await this.http.get(
+      `${this.config.baseUrl}/ai/sessions/message-events/count?${params.toString()}`,
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to count messages by tenant: ${response.status}`);
+    }
+    return z.object({ count: z.number().int().nonnegative() }).parse(response.body?.data);
   }
 }
