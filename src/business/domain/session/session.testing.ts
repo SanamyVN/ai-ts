@@ -8,6 +8,7 @@ import type { ISessionService } from './session.interface.js';
  * @example
  * const service = createMockSessionService();
  * service.start.mockResolvedValue({ id: 's1', ... });
+ * service.appendMessageEvent.mockResolvedValue(undefined);
  */
 export function createMockSessionService() {
   return {
@@ -23,5 +24,7 @@ export function createMockSessionService() {
     updateLastMessage: vi.fn<ISessionService['updateLastMessage']>(),
     updateTitle: vi.fn<ISessionService['updateTitle']>(),
     delete: vi.fn<ISessionService['delete']>(),
+    appendMessageEvent: vi.fn<ISessionService['appendMessageEvent']>(),
+    countMessagesByTenant: vi.fn<ISessionService['countMessagesByTenant']>(),
   };
 }
