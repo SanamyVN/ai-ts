@@ -220,7 +220,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
 
     await repo.list({ purposePrefix: 'ta-chat:' }, { page: 1, perPage: 10 });
 
-    const [whereArg] = mock.whereFn.mock.calls[0] as [unknown];
+    const [whereArg] = mock.whereFn.mock.calls[0] as unknown as [unknown];
     expect(whereArg).toBeDefined();
   });
 
@@ -234,7 +234,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
       { page: 1, perPage: 10 },
     );
 
-    const [whereArg] = mock.whereFn.mock.calls[0] as [unknown];
+    const [whereArg] = mock.whereFn.mock.calls[0] as unknown as [unknown];
     expect(whereArg).toBeDefined();
   });
 
@@ -248,7 +248,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
       { page: 1, perPage: 10 },
     );
 
-    const [whereArg] = mock.whereFn.mock.calls[0] as [unknown];
+    const [whereArg] = mock.whereFn.mock.calls[0] as unknown as [unknown];
     expect(whereArg).toBeDefined();
   });
 
@@ -268,7 +268,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
     );
 
     expect(mock.whereFn).toHaveBeenCalledTimes(1);
-    const [whereArg] = mock.whereFn.mock.calls[0] as [unknown];
+    const [whereArg] = mock.whereFn.mock.calls[0] as unknown as [unknown];
     expect(whereArg).toBeDefined();
   });
 
@@ -279,7 +279,7 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
 
     await repo.list({}, { page: 1, perPage: 10 });
 
-    const [whereArg] = mock.whereFn.mock.calls[0] as [unknown];
+    const [whereArg] = mock.whereFn.mock.calls[0] as unknown as [unknown];
     expect(whereArg).toBeUndefined();
   });
 
