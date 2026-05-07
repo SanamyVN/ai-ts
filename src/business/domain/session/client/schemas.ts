@@ -29,6 +29,7 @@ export const sessionSummaryClientSchema = z.object({
   startedAt: z.date(),
   lastMessage: z.string().nullable(),
   lastMessageAt: z.date().nullable(),
+  /** User-submitted messages only — excludes seed messages, system prompts, and assistant replies. */
   messageCount: z.number().int().nonnegative(),
 });
 
