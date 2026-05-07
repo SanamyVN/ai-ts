@@ -132,10 +132,7 @@ export class SessionRouter implements IRouter {
         // ISO 8601 only — reject epoch numbers and locale strings.
         // `z.coerce.date()` would happily parse `1730419200` and `"4/1/2026"`.
         body: z.object({
-          sentAt: z
-            .string()
-            .datetime({ offset: true })
-            .transform((s) => new Date(s)),
+          sentAt: z.iso.datetime({ offset: true }).transform((s) => new Date(s)),
         }),
       })
       .handle(async ({ params, body, ctx }) => {

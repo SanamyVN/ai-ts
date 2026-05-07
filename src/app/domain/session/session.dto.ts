@@ -7,8 +7,8 @@ export const sessionListQueryDto = z.object({
   purposePrefix: z.string().min(1).optional(),
   status: z.string().optional(),
   search: z.string().max(200).optional(),
-  startedAtGte: z.string().datetime().optional(),
-  startedAtLt: z.string().datetime().optional(),
+  startedAtGte: z.iso.datetime().optional(),
+  startedAtLt: z.iso.datetime().optional(),
   page: z.coerce.number().int().min(1),
   perPage: z.coerce.number().int().min(1).max(500),
 });
@@ -62,8 +62,8 @@ export const countMessagesQueryDto = z.object({
   tenantId: z.string(),
   purpose: z.string().optional(),
   purposePrefix: z.string().min(1).optional(),
-  sentAtGte: z.string().datetime().optional(),
-  sentAtLt: z.string().datetime().optional(),
+  sentAtGte: z.iso.datetime().optional(),
+  sentAtLt: z.iso.datetime().optional(),
 });
 export type CountMessagesQueryDto = z.infer<typeof countMessagesQueryDto>;
 
