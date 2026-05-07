@@ -89,7 +89,11 @@ export class SessionAppService {
   }
 
   async appendMessageEvent(sessionId: string, sentAt: Date): Promise<void> {
-    await this.mediator.send(new AppendSessionMessageEventCommand({ sessionId, sentAt }));
+    try {
+      await this.mediator.send(new AppendSessionMessageEventCommand({ sessionId, sentAt }));
+    } catch (error) {
+      mapSessionError(error);
+    }
   }
 
   async countMessagesByTenant(filter: {
@@ -99,7 +103,11 @@ export class SessionAppService {
     sentAtGte?: Date;
     sentAtLt?: Date;
   }): Promise<{ count: number }> {
-    return this.mediator.send(new CountMessagesByTenantQuery(filter));
+    try {
+      return await this.mediator.send(new CountMessagesByTenantQuery(filter));
+    } catch (error) {
+      mapSessionError(error);
+    }
   }
 }
 

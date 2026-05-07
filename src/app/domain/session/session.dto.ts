@@ -1,17 +1,30 @@
 import { z } from 'zod';
 
-export const sessionListQueryDto = z.object({
-  userId: z.string().optional(),
-  tenantId: z.string().optional(),
-  purpose: z.string().optional(),
-  purposePrefix: z.string().min(1).optional(),
-  status: z.string().optional(),
-  search: z.string().max(200).optional(),
-  startedAtGte: z.iso.datetime().optional(),
-  startedAtLt: z.iso.datetime().optional(),
-  page: z.coerce.number().int().min(1),
-  perPage: z.coerce.number().int().min(1).max(500),
-});
+export const sessionListQueryDto = z
+  .object({
+    userId: z.string().optional(),
+    tenantId: z.string().optional(),
+    purpose: z.string().optional(),
+    purposePrefix: z.string().min(1).optional(),
+    status: z.string().optional(),
+    search: z.string().max(200).optional(),
+    startedAtGte: z.iso.datetime().optional(),
+    startedAtLt: z.iso.datetime().optional(),
+    page: z.coerce.number().int().min(1),
+    perPage: z.coerce.number().int().min(1).max(500),
+  })
+  .refine((q) => !(q.purpose !== undefined && q.purposePrefix !== undefined), {
+    message: 'purpose and purposePrefix are mutually exclusive',
+  })
+  .refine(
+    (q) =>
+      !(
+        q.startedAtLt !== undefined &&
+        q.startedAtGte !== undefined &&
+        Date.parse(q.startedAtLt) <= Date.parse(q.startedAtGte)
+      ),
+    { message: 'startedAtLt must be strictly greater than startedAtGte' },
+  );
 export type SessionListQueryDto = z.infer<typeof sessionListQueryDto>;
 
 export const paginationQueryDto = z.object({
@@ -58,13 +71,26 @@ export const sessionSummaryResponseDto = z.object({
 });
 export type SessionSummaryResponseDto = z.infer<typeof sessionSummaryResponseDto>;
 
-export const countMessagesQueryDto = z.object({
-  tenantId: z.string(),
-  purpose: z.string().optional(),
-  purposePrefix: z.string().min(1).optional(),
-  sentAtGte: z.iso.datetime().optional(),
-  sentAtLt: z.iso.datetime().optional(),
-});
+export const countMessagesQueryDto = z
+  .object({
+    tenantId: z.string(),
+    purpose: z.string().optional(),
+    purposePrefix: z.string().min(1).optional(),
+    sentAtGte: z.iso.datetime().optional(),
+    sentAtLt: z.iso.datetime().optional(),
+  })
+  .refine((q) => !(q.purpose !== undefined && q.purposePrefix !== undefined), {
+    message: 'purpose and purposePrefix are mutually exclusive',
+  })
+  .refine(
+    (q) =>
+      !(
+        q.sentAtLt !== undefined &&
+        q.sentAtGte !== undefined &&
+        Date.parse(q.sentAtLt) <= Date.parse(q.sentAtGte)
+      ),
+    { message: 'sentAtLt must be strictly greater than sentAtGte' },
+  );
 export type CountMessagesQueryDto = z.infer<typeof countMessagesQueryDto>;
 
 export const countMessagesResponseDto = z.object({

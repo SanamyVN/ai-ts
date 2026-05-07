@@ -193,6 +193,42 @@ describe('SessionRouter', () => {
       expect(service.countMessagesByTenant).not.toHaveBeenCalled();
     });
 
+    it('returns 422 when both purpose and purposePrefix are set', async () => {
+      const params = new URLSearchParams({
+        tenantId: 'tenant-1',
+        purpose: 'support',
+        purposePrefix: 'sup-',
+      });
+      const res = await app.get(`/ai/sessions/message-events/count?${params.toString()}`);
+
+      expect(res.status).toBe(422);
+      expect(service.countMessagesByTenant).not.toHaveBeenCalled();
+    });
+
+    it('returns 422 when sentAtLt is not strictly greater than sentAtGte', async () => {
+      const params = new URLSearchParams({
+        tenantId: 'tenant-1',
+        sentAtGte: '2026-05-01T00:00:00.000Z',
+        sentAtLt: '2026-04-01T00:00:00.000Z',
+      });
+      const res = await app.get(`/ai/sessions/message-events/count?${params.toString()}`);
+
+      expect(res.status).toBe(422);
+      expect(service.countMessagesByTenant).not.toHaveBeenCalled();
+    });
+
+    it('returns 422 when sentAtLt equals sentAtGte', async () => {
+      const params = new URLSearchParams({
+        tenantId: 'tenant-1',
+        sentAtGte: '2026-05-01T00:00:00.000Z',
+        sentAtLt: '2026-05-01T00:00:00.000Z',
+      });
+      const res = await app.get(`/ai/sessions/message-events/count?${params.toString()}`);
+
+      expect(res.status).toBe(422);
+      expect(service.countMessagesByTenant).not.toHaveBeenCalled();
+    });
+
     it('is NOT swallowed by GET /:id — countMessagesByTenant is called, not get', async () => {
       service.countMessagesByTenant.mockResolvedValue({ count: 0 });
 
@@ -247,6 +283,45 @@ describe('SessionRouter', () => {
       const res = await app.get('/ai/sessions?page=1');
 
       expect(res.status).toBe(422);
+    });
+
+    it('returns 422 when both purpose and purposePrefix are set', async () => {
+      const params = new URLSearchParams({
+        page: '1',
+        perPage: '20',
+        purpose: 'support',
+        purposePrefix: 'sup-',
+      });
+      const res = await app.get(`/ai/sessions?${params.toString()}`);
+
+      expect(res.status).toBe(422);
+      expect(service.list).not.toHaveBeenCalled();
+    });
+
+    it('returns 422 when startedAtLt is not strictly greater than startedAtGte', async () => {
+      const params = new URLSearchParams({
+        page: '1',
+        perPage: '20',
+        startedAtGte: '2026-05-01T00:00:00.000Z',
+        startedAtLt: '2026-04-01T00:00:00.000Z',
+      });
+      const res = await app.get(`/ai/sessions?${params.toString()}`);
+
+      expect(res.status).toBe(422);
+      expect(service.list).not.toHaveBeenCalled();
+    });
+
+    it('returns 422 when startedAtLt equals startedAtGte', async () => {
+      const params = new URLSearchParams({
+        page: '1',
+        perPage: '20',
+        startedAtGte: '2026-05-01T00:00:00.000Z',
+        startedAtLt: '2026-05-01T00:00:00.000Z',
+      });
+      const res = await app.get(`/ai/sessions?${params.toString()}`);
+
+      expect(res.status).toBe(422);
+      expect(service.list).not.toHaveBeenCalled();
     });
   });
 });

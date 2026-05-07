@@ -107,6 +107,14 @@ describe('SessionAppService', () => {
       expect(sent.sessionId).toBe('session-1');
       expect(sent.sentAt).toEqual(sentAt);
     });
+
+    it('maps client not found errors to HTTP errors', async () => {
+      mediator.send.mockRejectedValueOnce(new SessionNotFoundClientError('missing'));
+
+      await expect(service.appendMessageEvent('missing', new Date())).rejects.toThrow(
+        SessionNotFoundHttpError,
+      );
+    });
   });
 
   describe('countMessagesByTenant', () => {
@@ -117,6 +125,14 @@ describe('SessionAppService', () => {
 
       expect(mediator.send).toHaveBeenCalledWith(expect.any(CountMessagesByTenantQuery));
       expect(result).toEqual({ count: 7 });
+    });
+
+    it('maps client not found errors to HTTP errors', async () => {
+      mediator.send.mockRejectedValueOnce(new SessionNotFoundClientError('missing'));
+
+      await expect(service.countMessagesByTenant({ tenantId: 'missing' })).rejects.toThrow(
+        SessionNotFoundHttpError,
+      );
     });
   });
 

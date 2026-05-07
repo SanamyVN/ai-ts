@@ -93,19 +93,18 @@ export class SessionRemoteMediator implements ISessionMediator {
     if (query.startedAtLt) params.set('startedAtLt', query.startedAtLt.toISOString());
     params.set('page', String(query.page));
     params.set('perPage', String(query.perPage));
-    const qs = params.toString() ? `?${params.toString()}` : '';
+    const qs = `?${params.toString()}`;
     const response = await this.http.get(`${this.config.baseUrl}/ai/sessions${qs}`);
     if (!response.ok) {
       throw new Error(`Failed to list sessions: ${response.status}`);
     }
-    const parsed = z
+    return z
       .object({
         items: z.array(sessionSummaryClientSchema),
         page: z.number(),
         perPage: z.number(),
       })
       .parse(response.body?.data);
-    return parsed;
   }
 
   async create(command: InstanceType<typeof CreateSessionCommand>): Promise<SessionClientModel> {
