@@ -4,8 +4,13 @@ export const sessionListQueryDto = z.object({
   userId: z.string().optional(),
   tenantId: z.string().optional(),
   purpose: z.string().optional(),
+  purposePrefix: z.string().min(1).optional(),
   status: z.string().optional(),
   search: z.string().max(200).optional(),
+  startedAtGte: z.string().datetime().optional(),
+  startedAtLt: z.string().datetime().optional(),
+  page: z.coerce.number().int().min(1),
+  perPage: z.coerce.number().int().min(1).max(500),
 });
 export type SessionListQueryDto = z.infer<typeof sessionListQueryDto>;
 
@@ -49,8 +54,23 @@ export const sessionSummaryResponseDto = z.object({
   status: z.string(),
   title: z.string().nullable(),
   startedAt: z.string(),
+  messageCount: z.number().int().nonnegative(),
 });
 export type SessionSummaryResponseDto = z.infer<typeof sessionSummaryResponseDto>;
+
+export const countMessagesQueryDto = z.object({
+  tenantId: z.string(),
+  purpose: z.string().optional(),
+  purposePrefix: z.string().min(1).optional(),
+  sentAtGte: z.string().datetime().optional(),
+  sentAtLt: z.string().datetime().optional(),
+});
+export type CountMessagesQueryDto = z.infer<typeof countMessagesQueryDto>;
+
+export const countMessagesResponseDto = z.object({
+  count: z.number().int().nonnegative(),
+});
+export type CountMessagesResponseDto = z.infer<typeof countMessagesResponseDto>;
 
 export const messageResponseDto = z.object({
   id: z.string().optional(),

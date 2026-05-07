@@ -8,6 +8,8 @@ import {
   DeleteSessionCommand,
   EndSessionCommand,
   UpdateSessionTitleCommand,
+  AppendSessionMessageEventCommand,
+  CountMessagesByTenantQuery,
 } from '@/business/domain/session/client/queries.js';
 import { mapSessionError } from './session.error.js';
 import {
@@ -20,15 +22,37 @@ import type { SessionResponseDto, SessionSummaryResponseDto } from './session.dt
 export class SessionAppService {
   constructor(@Inject(AI_MEDIATOR) private readonly mediator: IMediator) {}
 
-  async list(query?: {
+  async list(query: {
     userId?: string;
     tenantId?: string;
     purpose?: string;
+    purposePrefix?: string;
     status?: string;
     search?: string;
-  }): Promise<SessionSummaryResponseDto[]> {
-    const results = await this.mediator.send(new ListSessionsQuery(query ?? {}));
-    return results.map(toSessionSummaryResponseDtoFromClient);
+    startedAtGte?: Date;
+    startedAtLt?: Date;
+    page: number;
+    perPage: number;
+  }): Promise<{ items: SessionSummaryResponseDto[]; page: number; perPage: number }> {
+    const result = await this.mediator.send(
+      new ListSessionsQuery({
+        ...(query.userId !== undefined ? { userId: query.userId } : {}),
+        ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
+        ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
+        ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
+        ...(query.status !== undefined ? { status: query.status } : {}),
+        ...(query.search !== undefined ? { search: query.search } : {}),
+        ...(query.startedAtGte !== undefined ? { startedAtGte: query.startedAtGte } : {}),
+        ...(query.startedAtLt !== undefined ? { startedAtLt: query.startedAtLt } : {}),
+        page: query.page,
+        perPage: query.perPage,
+      }),
+    );
+    return {
+      items: result.items.map(toSessionSummaryResponseDtoFromClient),
+      page: result.page,
+      perPage: result.perPage,
+    };
   }
 
   async get(sessionId: string): Promise<SessionResponseDto> {
@@ -62,6 +86,20 @@ export class SessionAppService {
     } catch (error) {
       mapSessionError(error);
     }
+  }
+
+  async appendMessageEvent(sessionId: string, sentAt: Date): Promise<void> {
+    await this.mediator.send(new AppendSessionMessageEventCommand({ sessionId, sentAt }));
+  }
+
+  async countMessagesByTenant(filter: {
+    tenantId: string;
+    purpose?: string;
+    purposePrefix?: string;
+    sentAtGte?: Date;
+    sentAtLt?: Date;
+  }): Promise<{ count: number }> {
+    return this.mediator.send(new CountMessagesByTenantQuery(filter));
   }
 }
 

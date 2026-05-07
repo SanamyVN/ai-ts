@@ -32,5 +32,6 @@ export function toSessionSummaryResponseDtoFromClient(
     status: model.status,
     title: model.title,
     startedAt: model.startedAt.toISOString(),
+    messageCount: model.messageCount,
   };
 }
