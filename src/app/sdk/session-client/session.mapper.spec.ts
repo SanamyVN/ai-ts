@@ -71,6 +71,7 @@ describe('toSessionSummaryClientFromBusiness', () => {
       startedAt: new Date('2026-01-01T00:00:00Z'),
       lastMessage: 'Goodbye',
       lastMessageAt: new Date('2026-01-02T00:00:00Z'),
+      messageCount: 0,
     };
 
     const result = toSessionSummaryClientFromBusiness(summary);
@@ -91,6 +92,7 @@ describe('toSessionSummaryClientFromBusiness', () => {
       startedAt: new Date('2026-01-01T00:00:00Z'),
       lastMessage: null,
       lastMessageAt: null,
+      messageCount: 0,
     };
 
     const result = toSessionSummaryClientFromBusiness(summary);

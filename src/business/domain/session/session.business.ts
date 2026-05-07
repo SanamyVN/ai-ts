@@ -1,8 +1,14 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import {
   SESSION_REPOSITORY,
   type ISessionRepository,
 } from '@/repository/domain/session/session.interface.js';
+import {
+  SESSION_MESSAGE_REPOSITORY,
+  type ISessionMessageRepository,
+  type SessionMessageRepoFilter,
+} from '@/repository/domain/session-message/session-message.interface.js';
 import {
   MASTRA_MEMORY,
   type IMastraMemory,
@@ -15,6 +21,7 @@ import type {
   SessionSummary,
   StartSessionInput,
   SessionFilter,
+  CountMessagesFilter,
   Transcript,
 } from './session.model.js';
 import { SessionNotFoundError, SessionAlreadyEndedError } from './session.error.js';
@@ -26,6 +33,8 @@ export class SessionService implements ISessionService {
   constructor(
     @Inject(SESSION_REPOSITORY) private readonly sessionRepo: ISessionRepository,
     @Inject(MASTRA_MEMORY) private readonly mastraMemory: IMastraMemory,
+    @Inject(SESSION_MESSAGE_REPOSITORY)
+    private readonly sessionMessageRepo: ISessionMessageRepository,
   ) {}
 
   async start(input: StartSessionInput): Promise<Session> {
@@ -65,9 +74,21 @@ export class SessionService implements ISessionService {
     return this.getSessionOrThrow(sessionId);
   }
 
-  async list(filter: SessionFilter): Promise<SessionSummary[]> {
-    const records = await this.sessionRepo.list(filter);
-    return records.map(toSessionSummaryFromRecord);
+  /**
+   * Lists sessions matching the given filter, newest first. Collects the page's
+   * session ids, queries the message-event ledger for per-session counts in one
+   * round-trip, then projects `messageCount` onto each summary. (§1, §5)
+   */
+  async list(
+    filter: SessionFilter,
+    pagination: { page: number; perPage: number },
+  ): Promise<SessionSummary[]> {
+    const records = await this.sessionRepo.list(filter, pagination);
+    const ids = records.map((r) => r.id);
+    const countMap = await this.sessionMessageRepo.countBySession(ids);
+    return records.map((record) =>
+      toSessionSummaryFromRecord(record, countMap.get(record.id) ?? 0),
+    );
   }
 
   async getMessages(sessionId: string, pagination: Pagination): Promise<MessageList> {
@@ -127,6 +148,47 @@ export class SessionService implements ISessionService {
         : messages.map((m) => `[${m.role}] ${m.content}`).join('\n');
 
     return { sessionId, format, content, messages };
+  }
+
+  /**
+   * Appends one event row to `ai_session_messages`. The `sentAt` timestamp is
+   * captured at hook entry in Phase 4 so it reflects when the user sent the
+   * message, not when this write completes (§1 "When sent_at is captured").
+   *
+   * Returns silently when `session.tenantId` is null — tenantless sessions are
+   * not billable; writing a row with `tenant_id = ''` would pollute aggregates.
+   * Throws `SessionNotFoundError` when the session is missing so the
+   * best-effort wrapper in `conversation.business` can log and swallow cleanly.
+   * (§1 "Service surface")
+   */
+  async appendMessageEvent(sessionId: string, sentAt: Date): Promise<void> {
+    const session = await this.sessionRepo.findById(sessionId);
+    if (!session) throw new SessionNotFoundError(sessionId);
+    if (session.tenantId == null) return;
+    await this.sessionMessageRepo.append({
+      id: randomUUID(),
+      sessionId,
+      tenantId: session.tenantId,
+      purpose: session.purpose,
+      sentAt,
+    });
+  }
+
+  /**
+   * Translates `CountMessagesFilter` to `SessionMessageRepoFilter` using the
+   * conditional-spread pattern so undefined fields are not propagated. Then
+   * delegates to `sessionMessageRepository.count`. Returns a bare number; the
+   * mediator wraps it as `{ count }` in Phase 3. (§4)
+   */
+  async countMessagesByTenant(filter: CountMessagesFilter): Promise<number> {
+    const repoFilter: SessionMessageRepoFilter = {
+      tenantId: filter.tenantId,
+      ...(filter.purpose !== undefined && { purpose: filter.purpose }),
+      ...(filter.purposePrefix !== undefined && { purposePrefix: filter.purposePrefix }),
+      ...(filter.sentAtGte !== undefined && { sentAtGte: filter.sentAtGte }),
+      ...(filter.sentAtLt !== undefined && { sentAtLt: filter.sentAtLt }),
+    };
+    return this.sessionMessageRepo.count(repoFilter);
   }
 
   private async getSessionOrThrow(sessionId: string): Promise<Session> {

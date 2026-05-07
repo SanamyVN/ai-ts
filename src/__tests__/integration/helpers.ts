@@ -4,6 +4,7 @@ import type { AiSchema } from '@/shared/schema.js';
 import { PromptDrizzleRepository } from '@/repository/domain/prompt/prompt.db.js';
 import { PromptVersionDrizzleRepository } from '@/repository/domain/prompt-version/prompt-version.db.js';
 import { SessionDrizzleRepository } from '@/repository/domain/session/session.db.js';
+import { SessionMessageDrizzleRepository } from '@/repository/domain/session-message/session-message.db.js';
 import { PromptService } from '@/business/domain/prompt/prompt.business.js';
 import { SessionService } from '@/business/domain/session/session.business.js';
 import {
@@ -65,9 +66,10 @@ export function createAiTestContext(): AiTestContext {
 
   const promptService = new PromptService(promptRepo, versionRepo);
 
+  const sessionMessageRepo = new SessionMessageDrizzleRepository(client);
   const mastraAgent = createMockMastraAgent();
   const mastraMemory = createMockMastraMemory();
-  const sessionService = new SessionService(sessionRepo, mastraMemory);
+  const sessionService = new SessionService(sessionRepo, mastraMemory, sessionMessageRepo);
 
   return {
     promptRepo,

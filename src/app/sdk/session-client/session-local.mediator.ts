@@ -50,14 +50,19 @@ export class SessionLocalMediator implements ISessionMediator {
   }
 
   async list(query: InstanceType<typeof ListSessionsQuery>): Promise<SessionSummaryClient[]> {
-    const results = await this.sessionService.list({
-      ...(query.userId !== undefined ? { userId: query.userId } : {}),
-      ...(query.userIds !== undefined ? { userIds: query.userIds } : {}),
-      ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
-      ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
-      ...(query.status !== undefined ? { status: query.status } : {}),
-      ...(query.search !== undefined ? { search: query.search } : {}),
-    });
+    // TODO(Phase 3): ListSessionsQuery will gain page/perPage fields; remove the
+    // temporary default pagination once that query is updated.
+    const results = await this.sessionService.list(
+      {
+        ...(query.userId !== undefined ? { userId: query.userId } : {}),
+        ...(query.userIds !== undefined ? { userIds: query.userIds } : {}),
+        ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
+        ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
+        ...(query.status !== undefined ? { status: query.status } : {}),
+        ...(query.search !== undefined ? { search: query.search } : {}),
+      },
+      { page: 1, perPage: 100 },
+    );
     return results.map(toSessionSummaryClientFromBusiness);
   }
 
