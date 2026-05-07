@@ -1,6 +1,9 @@
-import { describe, expect, it, beforeEach, type Mock } from 'vitest';
+import { describe, expect, it, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { createMockMediator, type MockMediator } from '@sanamyvn/foundation/mediator/testing';
 import type { Sendable } from '@sanamyvn/foundation/mediator/request';
+import { setRootLogger, resetRootLogger, getLogger } from '@sanamyvn/foundation/logging/global';
+import { createMockLogger } from '@sanamyvn/foundation/logging/testing';
+import type { MockLogger } from '@sanamyvn/foundation/logging/testing';
 import { ConversationEngine } from './conversation.business.js';
 import { ConversationNotFoundError, ConversationSendError } from './conversation.error.js';
 import {
@@ -14,6 +17,7 @@ import {
   FindSessionByIdQuery,
   UpdateSessionCommand,
   UpdateSessionLastMessageCommand,
+  AppendSessionMessageEventCommand,
 } from '@/business/domain/session/client/queries.js';
 import type { AiConfig } from '@/config.js';
 
@@ -210,6 +214,30 @@ describe('ConversationEngine', () => {
           seedMessages: [{ role: 'assistant' as const, content: 'Welcome!' }],
         }),
       ).rejects.toThrow('Memory write failed');
+    });
+
+    it('does not dispatch AppendSessionMessageEventCommand even when seedMessages with user roles are provided', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+      memory.saveMessages.mockResolvedValueOnce(undefined);
+
+      const seedMessages = [
+        { role: 'assistant' as const, content: 'Welcome! How can I help?' },
+        { role: 'user' as const, content: 'I need help with billing.' },
+        { role: 'user' as const, content: 'Also about my subscription.' },
+      ];
+
+      await engine.create({
+        promptSlug: 'greet',
+        promptParams: { name: 'World' },
+        userId: 'user-1',
+        purpose: 'test',
+        seedMessages,
+      });
+
+      const appendCalls = send.mock.calls.filter(
+        (call) => call[0] instanceof AppendSessionMessageEventCommand,
+      );
+      expect(appendCalls).toHaveLength(0);
     });
   });
 
@@ -620,6 +648,187 @@ describe('ConversationEngine', () => {
         }),
       );
     });
+
+    it('dispatches AppendSessionMessageEventCommand once after successful generate with correct sentAt', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'AI response',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      const frozenNow = new Date('2025-06-01T12:00:00.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(frozenNow);
+
+      // Queue: FindSessionByIdQuery, UpdateSessionLastMessageCommand, AppendSessionMessageEventCommand
+      send
+        .mockResolvedValueOnce(SESSION)
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(undefined);
+
+      await engine.send(convo.id, 'Hello');
+
+      vi.useRealTimers();
+
+      const appendCalls = send.mock.calls.filter(
+        (call) => call[0] instanceof AppendSessionMessageEventCommand,
+      );
+      expect(appendCalls).toHaveLength(1);
+      if (appendCalls[0]) {
+        expect(appendCalls[0][0]).toHaveProperty('sessionId', 'session-1');
+        expect(appendCalls[0][0]).toHaveProperty('sentAt', frozenNow);
+      }
+    });
+
+    it('does not dispatch AppendSessionMessageEventCommand when mastraAgent.generate throws', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      send.mockResolvedValueOnce(SESSION);
+      agent.generate.mockRejectedValue(new MastraAdapterError('generate'));
+
+      await expect(engine.send(convo.id, 'Hello')).rejects.toThrow(ConversationSendError);
+
+      const appendCalls = send.mock.calls.filter(
+        (call) => call[0] instanceof AppendSessionMessageEventCommand,
+      );
+      expect(appendCalls).toHaveLength(0);
+    });
+
+    it('dispatches AppendSessionMessageEventCommand even when response.text is empty (structured output)', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({ text: '', object: { answer: 42 }, threadId: 'thread-1' });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      const frozenNow = new Date('2025-06-01T09:00:00.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(frozenNow);
+
+      // Queue: FindSessionByIdQuery, AppendSessionMessageEventCommand
+      // UpdateSessionLastMessageCommand is NOT queued — existing guard skips it when text is empty
+      send.mockResolvedValueOnce(SESSION).mockResolvedValueOnce(undefined);
+
+      await engine.send(convo.id, 'Hello');
+
+      vi.useRealTimers();
+
+      const appendCalls = send.mock.calls.filter(
+        (call) => call[0] instanceof AppendSessionMessageEventCommand,
+      );
+      expect(appendCalls).toHaveLength(1);
+      if (appendCalls[0]) {
+        expect(appendCalls[0][0]).toHaveProperty('sentAt', frozenNow);
+      }
+
+      // Confirm UpdateSessionLastMessageCommand was NOT dispatched (text is empty — existing guard)
+      const lastMessageCalls = send.mock.calls.filter(
+        (call) => call[0] instanceof UpdateSessionLastMessageCommand,
+      );
+      expect(lastMessageCalls).toHaveLength(0);
+    });
+
+    it('does not throw when AppendSessionMessageEventCommand dispatch rejects during send', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.generate.mockResolvedValue({
+        text: 'AI response',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-06-01T12:00:00.000Z'));
+
+      // FindSessionByIdQuery succeeds, UpdateSessionLastMessageCommand succeeds,
+      // AppendSessionMessageEventCommand rejects — user response must be unaffected
+      send
+        .mockResolvedValueOnce(SESSION)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('ledger write failed'));
+
+      const response = await engine.send(convo.id, 'Hello');
+
+      vi.useRealTimers();
+
+      expect(response).toEqual({ text: 'AI response', object: undefined });
+    });
+
+    it('calls logger.warn when AppendSessionMessageEventCommand dispatch fails during send', async () => {
+      const mockRoot = createMockLogger();
+      setRootLogger(mockRoot);
+
+      const localMediator = createMockMediator();
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const localSend = localMediator.send as PermissiveSendMock;
+      const localAgent = createMockMastraAgent();
+      const localMemory = createMockMastraMemory();
+      const localEngine = new ConversationEngine(
+        localMediator,
+        localAgent,
+        DEFAULT_CONFIG,
+        localMemory,
+      );
+
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-06-01T12:00:00.000Z'));
+
+      localAgent.generate.mockResolvedValue({
+        text: 'AI response',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      const ledgerError = new Error('ledger write failed');
+      // FindSessionByIdQuery, UpdateSessionLastMessageCommand succeed; AppendSessionMessageEventCommand rejects
+      localSend
+        .mockResolvedValueOnce(SESSION)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(ledgerError);
+
+      await localEngine.send('session-1', 'Hello');
+
+      vi.useRealTimers();
+
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const namedChild = mockRoot.named.mock.results.find((r) => r.value !== undefined)?.value as
+        | MockLogger
+        | undefined;
+      expect(namedChild?.warn).toHaveBeenCalledWith('appendMessageEventBestEffort failed', {
+        sessionId: 'session-1',
+        err: ledgerError,
+      });
+
+      resetRootLogger();
+    });
   });
 
   describe('stream', () => {
@@ -942,7 +1151,10 @@ describe('ConversationEngine', () => {
         metricsContext: { 'ai.operation': 'ta_chat' },
       });
 
-      send.mockResolvedValueOnce({ ...SESSION, metadata: { metricsContext: { 'ai.operation': 'ta_chat' } } });
+      send.mockResolvedValueOnce({
+        ...SESSION,
+        metadata: { metricsContext: { 'ai.operation': 'ta_chat' } },
+      });
 
       const overrideContext = { 'ai.operation': 'ta_title_gen' };
       for await (const _ of engine.stream(convo.id, 'Hello', undefined, undefined, undefined, {
@@ -957,6 +1169,259 @@ describe('ConversationEngine', () => {
           metricsContext: overrideContext,
         }),
       );
+    });
+
+    it('dispatches AppendSessionMessageEventCommand once on clean stream completion with correct sentAt', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      const chunks = [
+        { type: 'text-delta' as const, content: 'Hello' },
+        { type: 'text-delta' as const, content: ' world' },
+        { type: 'finish' as const, content: '' },
+      ];
+
+      agent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) yield chunk;
+        })(),
+      );
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      const frozenNow = new Date('2025-06-01T23:59:30.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(frozenNow);
+
+      // Queue: FindSessionByIdQuery, UpdateSessionLastMessageCommand, AppendSessionMessageEventCommand
+      send
+        .mockResolvedValueOnce(SESSION)
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(undefined);
+
+      const collected = [];
+      for await (const chunk of engine.stream(convo.id, 'Hello')) {
+        collected.push(chunk);
+      }
+
+      vi.useRealTimers();
+
+      expect(collected).toEqual(chunks);
+
+      const appendCalls = send.mock.calls.filter(
+        (call) => call[0] instanceof AppendSessionMessageEventCommand,
+      );
+      expect(appendCalls).toHaveLength(1);
+      if (appendCalls[0]) {
+        expect(appendCalls[0][0]).toHaveProperty('sessionId', 'session-1');
+        expect(appendCalls[0][0]).toHaveProperty('sentAt', frozenNow);
+      }
+    });
+
+    it('does not dispatch AppendSessionMessageEventCommand when stream errors before finish chunk', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      agent.stream.mockReturnValue(
+        (async function* () {
+          yield { type: 'text-delta' as const, content: 'partial' };
+          throw new MastraAdapterError('stream');
+        })(),
+      );
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      send.mockResolvedValueOnce(SESSION);
+
+      await expect(async () => {
+        for await (const _ of engine.stream(convo.id, 'Hello')) {
+          // consume
+        }
+      }).rejects.toThrow(ConversationSendError);
+
+      const appendCalls = send.mock.calls.filter(
+        (call) => call[0] instanceof AppendSessionMessageEventCommand,
+      );
+      expect(appendCalls).toHaveLength(0);
+    });
+
+    it('dispatches AppendSessionMessageEventCommand on finish even when no text was accumulated (structured-output stream)', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
+
+      // finish chunk only — no text-delta — simulates a structured-output stream
+      const chunks = [{ type: 'finish' as const, content: '' }];
+
+      agent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) yield chunk;
+        })(),
+      );
+
+      const convo = await engine.create({
+        promptSlug: 'greet',
+        promptParams: {},
+        userId: 'user-1',
+        purpose: 'test',
+      });
+
+      const frozenNow = new Date('2025-06-01T09:00:00.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(frozenNow);
+
+      // Queue: FindSessionByIdQuery, AppendSessionMessageEventCommand
+      // UpdateSessionLastMessageCommand is NOT queued — accumulated is empty, existing guard skips it
+      send.mockResolvedValueOnce(SESSION).mockResolvedValueOnce(undefined);
+
+      for await (const _ of engine.stream(convo.id, 'Hello')) {
+        // consume
+      }
+
+      vi.useRealTimers();
+
+      const appendCalls = send.mock.calls.filter(
+        (call) => call[0] instanceof AppendSessionMessageEventCommand,
+      );
+      expect(appendCalls).toHaveLength(1);
+      if (appendCalls[0]) {
+        expect(appendCalls[0][0]).toHaveProperty('sentAt', frozenNow);
+      }
+
+      // Confirm UpdateSessionLastMessageCommand was NOT dispatched (no accumulated text)
+      const lastMessageCalls = send.mock.calls.filter(
+        (call) => call[0] instanceof UpdateSessionLastMessageCommand,
+      );
+      expect(lastMessageCalls).toHaveLength(0);
+    });
+
+    it('calls logger.warn when AppendSessionMessageEventCommand dispatch fails during stream', async () => {
+      const mockRoot = createMockLogger();
+      setRootLogger(mockRoot);
+
+      const localMediator = createMockMediator();
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const localSend = localMediator.send as PermissiveSendMock;
+      const localAgent = createMockMastraAgent();
+      const localMemory = createMockMastraMemory();
+      const localEngine = new ConversationEngine(
+        localMediator,
+        localAgent,
+        DEFAULT_CONFIG,
+        localMemory,
+      );
+
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-06-01T12:00:00.000Z'));
+
+      const chunks = [
+        { type: 'text-delta' as const, content: 'Hi' },
+        { type: 'finish' as const, content: '' },
+      ];
+      localAgent.stream.mockReturnValue(
+        (async function* () {
+          for (const chunk of chunks) yield chunk;
+        })(),
+      );
+
+      const ledgerError = new Error('ledger stream write failed');
+      // FindSessionByIdQuery succeeds, UpdateSessionLastMessageCommand succeeds,
+      // AppendSessionMessageEventCommand rejects
+      localSend
+        .mockResolvedValueOnce(SESSION)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(ledgerError);
+
+      for await (const _ of localEngine.stream('session-1', 'Hello')) {
+        // consume — must not throw despite the ledger rejection
+      }
+
+      vi.useRealTimers();
+
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const namedChild = mockRoot.named.mock.results.find((r) => r.value !== undefined)?.value as
+        | MockLogger
+        | undefined;
+      expect(namedChild?.warn).toHaveBeenCalledWith('appendMessageEventBestEffort failed', {
+        sessionId: 'session-1',
+        err: ledgerError,
+      });
+
+      resetRootLogger();
+    });
+  });
+
+  describe('logger wiring', () => {
+    let mockRoot: MockLogger;
+
+    beforeEach(() => {
+      mockRoot = createMockLogger();
+      setRootLogger(mockRoot);
+    });
+
+    afterEach(() => {
+      resetRootLogger();
+    });
+
+    it('resolves the logger import at module load without throwing', () => {
+      // If the import path is wrong this line throws at import time, not here.
+      // Reaching this assertion confirms the module loaded and getLogger returned something.
+      // Using the string form here to match the production module — both refer to the same proxy.
+      const log = getLogger('ConversationEngine');
+      expect(log).toBeDefined();
+    });
+
+    it('calls logger.warn when UpdateSessionLastMessageCommand dispatch fails', async () => {
+      // Re-create engine after setRootLogger so the proxy picks up the new root
+      const localMediator = createMockMediator();
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const localSend = localMediator.send as PermissiveSendMock;
+      const localAgent = createMockMastraAgent();
+      const localMemory = createMockMastraMemory();
+      const localEngine = new ConversationEngine(
+        localMediator,
+        localAgent,
+        DEFAULT_CONFIG,
+        localMemory,
+      );
+
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-06-01T12:00:00.000Z'));
+
+      localAgent.generate.mockResolvedValue({
+        text: 'AI response',
+        object: undefined,
+        threadId: 'thread-1',
+      });
+
+      // FindSessionByIdQuery succeeds, UpdateSessionLastMessageCommand rejects,
+      // AppendSessionMessageEventCommand succeeds (must be queued — send() still reaches it)
+      const dbError = new Error('DB write failed');
+      localSend
+        .mockResolvedValueOnce(SESSION)
+        .mockRejectedValueOnce(dbError)
+        .mockResolvedValueOnce(undefined);
+
+      await localEngine.send('session-1', 'Hello');
+
+      // The named child logger for ConversationEngine receives the warn call
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const namedChild = mockRoot.named.mock.results.find((r) => r.value !== undefined)?.value as
+        | MockLogger
+        | undefined;
+      expect(namedChild?.warn).toHaveBeenCalledTimes(1);
+      expect(namedChild?.warn).toHaveBeenCalledWith('updateLastMessageBestEffort failed', {
+        sessionId: 'session-1',
+        err: dbError,
+      });
+
+      vi.useRealTimers();
     });
   });
 });

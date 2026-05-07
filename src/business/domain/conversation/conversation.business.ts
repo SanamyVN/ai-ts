@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
+import { getLogger } from '@sanamyvn/foundation/logging/global';
 import { AI_MEDIATOR } from '@/shared/tokens.js';
 import {
   MASTRA_AGENT,
@@ -17,6 +18,7 @@ import {
   FindSessionByIdQuery,
   UpdateSessionCommand,
   UpdateSessionLastMessageCommand,
+  AppendSessionMessageEventCommand,
 } from '@/business/domain/session/client/queries.js';
 import type { IConversationEngine, SendOptions } from './conversation.interface.js';
 import type {
@@ -27,6 +29,11 @@ import type {
 import { ConversationNotFoundError, ConversationSendError } from './conversation.error.js';
 import type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
 import type { ZodType } from 'zod';
+
+// Module-scope logger. Use the string form — passing `ConversationEngine`
+// here would TDZ-error because the class is declared further down in the
+// same module (ESM evaluates top-to-bottom; class declarations are not hoisted).
+const logger = getLogger('ConversationEngine');
 
 interface ConversationState {
   readonly sessionId: string;
@@ -104,6 +111,9 @@ export class ConversationEngine implements IConversationEngine {
     toolsets?: Record<string, Record<string, unknown>>,
     sendOptions?: SendOptions,
   ): Promise<ConversationResponse> {
+    // Capture sentAt at hook entry — before any await — so the timestamp reflects
+    // when the user submitted the message, not when the response arrived (§1 "When sent_at is captured").
+    const sentAt = new Date();
     const state = await this.loadState(conversationId);
     const instructions = await this.resolveInstructions(state, promptParams);
     const metricsContext = sendOptions?.metricsContext ?? state.metricsContext;
@@ -119,6 +129,7 @@ export class ConversationEngine implements IConversationEngine {
       if (response.text.length > 0) {
         await this.updateLastMessageBestEffort(state.sessionId, response.text);
       }
+      await this.appendMessageEventBestEffort(state.sessionId, sentAt);
       return { text: response.text, object: response.object };
     } catch (error) {
       if (isMastraAdapterError(error)) {
@@ -136,6 +147,10 @@ export class ConversationEngine implements IConversationEngine {
     toolsets?: Record<string, Record<string, unknown>>,
     sendOptions?: SendOptions,
   ): AsyncIterable<StreamChunk> {
+    // Capture sentAt at hook entry — before any await — so the timestamp reflects
+    // when the user submitted the message. A stream that starts at 23:59:30 and
+    // finishes at 00:00:15 must bill against 23:59:30 (§1 "When sent_at is captured").
+    const sentAt = new Date();
     const state = await this.loadState(conversationId);
     const instructions = await this.resolveInstructions(state, promptParams);
     const metricsContext = sendOptions?.metricsContext ?? state.metricsContext;
@@ -152,8 +167,11 @@ export class ConversationEngine implements IConversationEngine {
         if (chunk.type === 'text-delta') {
           accumulated += chunk.content;
         }
-        if (chunk.type === 'finish' && accumulated.length > 0) {
-          await this.updateLastMessageBestEffort(state.sessionId, accumulated);
+        if (chunk.type === 'finish') {
+          if (accumulated.length > 0) {
+            await this.updateLastMessageBestEffort(state.sessionId, accumulated);
+          }
+          await this.appendMessageEventBestEffort(state.sessionId, sentAt);
         }
         yield chunk;
       }
@@ -202,16 +220,38 @@ export class ConversationEngine implements IConversationEngine {
 
   /**
    * Best-effort update of the session's denormalized lastMessage.
-   * Failures are silently ignored — the primary response must not be
-   * blocked by a metadata write failure.
+   * Failures are logged at warn level and swallowed — the primary response
+   * must not be blocked by a metadata write failure.
    */
   private async updateLastMessageBestEffort(sessionId: string, text: string): Promise<void> {
     try {
       await this.mediator.send(
         new UpdateSessionLastMessageCommand({ sessionId, lastMessage: text }),
       );
-    } catch {
-      // Best-effort: do not let a metadata update failure break the conversation flow.
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      logger.warn('updateLastMessageBestEffort failed', { sessionId, err: err as Error });
+    }
+  }
+
+  /**
+   * Best-effort append of a user-message event to the `ai_session_messages` ledger.
+   * Called after every successful generate/stream call. Failures are logged at warn
+   * level and swallowed — a ledger write failure must never break the user-facing
+   * response. Under-count is tenant-favorable (§1).
+   *
+   * @param sessionId - The session that received the user message.
+   * @param sentAt - Timestamp captured at hook entry (start of `send()` or `stream()`),
+   *   not at dispatch time. A long-running stream must bill against the period
+   *   containing message submission, not the period containing the finish chunk
+   *   (§1 "When sent_at is captured").
+   */
+  private async appendMessageEventBestEffort(sessionId: string, sentAt: Date): Promise<void> {
+    try {
+      await this.mediator.send(new AppendSessionMessageEventCommand({ sessionId, sentAt }));
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      logger.warn('appendMessageEventBestEffort failed', { sessionId, err: err as Error });
     }
   }
 
