@@ -1,4 +1,16 @@
-import { and, desc, eq, gte, ilike, inArray, like, lt } from 'drizzle-orm';
+import {
+  and,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  gte,
+  ilike,
+  inArray,
+  like,
+  lt,
+  sql,
+} from 'drizzle-orm';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
 import type { AiSchema } from '@/shared/schema.js';
@@ -43,21 +55,59 @@ export class SessionDrizzleRepository implements ISessionRepository {
   }
 
   /**
-   * List sessions ordered `started_at DESC, id DESC` (deterministic across tied
-   * timestamps) with offset pagination. (§5)
+   * Lists sessions ordered `started_at DESC, id DESC` with offset pagination.
+   * Returns both the page rows and the `total` filtered count across all pages.
+   *
+   * Common path (non-empty page): one query using `COUNT(*) OVER ()` so the
+   * count and rows share the same snapshot and filter. Empty-page fallback:
+   * a second `SELECT COUNT(*)` with the same WHERE. (§1 SQL plan,
+   * design doc paginated-total-counts.md §5.2)
    */
   async list(
     filter: SessionRepoFilter,
     pagination: { page: number; perPage: number },
-  ): Promise<SessionRecord[]> {
+  ): Promise<{ rows: readonly SessionRecord[]; total: number }> {
     const conditions = this.buildListConditions(filter);
-    return this.db.db
-      .select()
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Single query: SELECT *, COUNT(*) OVER () AS total ... LIMIT ... OFFSET ...
+    // Drizzle returns the raw column as `total` alongside the typed record fields.
+    // getTableColumns() extracts only the column definitions (not the table meta),
+    // which is required for spreading into select({}) in Drizzle v0.45.
+    const rawRows = await this.db.db
+      .select({
+        ...getTableColumns(aiSessions),
+        total: sql<number>`count(*) over ()`.mapWith(Number),
+      })
       .from(aiSessions)
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .where(whereClause)
       .orderBy(desc(aiSessions.startedAt), desc(aiSessions.id))
       .limit(pagination.perPage)
       .offset((pagination.page - 1) * pagination.perPage);
+
+    if (rawRows.length > 0) {
+      // Strip the `total` column off each row before returning typed SessionRecord[].
+      // The spread captures all SessionRecord fields; `total` is the only extra column
+      // added by the sql`` template tag — this is the type erasure boundary. (§1)
+      const firstRow = rawRows[0];
+      // firstRow is defined: we are inside `rawRows.length > 0`
+      const pageTotal = firstRow ? firstRow.total : 0;
+      const rows = rawRows.map(
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        ({ total: _total, ...record }) => record as unknown as SessionRecord,
+      );
+      return { rows, total: pageTotal };
+    }
+
+    // Empty-page fallback: issue a second SELECT COUNT(*) with the same WHERE
+    // to populate total accurately even for past-the-end pages.
+    const [countRow] = await this.db.db
+      .select({ count: count() })
+      .from(aiSessions)
+      .where(whereClause)
+      .execute();
+
+    return { rows: [], total: countRow?.count ?? 0 };
   }
 
   async updateStatus(id: string, status: string, endedAt?: Date): Promise<SessionRecord> {

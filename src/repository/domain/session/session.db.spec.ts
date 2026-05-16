@@ -162,17 +162,39 @@ describe('SessionRepoFilter shape — compile-time check', () => {
 // Extended mock for list() tests
 // ---------------------------------------------------------------------------
 
-function createListMockClient(options?: { rows?: SessionRecord[] }) {
-  const offsetFn = vi.fn().mockResolvedValue(options?.rows ?? []);
+function createListMockClient(options?: {
+  rows?: (SessionRecord & { total?: number })[];
+  fallbackCount?: number;
+}) {
+  const rawRows = (options?.rows ?? []).map((r) => ({
+    ...r,
+    total: r.total ?? options?.rows?.length ?? 0,
+  }));
+
+  const offsetFn = vi.fn().mockResolvedValue(rawRows);
   const limitFn = vi.fn(() => ({ offset: offsetFn }));
   const orderByFn = vi.fn(() => ({ limit: limitFn }));
   const whereFn = vi.fn(() => ({ orderBy: orderByFn }));
   const fromFn = vi.fn(() => ({ where: whereFn }));
-  const selectFn = vi.fn(() => ({ from: fromFn }));
+
+  // Fallback COUNT(*) for empty-page path
+  const executeCountFn = vi.fn().mockResolvedValue([{ count: options?.fallbackCount ?? 0 }]);
+  const whereCountFn = vi.fn(() => ({ execute: executeCountFn }));
+  const fromCountFn = vi.fn(() => ({ where: whereCountFn }));
+
+  // selectFn toggles between the two query modes based on call order
+  // First call = window query (list with total), subsequent = count fallback
+  let callCount = 0;
+  const smartSelectFn = vi.fn(() => {
+    callCount += 1;
+    if (callCount === 1) {
+      return { from: fromFn };
+    }
+    return { from: fromCountFn };
+  });
 
   const db = {
-    select: selectFn,
-    // Stubs for existing tests that use other chains
+    select: smartSelectFn,
     update: vi.fn(() => ({
       set: vi.fn(() => ({ where: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([]) })) })),
     })),
@@ -195,12 +217,15 @@ function createListMockClient(options?: { rows?: SessionRecord[] }) {
       },
       isHealthy: async () => true,
     },
-    selectFn,
+    smartSelectFn,
     fromFn,
     whereFn,
     orderByFn,
     limitFn,
     offsetFn,
+    executeCountFn,
+    whereCountFn,
+    fromCountFn,
   };
 }
 
@@ -326,13 +351,65 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
   });
 
   it('returns empty array on last page (items.length < perPage sentinel)', async () => {
-    const mock = createListMockClient({ rows: [] });
+    const mock = createListMockClient({ rows: [], fallbackCount: 0 });
     // @ts-expect-error test-only client stub
     const repo = new SessionDrizzleRepository(mock.client);
 
     const result = await repo.list({}, { page: 99, perPage: 10 });
 
-    expect(result).toEqual([]);
+    expect(result.rows).toEqual([]);
+    expect(result.total).toBe(0);
+  });
+});
+
+// ─── SessionDrizzleRepository.list — { rows, total } shape ──────────────────
+
+describe('SessionDrizzleRepository.list — total shape', () => {
+  const baseRecord = createSessionRecord();
+
+  it('returns rows and total when page has results', async () => {
+    const mock = createListMockClient({ rows: [{ ...baseRecord, total: 3 }] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    const result = await repo.list({}, { page: 1, perPage: 10 });
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]?.id).toBe(baseRecord.id);
+    expect(result.total).toBe(3);
+  });
+
+  it('returns rows empty and total 0 on empty match set', async () => {
+    const mock = createListMockClient({ rows: [], fallbackCount: 0 });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    const result = await repo.list({}, { page: 1, perPage: 10 });
+
+    expect(result.rows).toHaveLength(0);
+    expect(result.total).toBe(0);
+  });
+
+  it('issues a fallback COUNT query when page is empty and returns correct total', async () => {
+    const mock = createListMockClient({ rows: [], fallbackCount: 3 });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    const result = await repo.list({}, { page: 2, perPage: 10 });
+
+    expect(result.rows).toHaveLength(0);
+    expect(result.total).toBe(3);
+    expect(mock.executeCountFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT issue a fallback COUNT query when the page has rows', async () => {
+    const mock = createListMockClient({ rows: [{ ...baseRecord, total: 5 }] });
+    // @ts-expect-error test-only client stub
+    const repo = new SessionDrizzleRepository(mock.client);
+
+    await repo.list({}, { page: 1, perPage: 10 });
+
+    expect(mock.executeCountFn).not.toHaveBeenCalled();
   });
 });
 
