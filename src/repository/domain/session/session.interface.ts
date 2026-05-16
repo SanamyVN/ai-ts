@@ -38,15 +38,21 @@ export interface ISessionRepository {
    * `started_at DESC, id DESC` (deterministic for pagination).
    * `pagination.page` is 1-based; `pagination.perPage` is required. (§5)
    *
+   * Returns both the page rows and the `total` filtered count across all
+   * pages. `total` is computed from the same `WHERE` clause as `rows` in a
+   * single round trip using `COUNT(*) OVER ()`. When the page is past the
+   * last data page (`rows.length === 0`), a follow-up `SELECT COUNT(*)` with
+   * the same filter populates `total`. (§1 SQL plan, design doc paginated-total-counts.md)
+   *
    * @param filter - Filter options.
    * @param pagination - 1-based `page` and `perPage` (max 500). Required — no
    *   unbounded fetch path exists.
-   * @returns One page of matching session records.
+   * @returns Page rows and filtered total count.
    */
   list(
     filter: SessionRepoFilter,
     pagination: { page: number; perPage: number },
-  ): Promise<readonly SessionRecord[]>;
+  ): Promise<{ rows: readonly SessionRecord[]; total: number }>;
 
   /**
    * Transition a session to a new status.

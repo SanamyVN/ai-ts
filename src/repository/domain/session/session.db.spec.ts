@@ -335,3 +335,33 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
     expect(result).toEqual([]);
   });
 });
+
+// ─── ISessionRepository.list return type (type-level contract) ───────────────
+
+describe('ISessionRepository.list — return type contract', () => {
+  it('list() return type is assignable to Promise<{ rows: readonly SessionRecord[]; total: number }>', () => {
+    // This test is purely type-level: if ISessionRepository.list does not return
+    // { rows, total }, TypeScript will refuse to compile this assignment, and
+    // ts-expect-error will surface as an unexpected suppression error.
+    //
+    // We use a cast via createMockSessionRepository so we can inspect the type
+    // without running real SQL. The mock's vi.fn() infers its return type from
+    // the interface — so once the interface changes, the type flows through.
+    const repo = createMockSessionRepository();
+
+    // This line must type-check: the return of repo.list must be assignable to
+    // Promise<{ rows: readonly SessionRecord[]; total: number }>.
+    // If the interface still says Promise<SessionRecord[]>, TypeScript will error
+    // here (no matching property 'rows', 'total' missing) and the test file will
+    // fail to compile — which counts as a test failure.
+    const _check: Promise<{ rows: readonly SessionRecord[]; total: number }> = repo.list(
+      {},
+      { page: 1, perPage: 10 },
+    );
+
+    // Suppress "declared but never used" — the point is the type assignment above.
+    // The vi.fn() mock returns undefined by default; we verify the function exists.
+    expect(repo.list).toBeDefined();
+    void _check;
+  });
+});
