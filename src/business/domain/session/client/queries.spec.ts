@@ -5,6 +5,7 @@ import {
   ListSessionsQuery,
   GetSessionMessagesQuery,
 } from './queries.js';
+import { messageListClientSchema } from './schemas.js';
 
 /**
  * Assert that a constructor call throws a SchemaValidationError whose Zod cause
@@ -247,5 +248,36 @@ describe('GetSessionMessagesQuery', () => {
     expect(
       () => new GetSessionMessagesQuery({ sessionId: 'session-1', page: 1, perPage: 0 }),
     ).toThrow();
+  });
+});
+
+// ─── messageListClientSchema validation ──────────────────────────────────────
+
+describe('messageListClientSchema', () => {
+  it('parses a valid response with items and total', () => {
+    const valid = {
+      items: [{ id: 'm1', role: 'user', content: 'hello', createdAt: new Date() }],
+      page: 1,
+      perPage: 10,
+      total: 42,
+    };
+    expect(() => messageListClientSchema.parse(valid)).not.toThrow();
+  });
+
+  it('rejects a negative total', () => {
+    expect(() =>
+      messageListClientSchema.parse({ items: [], page: 1, perPage: 10, total: -1 }),
+    ).toThrow();
+  });
+
+  it('rejects a response that still uses the old messages field name', () => {
+    // items is required; messages is not a recognized key — parse must fail.
+    expect(() =>
+      messageListClientSchema.parse({ messages: [], page: 1, perPage: 10, total: 0 }),
+    ).toThrow();
+  });
+
+  it('rejects a missing total field', () => {
+    expect(() => messageListClientSchema.parse({ items: [], page: 1, perPage: 10 })).toThrow();
   });
 });

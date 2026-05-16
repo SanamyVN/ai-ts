@@ -103,6 +103,18 @@ export const DeleteSessionCommand = createCommand({
   response: z.void(),
 });
 
+/**
+ * Retrieves a paginated page of messages for a session.
+ *
+ * **Response shape:** `{ items, page, perPage, total }`.
+ * - `items`: messages in this page, ordered by `createdAt ASC`.
+ * - `total`: count of messages in this thread across all pages.
+ *   This is the literal stored Mastra transcript count (all roles).
+ *   It is **not** the same as `SessionSummary.messageCount`, which counts
+ *   only successful user submissions from the local ledger and is used
+ *   for billing. (§2 of the paginated-total-counts design doc)
+ * - Page indexing is 1-based: `page: 1` returns the first slice of the thread.
+ */
 export const GetSessionMessagesQuery = createQuery({
   type: 'ai.session.getMessages',
   payload: z.object({
