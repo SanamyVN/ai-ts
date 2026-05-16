@@ -3,7 +3,7 @@ import { SessionAppService } from './session.service.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import {
   AppendSessionMessageEventCommand,
-  CountMessagesByTenantQuery,
+  CountMessagesQuery,
   DeleteSessionCommand,
   ListSessionsQuery,
   UpdateSessionTitleCommand,
@@ -63,6 +63,16 @@ describe('SessionAppService', () => {
       expect(mediator.send).toHaveBeenCalledWith(expect.any(ListSessionsQuery));
       expect(result).toEqual({ items: [], page: 1, perPage: 20 });
     });
+
+    it('does not include tenantId in the dispatched query', async () => {
+      mediator.send.mockResolvedValueOnce({ items: [], page: 1, perPage: 20 });
+
+      await service.list({ page: 1, perPage: 20, userId: 'user-1' });
+
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const sent = mediator.send.mock.calls[0]?.[0] as InstanceType<typeof ListSessionsQuery>;
+      expect(sent).not.toHaveProperty('tenantId');
+    });
   });
 
   describe('list with pagination and date filters', () => {
@@ -119,34 +129,31 @@ describe('SessionAppService', () => {
     });
   });
 
-  describe('countMessagesByTenant', () => {
-    it('dispatches CountMessagesByTenantQuery and returns { count }', async () => {
+  describe('countMessages', () => {
+    it('dispatches CountMessagesQuery and returns { count }', async () => {
       mediator.send.mockResolvedValueOnce({ count: 7 });
 
-      const result = await service.countMessagesByTenant({ tenantId: 'tenant-1' });
+      const result = await service.countMessages({});
 
-      expect(mediator.send).toHaveBeenCalledWith(expect.any(CountMessagesByTenantQuery));
+      expect(mediator.send).toHaveBeenCalledWith(expect.any(CountMessagesQuery));
       expect(result).toEqual({ count: 7 });
     });
 
     it('maps client not found errors to HTTP errors', async () => {
       mediator.send.mockRejectedValueOnce(new SessionNotFoundClientError('missing'));
 
-      await expect(service.countMessagesByTenant({ tenantId: 'missing' })).rejects.toThrow(
-        SessionNotFoundHttpError,
-      );
+      await expect(service.countMessages({})).rejects.toThrow(SessionNotFoundHttpError);
     });
   });
 
-  describe('countMessagesByTenant with all filters', () => {
-    it('dispatches CountMessagesByTenantQuery with date filters', async () => {
+  describe('countMessages with all filters', () => {
+    it('dispatches CountMessagesQuery with date and prefix filters', async () => {
       mediator.send.mockResolvedValueOnce({ count: 99 });
 
       const sentAtGte = new Date('2026-04-01T00:00:00.000Z');
       const sentAtLt = new Date('2026-05-01T00:00:00.000Z');
 
-      const result = await service.countMessagesByTenant({
-        tenantId: 'tenant-1',
+      const result = await service.countMessages({
         purposePrefix: 'ta-',
         sentAtGte,
         sentAtLt,
@@ -155,12 +162,21 @@ describe('SessionAppService', () => {
       expect(result).toEqual({ count: 99 });
       expect(mediator.send).toHaveBeenCalledWith(
         expect.objectContaining({
-          tenantId: 'tenant-1',
           purposePrefix: 'ta-',
           sentAtGte,
           sentAtLt,
         }),
       );
+    });
+
+    it('does not include tenantId in the dispatched query', async () => {
+      mediator.send.mockResolvedValueOnce({ count: 0 });
+
+      await service.countMessages({});
+
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const sent = mediator.send.mock.calls[0]?.[0] as InstanceType<typeof CountMessagesQuery>;
+      expect(sent).not.toHaveProperty('tenantId');
     });
   });
 });

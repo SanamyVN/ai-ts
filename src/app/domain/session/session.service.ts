@@ -9,7 +9,7 @@ import {
   EndSessionCommand,
   UpdateSessionTitleCommand,
   AppendSessionMessageEventCommand,
-  CountMessagesByTenantQuery,
+  CountMessagesQuery,
 } from '@/business/domain/session/client/queries.js';
 import { mapSessionError } from './session.error.js';
 import {
@@ -24,7 +24,6 @@ export class SessionAppService {
 
   async list(query: {
     userId?: string;
-    tenantId?: string;
     purpose?: string;
     purposePrefix?: string;
     status?: string;
@@ -37,7 +36,6 @@ export class SessionAppService {
     const result = await this.mediator.send(
       new ListSessionsQuery({
         ...(query.userId !== undefined ? { userId: query.userId } : {}),
-        ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
         ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
         ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
         ...(query.status !== undefined ? { status: query.status } : {}),
@@ -98,15 +96,27 @@ export class SessionAppService {
     }
   }
 
-  async countMessagesByTenant(filter: {
-    tenantId: string;
+  /**
+   * Counts session message events matching the given filter.
+   * Tenant scoping is implicit — the caller must set `search_path` in the
+   * active transaction before invoking this method.
+   *
+   * @example
+   * // Count all messages with a given purpose prefix this month
+   * const { count } = await sessionAppService.countMessages({
+   *   purposePrefix: 'support-',
+   *   sentAtGte: new Date('2026-05-01T00:00:00Z'),
+   *   sentAtLt: new Date('2026-06-01T00:00:00Z'),
+   * });
+   */
+  async countMessages(filter: {
     purpose?: string;
     purposePrefix?: string;
     sentAtGte?: Date;
     sentAtLt?: Date;
   }): Promise<{ count: number }> {
     try {
-      return await this.mediator.send(new CountMessagesByTenantQuery(filter));
+      return await this.mediator.send(new CountMessagesQuery(filter));
     } catch (error) {
       mapSessionError(error);
     }
