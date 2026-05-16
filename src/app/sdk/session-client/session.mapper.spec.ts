@@ -13,7 +13,6 @@ describe('toSessionClientModelFromBusiness', () => {
       id: 'session-1',
       mastraThreadId: 'thread-1',
       userId: 'user-1',
-      tenantId: null,
       promptSlug: 'test-prompt',
       resolvedPrompt: 'You are a test assistant.',
       purpose: 'test',
@@ -38,7 +37,6 @@ describe('toSessionClientModelFromBusiness', () => {
       id: 'session-1',
       mastraThreadId: 'thread-1',
       userId: 'user-1',
-      tenantId: null,
       promptSlug: 'test-prompt',
       resolvedPrompt: 'You are a test assistant.',
       purpose: 'test',
@@ -56,6 +54,28 @@ describe('toSessionClientModelFromBusiness', () => {
     expect(result.title).toBeNull();
     expect(result.lastMessage).toBeNull();
     expect(result.lastMessageAt).toBeNull();
+  });
+
+  it('does not include tenantId in the mapped output', () => {
+    const session: Session = {
+      id: 'session-1',
+      mastraThreadId: 'thread-1',
+      userId: 'user-1',
+      promptSlug: 'test-prompt',
+      resolvedPrompt: 'You are a test assistant.',
+      purpose: 'test',
+      status: 'active',
+      title: null,
+      metadata: null,
+      startedAt: new Date('2026-01-01T00:00:00Z'),
+      endedAt: null,
+      lastMessage: null,
+      lastMessageAt: null,
+    };
+
+    const result = toSessionClientModelFromBusiness(session);
+
+    expect(result).not.toHaveProperty('tenantId');
   });
 });
 
