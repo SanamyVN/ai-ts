@@ -51,27 +51,91 @@ describe('SessionAppService', () => {
   });
 
   describe('list', () => {
-    it('dispatches ListSessionsQuery with page and perPage and returns { items, page, perPage }', async () => {
+    it('dispatches ListSessionsQuery with page and perPage and returns { items, page, perPage, total }', async () => {
       mediator.send.mockResolvedValueOnce({
         items: [],
         page: 1,
         perPage: 20,
+        total: 0,
       });
 
       const result = await service.list({ page: 1, perPage: 20 });
 
       expect(mediator.send).toHaveBeenCalledWith(expect.any(ListSessionsQuery));
-      expect(result).toEqual({ items: [], page: 1, perPage: 20 });
+      expect(result).toEqual({ items: [], page: 1, perPage: 20, total: 0 });
     });
 
     it('does not include tenantId in the dispatched query', async () => {
-      mediator.send.mockResolvedValueOnce({ items: [], page: 1, perPage: 20 });
+      mediator.send.mockResolvedValueOnce({ items: [], page: 1, perPage: 20, total: 0 });
 
       await service.list({ page: 1, perPage: 20, userId: 'user-1' });
 
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const sent = mediator.send.mock.calls[0]?.[0] as InstanceType<typeof ListSessionsQuery>;
       expect(sent).not.toHaveProperty('tenantId');
+    });
+
+    it('forwards total from the mediator response unchanged', async () => {
+      mediator.send.mockResolvedValue({
+        items: [],
+        page: 1,
+        perPage: 10,
+        total: 42,
+      });
+
+      const result = await service.list({ page: 1, perPage: 10 });
+
+      expect(result.total).toBe(42);
+    });
+
+    it('returns total: 0 when mediator returns total: 0', async () => {
+      mediator.send.mockResolvedValue({
+        items: [],
+        page: 1,
+        perPage: 10,
+        total: 0,
+      });
+
+      const result = await service.list({ page: 1, perPage: 10 });
+
+      expect(result.total).toBe(0);
+    });
+
+    it('returns items mapped through toSessionSummaryResponseDtoFromClient alongside total', async () => {
+      mediator.send.mockResolvedValue({
+        items: [
+          {
+            id: 'session-1',
+            userId: 'user-1',
+            promptSlug: 'prompt',
+            purpose: 'test',
+            status: 'active',
+            title: null,
+            startedAt: new Date('2026-01-01T00:00:00.000Z'),
+            lastMessage: null,
+            lastMessageAt: null,
+            messageCount: 5,
+          },
+        ],
+        page: 1,
+        perPage: 10,
+        total: 1,
+      });
+
+      const result = await service.list({ page: 1, perPage: 10 });
+
+      expect(result.total).toBe(1);
+      expect(result.items).toHaveLength(1);
+      expect(result.page).toBe(1);
+      expect(result.perPage).toBe(10);
+    });
+
+    it('sends a ListSessionsQuery to the mediator', async () => {
+      mediator.send.mockResolvedValue({ items: [], page: 1, perPage: 10, total: 0 });
+
+      await service.list({ page: 1, perPage: 20 });
+
+      expect(mediator.send).toHaveBeenCalledWith(expect.any(ListSessionsQuery));
     });
   });
 

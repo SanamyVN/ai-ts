@@ -24,6 +24,7 @@ export class SessionAppService {
 
   async list(query: {
     userId?: string;
+    userIds?: string[];
     purpose?: string;
     purposePrefix?: string;
     status?: string;
@@ -32,10 +33,16 @@ export class SessionAppService {
     startedAtLt?: Date;
     page: number;
     perPage: number;
-  }): Promise<{ items: SessionSummaryResponseDto[]; page: number; perPage: number }> {
+  }): Promise<{
+    items: SessionSummaryResponseDto[];
+    page: number;
+    perPage: number;
+    total: number;
+  }> {
     const result = await this.mediator.send(
       new ListSessionsQuery({
         ...(query.userId !== undefined ? { userId: query.userId } : {}),
+        ...(query.userIds !== undefined ? { userIds: query.userIds } : {}),
         ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
         ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
         ...(query.status !== undefined ? { status: query.status } : {}),
@@ -50,6 +57,7 @@ export class SessionAppService {
       items: result.items.map(toSessionSummaryResponseDtoFromClient),
       page: result.page,
       perPage: result.perPage,
+      total: result.total,
     };
   }
 
