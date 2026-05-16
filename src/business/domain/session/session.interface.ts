@@ -54,11 +54,13 @@ export interface ISessionService {
   /**
    * Lists sessions matching `filter`, paginated.
    *
+   * Tenant scoping is implicit via the active `search_path` on `AI_DB`.
+   *
    * @param filter - Filter options including `purposePrefix`, `startedAtGte`,
    *   and `startedAtLt`. Filters on session start time, not message send time
-   *   — for billing aggregates, use `countMessagesByTenant`.
+   *   — for billing aggregates, use `countMessages`. (§5)
    * @param pagination - 1-based `page`; `perPage` is required and capped
-   *   at 500 by the mediator. Last page is detected via
+   *   at 500 by the mediator. Last page detected via
    *   `result.length < perPage`. (§5)
    */
   list(
@@ -88,7 +90,6 @@ export interface ISessionService {
    * Updates the resolved prompt for a session.
    * @param sessionId - Session to update.
    * @param resolvedPrompt - The new resolved prompt text.
-   * @throws {SessionNotFoundError} If the session does not exist.
    */
   updateResolvedPrompt(sessionId: string, resolvedPrompt: string): Promise<void>;
 
@@ -120,9 +121,11 @@ export interface ISessionService {
    * given session. Invoked only by `conversation.business` after a
    * successful `generate`/`stream` call. Not for general consumer use.
    *
+   * Tenant isolation is implicit via the active `search_path` on `AI_DB`.
+   *
    * @param eventId - Caller-supplied UUID v4 used as the ledger row id.
    *   The repository uses `ON CONFLICT (id) DO NOTHING`, so replaying the
-   *   same `eventId` is safe — only the first insert is persisted.
+   *   same `eventId` is safe. (§idempotency)
    * @param sessionId - Session to record the event against.
    * @param sentAt - Timestamp captured at hook entry (before the LLM call).
    * @throws {SessionNotFoundError} when no session exists with the given id.
@@ -131,14 +134,16 @@ export interface ISessionService {
 
   /**
    * Billing aggregate — `COUNT(*)` over the `ai_session_messages` ledger
-   * filtered by `tenantId`, optional `purpose`/`purposePrefix`, and the
-   * half-open interval `[sentAtGte, sentAtLt)` on message `sent_at`.
-   * Counts across all session statuses.
+   * filtered by optional `purpose`/`purposePrefix` and the half-open interval
+   * `[sentAtGte, sentAtLt)` on message `sent_at`. Counts across all session
+   * statuses.
+   *
+   * Tenant scoping is implicit via the active `search_path` on `AI_DB`. (§4, §6)
    *
    * @returns the bare count; the wire format `{ count }` wrapping happens
    * in the local mediator. (§4)
    */
-  countMessagesByTenant(filter: CountMessagesFilter): Promise<number>;
+  countMessages(filter: CountMessagesFilter): Promise<number>;
 }
 
 /** Dependency-injection token for {@link ISessionService}. */

@@ -25,6 +25,6 @@ export function createMockSessionService() {
     updateTitle: vi.fn<ISessionService['updateTitle']>(),
     delete: vi.fn<ISessionService['delete']>(),
     appendMessageEvent: vi.fn<ISessionService['appendMessageEvent']>(),
-    countMessagesByTenant: vi.fn<ISessionService['countMessagesByTenant']>(),
+    countMessages: vi.fn<ISessionService['countMessages']>(),
   };
 }

@@ -41,7 +41,6 @@ export class SessionService implements ISessionService {
     const record = await this.sessionRepo.create({
       mastraThreadId: thread.id,
       userId: input.userId,
-      tenantId: input.tenantId ?? null,
       promptSlug: input.promptSlug,
       resolvedPrompt: input.resolvedPrompt,
       purpose: input.purpose,
@@ -77,6 +76,8 @@ export class SessionService implements ISessionService {
    * Lists sessions matching the given filter, newest first. Collects the page's
    * session ids, queries the message-event ledger for per-session counts in one
    * round-trip, then projects `messageCount` onto each summary. (§1, §5)
+   *
+   * Tenant scoping is implicit via the active `search_path` on `AI_DB`. (§6)
    */
   async list(
     filter: SessionFilter,
@@ -151,11 +152,11 @@ export class SessionService implements ISessionService {
 
   /**
    * Appends one event row to `ai_session_messages`. The `sentAt` timestamp is
-   * captured at hook entry in Phase 4 so it reflects when the user sent the
-   * message, not when this write completes (§1 "When sent_at is captured").
+   * captured at hook entry in the caller so it reflects when the user sent the
+   * message, not when this write completes. (§1 "When sent_at is captured")
    *
-   * Returns silently when `session.tenantId` is null — tenantless sessions are
-   * not billable; writing a row with `tenant_id = ''` would pollute aggregates.
+   * Tenant isolation is implicit via the active `search_path` on `AI_DB`. (§6)
+   *
    * Throws `SessionNotFoundError` when the session is missing so the
    * best-effort wrapper in `conversation.business` can log and swallow cleanly.
    * (§1 "Service surface")
@@ -163,11 +164,9 @@ export class SessionService implements ISessionService {
   async appendMessageEvent(eventId: string, sessionId: string, sentAt: Date): Promise<void> {
     const session = await this.sessionRepo.findById(sessionId);
     if (!session) throw new SessionNotFoundError(sessionId);
-    if (session.tenantId === null) return;
     await this.sessionMessageRepo.append({
       id: eventId,
       sessionId,
-      tenantId: session.tenantId,
       purpose: session.purpose,
       sentAt,
     });
@@ -177,11 +176,12 @@ export class SessionService implements ISessionService {
    * Translates `CountMessagesFilter` to `SessionMessageRepoFilter` using the
    * conditional-spread pattern so undefined fields are not propagated. Then
    * delegates to `sessionMessageRepository.count`. Returns a bare number; the
-   * mediator wraps it as `{ count }` in Phase 3. (§4)
+   * mediator wraps it as `{ count }` in the handler. (§4)
+   *
+   * Tenant isolation is implicit via the active `search_path` on `AI_DB`. (§6)
    */
-  async countMessagesByTenant(filter: CountMessagesFilter): Promise<number> {
+  async countMessages(filter: CountMessagesFilter): Promise<number> {
     const repoFilter: SessionMessageRepoFilter = {
-      tenantId: filter.tenantId,
       ...(filter.purpose !== undefined && { purpose: filter.purpose }),
       ...(filter.purposePrefix !== undefined && { purposePrefix: filter.purposePrefix }),
       ...(filter.sentAtGte !== undefined && { sentAtGte: filter.sentAtGte }),

@@ -31,7 +31,6 @@ describe('SessionService', () => {
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test-prompt',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -70,7 +69,6 @@ describe('SessionService', () => {
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -86,7 +84,6 @@ describe('SessionService', () => {
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -108,7 +105,6 @@ describe('SessionService', () => {
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -138,7 +134,6 @@ describe('SessionService', () => {
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -168,7 +163,6 @@ describe('SessionService', () => {
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -214,7 +208,6 @@ describe('SessionService', () => {
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -256,7 +249,6 @@ describe('SessionService', () => {
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -289,7 +281,6 @@ describe('SessionService', () => {
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -312,7 +303,6 @@ describe('SessionService', () => {
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -335,7 +325,6 @@ describe('SessionService', () => {
         id: 'session-to-delete',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: null,
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'test',
@@ -359,7 +348,6 @@ describe('SessionService', () => {
           id: 'session-other',
           mastraThreadId: 'thread-other',
           userId: 'user-1',
-          tenantId: null,
           promptSlug: 'test',
           resolvedPrompt: 'You are a test assistant.',
           purpose: 'test',
@@ -381,13 +369,12 @@ describe('SessionService', () => {
   });
 
   describe('appendMessageEvent', () => {
-    it('loads the session and calls sessionMessageRepository.append with tenantId, purpose, and sentAt', async () => {
+    it('loads the session and calls sessionMessageRepository.append with purpose and sentAt', async () => {
       const sentAt = new Date('2026-03-15T10:00:00.000Z');
       sessionRepo.findById.mockResolvedValue({
         id: 'session-1',
         mastraThreadId: 'thread-1',
         userId: 'user-1',
-        tenantId: 'tenant-abc',
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'ta-chat:uuid-1',
@@ -407,7 +394,6 @@ describe('SessionService', () => {
       expect(sessionMessageRepo.append).toHaveBeenCalledWith(
         expect.objectContaining({
           sessionId: 'session-1',
-          tenantId: 'tenant-abc',
           purpose: 'ta-chat:uuid-1',
           sentAt,
         }),
@@ -428,46 +414,13 @@ describe('SessionService', () => {
       expect(sessionMessageRepo.append).not.toHaveBeenCalled();
     });
 
-    it('does not call sessionMessageRepository.append when session.tenantId is null', async () => {
-      // Tenantless sessions are not billable — writing a row with tenant_id = ''
-      // would pollute billing aggregates. The method must return silently. (§1)
-      sessionRepo.findById.mockResolvedValue({
-        id: 'session-tenantless',
-        mastraThreadId: 'thread-tenantless',
-        userId: 'user-1',
-        tenantId: null,
-        promptSlug: 'test',
-        resolvedPrompt: 'You are a test assistant.',
-        purpose: 'ta-chat:uuid-2',
-        status: 'active',
-        title: null,
-        metadata: null,
-        startedAt: new Date(),
-        endedAt: null,
-        lastMessage: null,
-        lastMessageAt: null,
-      });
-
-      await service.appendMessageEvent(
-        'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
-        'session-tenantless',
-        new Date(),
-      );
-
-      expect(sessionMessageRepo.append).not.toHaveBeenCalled();
-    });
-
     it('uses the caller-supplied eventId as the repo row id', async () => {
-      // The business service forwards the caller-supplied eventId directly to
-      // sessionMessageRepository.append as `id`. The caller (conversation.business)
-      // is responsible for generating an idempotent UUID v4.
       const eventId = 'a1b2c3d4-e5f6-4789-abcd-ef0123456789';
 
       sessionRepo.findById.mockResolvedValue({
         id: 'session-uuid-check',
         mastraThreadId: 'thread-uuid',
         userId: 'user-1',
-        tenantId: 'tenant-xyz',
         promptSlug: 'test',
         resolvedPrompt: 'You are a test assistant.',
         purpose: 'ta-chat:uuid-3',
@@ -488,21 +441,19 @@ describe('SessionService', () => {
     });
   });
 
-  describe('countMessagesByTenant', () => {
+  describe('countMessages', () => {
     it('forwards full CountMessagesFilter to sessionMessageRepository.count and returns bare number', async () => {
       sessionMessageRepo.count.mockResolvedValue(99);
 
       const filter: CountMessagesFilter = {
-        tenantId: 'tenant-1',
         purposePrefix: 'ta-chat:',
         sentAtGte: new Date('2026-01-01T00:00:00.000Z'),
         sentAtLt: new Date('2026-02-01T00:00:00.000Z'),
       };
 
-      const result = await service.countMessagesByTenant(filter);
+      const result = await service.countMessages(filter);
 
       expect(sessionMessageRepo.count).toHaveBeenCalledWith({
-        tenantId: 'tenant-1',
         purposePrefix: 'ta-chat:',
         sentAtGte: new Date('2026-01-01T00:00:00.000Z'),
         sentAtLt: new Date('2026-02-01T00:00:00.000Z'),
@@ -510,22 +461,21 @@ describe('SessionService', () => {
       expect(result).toBe(99);
     });
 
-    it('passes only tenantId when no other filter fields are present', async () => {
+    it('passes an empty filter when no fields are present', async () => {
       sessionMessageRepo.count.mockResolvedValue(7);
 
-      const result = await service.countMessagesByTenant({ tenantId: 'tenant-2' });
+      const result = await service.countMessages({});
 
-      expect(sessionMessageRepo.count).toHaveBeenCalledWith({ tenantId: 'tenant-2' });
+      expect(sessionMessageRepo.count).toHaveBeenCalledWith({});
       expect(result).toBe(7);
     });
 
     it('forwards purpose (exact match) when provided instead of purposePrefix', async () => {
       sessionMessageRepo.count.mockResolvedValue(3);
 
-      await service.countMessagesByTenant({ tenantId: 'tenant-3', purpose: 'ta-chat:exact-id' });
+      await service.countMessages({ purpose: 'ta-chat:exact-id' });
 
       expect(sessionMessageRepo.count).toHaveBeenCalledWith({
-        tenantId: 'tenant-3',
         purpose: 'ta-chat:exact-id',
       });
     });
@@ -533,7 +483,7 @@ describe('SessionService', () => {
     it('returns 0 when repository returns 0', async () => {
       sessionMessageRepo.count.mockResolvedValue(0);
 
-      const result = await service.countMessagesByTenant({ tenantId: 'tenant-empty' });
+      const result = await service.countMessages({});
 
       expect(result).toBe(0);
     });
@@ -555,7 +505,6 @@ describe('SessionService', () => {
           id: 'session-a',
           mastraThreadId: 'thread-a',
           userId: 'user-1',
-          tenantId: null,
           promptSlug: 'test',
           resolvedPrompt: 'You are a test assistant.',
           purpose: 'test',
@@ -571,7 +520,6 @@ describe('SessionService', () => {
           id: 'session-b',
           mastraThreadId: 'thread-b',
           userId: 'user-1',
-          tenantId: null,
           promptSlug: 'test',
           resolvedPrompt: 'You are a test assistant.',
           purpose: 'test',
@@ -598,7 +546,6 @@ describe('SessionService', () => {
           id: 'session-a',
           mastraThreadId: 'thread-a',
           userId: 'user-1',
-          tenantId: null,
           promptSlug: 'test',
           resolvedPrompt: 'You are a test assistant.',
           purpose: 'test',
@@ -625,7 +572,6 @@ describe('SessionService', () => {
           id: 'session-no-events',
           mastraThreadId: 'thread-1',
           userId: 'user-1',
-          tenantId: null,
           promptSlug: 'test',
           resolvedPrompt: 'You are a test assistant.',
           purpose: 'test',
@@ -659,12 +605,9 @@ describe('SessionService', () => {
 });
 
 describe('ISessionService contract', () => {
-  it('service exposes appendMessageEvent and countMessagesByTenant (compile-time check)', () => {
-    // If ISessionService is missing these methods, the vi.fn() stubs in
-    // createMockSessionService will drift from the interface and tsc will error.
-    // The runtime assertion is a no-op.
+  it('service exposes appendMessageEvent and countMessages (compile-time check)', () => {
     const mock = createMockSessionService();
     expect(mock.appendMessageEvent).toBeDefined();
-    expect(mock.countMessagesByTenant).toBeDefined();
+    expect(mock.countMessages).toBeDefined();
   });
 });
