@@ -20,6 +20,8 @@ export interface ISessionMediator {
     items: SessionSummaryClient[];
     page: number;
     perPage: number;
+    /** Filtered session count across all pages. See ListSessionsQuery response JSDoc. */
+    total: number;
   }>;
   create(command: InstanceType<typeof CreateSessionCommand>): Promise<SessionClientModel>;
   end(command: InstanceType<typeof EndSessionCommand>): Promise<void>;

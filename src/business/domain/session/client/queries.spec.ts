@@ -251,6 +251,64 @@ describe('GetSessionMessagesQuery', () => {
   });
 });
 
+// ─── ListSessionsQuery response schema ───────────────────────────────────────
+
+describe('ListSessionsQuery response schema', () => {
+  it('accepts a valid response with total: 0', () => {
+    const schema = ListSessionsQuery.responseSchema;
+    const result = schema.safeParse({
+      items: [],
+      page: 1,
+      perPage: 10,
+      total: 0,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts a valid response with total: 42', () => {
+    const schema = ListSessionsQuery.responseSchema;
+    const result = schema.safeParse({
+      items: [],
+      page: 1,
+      perPage: 10,
+      total: 42,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a negative total', () => {
+    const schema = ListSessionsQuery.responseSchema;
+    const result = schema.safeParse({
+      items: [],
+      page: 1,
+      perPage: 10,
+      total: -1,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a non-integer total', () => {
+    const schema = ListSessionsQuery.responseSchema;
+    const result = schema.safeParse({
+      items: [],
+      page: 1,
+      perPage: 10,
+      total: 1.5,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a response missing total', () => {
+    const schema = ListSessionsQuery.responseSchema;
+    const result = schema.safeParse({
+      items: [],
+      page: 1,
+      perPage: 10,
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
 // ─── messageListClientSchema validation ──────────────────────────────────────
 
 describe('messageListClientSchema', () => {

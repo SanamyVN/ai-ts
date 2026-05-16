@@ -49,6 +49,15 @@ export const ListSessionsQuery = createQuery({
     items: z.array(sessionSummaryClientSchema),
     page: z.number(),
     perPage: z.number(),
+    /**
+     * Filtered count of sessions matching the same filter across all pages — not
+     * just the current page. Use this to compute `totalPages = Math.ceil(total / perPage)`.
+     *
+     * This `total` counts sessions. It is distinct from `SessionSummary.messageCount`,
+     * which counts user-submitted messages in the `ai_session_messages` ledger for billing.
+     * (Design doc §4.2, paginated-total-counts.md)
+     */
+    total: z.number().int().nonnegative(),
   }),
 });
 
