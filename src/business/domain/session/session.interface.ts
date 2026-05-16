@@ -71,8 +71,12 @@ export interface ISessionService {
   /**
    * Retrieves paginated messages for a session.
    * @param sessionId - Session whose messages to fetch.
-   * @param pagination - Page size and cursor options.
-   * @returns A paginated list of messages.
+   * @param pagination - 1-based `page` and `perPage`. `page: 1` returns the
+   *   first slice of the thread (Mastra 0-indexed internally; the adapter
+   *   translates). See §2 of the paginated-total-counts design doc.
+   * @returns A paginated list of messages. The `total` field counts the full
+   *   Mastra thread transcript (all roles). It is not the same as
+   *   `SessionSummary.messageCount` (user-submission billing ledger).
    * @throws {SessionNotFoundError} If the session does not exist.
    */
   getMessages(sessionId: string, pagination: Pagination): Promise<MessageList>;
