@@ -18,7 +18,6 @@ export class ConversationAppService {
     promptSlug: string;
     promptParams: Record<string, unknown>;
     userId: string;
-    tenantId?: string;
     purpose: string;
     model?: string;
   }): Promise<ConversationResponseDto> {
