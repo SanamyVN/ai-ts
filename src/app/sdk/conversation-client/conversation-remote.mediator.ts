@@ -55,7 +55,6 @@ export class ConversationRemoteMediator implements IConversationMediator {
       promptSlug: command.promptSlug,
       promptParams: command.promptParams,
       userId: command.userId,
-      tenantId: command.tenantId,
       purpose: command.purpose,
       model: command.model,
     });

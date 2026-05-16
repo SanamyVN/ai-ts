@@ -33,7 +33,6 @@ export class ConversationLocalMediator implements IConversationMediator {
       promptSlug: command.promptSlug,
       promptParams: command.promptParams,
       userId: command.userId,
-      ...(command.tenantId !== undefined ? { tenantId: command.tenantId } : {}),
       purpose: command.purpose,
       ...(command.model !== undefined ? { model: command.model } : {}),
     });
