@@ -38,7 +38,6 @@ const SESSION = {
   id: 'session-1',
   mastraThreadId: 'thread-1',
   userId: 'user-1',
-  tenantId: null,
   promptSlug: 'greet',
   resolvedPrompt: 'Hello {{name}}',
   purpose: 'test',
@@ -101,16 +100,13 @@ describe('ConversationEngine', () => {
       expect(result.model).toBe('openai/gpt-4o');
     });
 
-    it('passes tenantId to session creation when provided', async () => {
-      send
-        .mockResolvedValueOnce(RESOLVED_PROMPT)
-        .mockResolvedValueOnce({ ...SESSION, tenantId: 'tenant-1' });
+    it('does not forward tenantId to the session command', async () => {
+      send.mockResolvedValueOnce(RESOLVED_PROMPT).mockResolvedValueOnce(SESSION);
 
       await engine.create({
         promptSlug: 'greet',
         promptParams: {},
         userId: 'user-1',
-        tenantId: 'tenant-1',
         purpose: 'test',
       });
 
@@ -118,7 +114,9 @@ describe('ConversationEngine', () => {
       if (!call) throw new Error('Expected second mediator call');
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const sessionCommand = call[0] as InstanceType<typeof CreateSessionCommand>;
-      expect(sessionCommand).toHaveProperty('tenantId', 'tenant-1');
+      // Foundation's createCommand spreads payload fields directly onto the
+      // instance — no `.payload` property exists. Assert on the instance.
+      expect(sessionCommand).not.toHaveProperty('tenantId');
     });
 
     it('saves seed messages to the thread after session creation', async () => {

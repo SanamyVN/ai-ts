@@ -76,7 +76,6 @@ export class ConversationEngine implements IConversationEngine {
     const session = await this.mediator.send(
       new CreateSessionCommand({
         userId: config.userId,
-        ...(config.tenantId !== undefined ? { tenantId: config.tenantId } : {}),
         promptSlug: config.promptSlug,
         resolvedPrompt: prompt.text,
         purpose: config.purpose,

@@ -11,7 +11,6 @@ export interface ConversationConfig {
   readonly promptSlug: string;
   readonly promptParams: Record<string, unknown>;
   readonly userId: string;
-  readonly tenantId?: string;
   readonly purpose: string;
   /** LLM model identifier override; falls back to the system default when omitted. */
   readonly model?: string;
