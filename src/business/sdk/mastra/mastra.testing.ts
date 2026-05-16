@@ -30,6 +30,12 @@ export function createMockMastraAgent() {
  * @example
  * const memory = createMockMastraMemory();
  * memory.createThread.mockResolvedValue({ id: 't1', resourceId: 'r1' });
+ * memory.getMessages.mockResolvedValue({
+ *   items: [{ id: 'm1', role: 'user', content: 'hello', createdAt: new Date() }],
+ *   page: 1,
+ *   perPage: 10,
+ *   total: 1,
+ * });
  */
 export function createMockMastraMemory() {
   return {
@@ -106,4 +112,3 @@ export function createMockMastraVoiceRealtime() {
     updateConfig: vi.fn<IMastraVoiceRealtime['updateConfig']>(),
   };
 }
-
