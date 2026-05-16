@@ -82,6 +82,46 @@ describe('SessionRemoteMediator', () => {
       await expect(mediator.getMessages(query)).rejects.toThrow(SessionNotFoundClientError);
     });
 
+    it('rejects a v1.27.0 server response that uses messages instead of items and omits total', async () => {
+      // A v1.27.0 server returns { messages, page, perPage } without items or total.
+      // messageListClientSchema.parse must throw so a mixed-version deployment fails
+      // loudly rather than silently returning an empty items array.
+      vi.mocked(http.get).mockResolvedValue({
+        ok: true,
+        body: {
+          data: {
+            messages: [
+              {
+                id: 'msg-1',
+                role: 'user',
+                content: 'Hello',
+                createdAt: new Date('2026-01-01T10:00:00Z'),
+              },
+            ],
+            page: 1,
+            perPage: 20,
+            // items absent, total absent — v1.27.0 shape
+          },
+        },
+      });
+
+      const query = new GetSessionMessagesQuery({ sessionId: 'session-1', page: 1, perPage: 20 });
+
+      await expect(mediator.getMessages(query)).rejects.toThrow();
+    });
+
+    it('throws SessionNotFoundClientError on 404', async () => {
+      vi.mocked(http.get).mockResolvedValue({ ok: false, status: 404 });
+
+      const query = new GetSessionMessagesQuery({
+        sessionId: 'session-missing',
+        page: 1,
+        perPage: 10,
+      });
+
+      await expect(mediator.getMessages(query)).rejects.toThrow(SessionNotFoundClientError);
+    });
+
     it('throws generic error on non-404 failure', async () => {
       vi.mocked(http.get).mockResolvedValue({ ok: false, status: 500 });
 
@@ -316,6 +356,26 @@ describe('SessionRemoteMediator', () => {
       expect(call).toContain(`startedAtGte=${encodeURIComponent(startedAtGte.toISOString())}`);
       expect(call).toContain(`startedAtLt=${encodeURIComponent(startedAtLt.toISOString())}`);
       expect(call).not.toContain('tenantId');
+    });
+
+    it('rejects a v1.27.0 server response that is missing total', async () => {
+      // A v1.27.0 server returns { items, page, perPage } without total.
+      // The Zod parse must throw so a mixed-version deployment fails loudly.
+      vi.mocked(http.get).mockResolvedValue({
+        ok: true,
+        body: {
+          data: {
+            items: [],
+            page: 1,
+            perPage: 10,
+            // total intentionally absent — v1.27.0 shape
+          },
+        },
+      });
+
+      const query = new ListSessionsQuery({ page: 1, perPage: 10 });
+
+      await expect(mediator.list(query)).rejects.toThrow();
     });
   });
 });
