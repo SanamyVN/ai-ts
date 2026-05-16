@@ -24,7 +24,7 @@ describe('SessionLocalMediator', () => {
   describe('getMessages', () => {
     it('returns mapped message list from service', async () => {
       sessionService.getMessages.mockResolvedValue({
-        messages: [
+        items: [
           {
             id: 'msg-1',
             role: 'user' as const,
@@ -40,6 +40,7 @@ describe('SessionLocalMediator', () => {
         ],
         page: 1,
         perPage: 20,
+        total: 2,
       });
 
       const query = new GetSessionMessagesQuery({ sessionId: 'session-1', page: 1, perPage: 20 });
@@ -49,8 +50,8 @@ describe('SessionLocalMediator', () => {
         page: 1,
         perPage: 20,
       });
-      expect(result.messages).toHaveLength(2);
-      expect(result.messages[0]).toEqual({
+      expect(result.items).toHaveLength(2);
+      expect(result.items[0]).toEqual({
         id: 'msg-1',
         role: 'user',
         content: 'Hello',
@@ -58,6 +59,7 @@ describe('SessionLocalMediator', () => {
       });
       expect(result.page).toBe(1);
       expect(result.perPage).toBe(20);
+      expect(result.total).toBe(2);
     });
 
     it('throws SessionNotFoundClientError when service throws SessionNotFoundError', async () => {

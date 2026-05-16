@@ -58,17 +58,18 @@ describe('Session / Lifecycle', () => {
     });
 
     ctx.mastraMemory.getMessages.mockResolvedValue({
-      messages: [
+      items: [
         { id: 'm1', role: 'user', content: 'Hello', createdAt: new Date() },
         { id: 'm2', role: 'assistant', content: 'Hi there!', createdAt: new Date() },
       ],
       page: 1,
       perPage: 10,
+      total: 2,
     });
 
     const result = await ctx.sessionService.getMessages(session.id, { page: 1, perPage: 10 });
 
-    expect(result.messages).toHaveLength(2);
+    expect(result.items).toHaveLength(2);
     expect(ctx.mastraMemory.getMessages).toHaveBeenCalledWith('thread-123', {
       page: 1,
       perPage: 10,
@@ -170,9 +171,10 @@ describe('Session / Lifecycle', () => {
       { id: 'm2', role: 'assistant' as const, content: 'Hi there!', createdAt: new Date() },
     ];
     ctx.mastraMemory.getMessages.mockResolvedValue({
-      messages,
+      items: messages,
       page: 1,
       perPage: 10000,
+      total: messages.length,
     });
 
     const transcript = await ctx.sessionService.exportTranscript(session.id, 'json');
@@ -198,12 +200,13 @@ describe('Session / Lifecycle', () => {
     });
 
     ctx.mastraMemory.getMessages.mockResolvedValue({
-      messages: [
+      items: [
         { id: 'm1', role: 'user', content: 'Hello', createdAt: new Date() },
         { id: 'm2', role: 'assistant', content: 'Hi there!', createdAt: new Date() },
       ],
       page: 1,
       perPage: 10000,
+      total: 2,
     });
 
     const transcript = await ctx.sessionService.exportTranscript(session.id, 'text');

@@ -129,7 +129,7 @@ describe('SessionService', () => {
   });
 
   describe('getMessages', () => {
-    it('delegates to Mastra memory', async () => {
+    it('delegates to Mastra memory and returns items and total', async () => {
       sessionRepo.findById.mockResolvedValue({
         id: 'session-1',
         mastraThreadId: 'thread-1',
@@ -146,14 +146,96 @@ describe('SessionService', () => {
         lastMessageAt: null,
       });
       mastraMemory.getMessages.mockResolvedValue({
-        messages: [{ id: 'm1', role: 'user', content: 'hello', createdAt: new Date() }],
+        items: [{ id: 'm1', role: 'user', content: 'hello', createdAt: new Date() }],
         page: 1,
         perPage: 10,
+        total: 42,
       });
 
       const result = await service.getMessages('session-1', { page: 1, perPage: 10 });
+
       expect(mastraMemory.getMessages).toHaveBeenCalledWith('thread-1', { page: 1, perPage: 10 });
-      expect(result.messages).toHaveLength(1);
+      expect(result.items).toHaveLength(1);
+      expect(result.total).toBe(42);
+    });
+  });
+
+  describe('exportTranscript', () => {
+    const SESSION_RECORD = {
+      id: 'session-1',
+      mastraThreadId: 'thread-1',
+      userId: 'user-1',
+      promptSlug: 'test',
+      resolvedPrompt: 'You are a test assistant.',
+      purpose: 'test',
+      status: 'active',
+      title: null,
+      metadata: null,
+      startedAt: new Date(),
+      endedAt: null,
+      lastMessage: null,
+      lastMessageAt: null,
+    };
+
+    it('calls getMessages with page: 1 and perPage: 10000 (regression: was page: 0)', async () => {
+      sessionRepo.findById.mockResolvedValue(SESSION_RECORD);
+      mastraMemory.getMessages.mockResolvedValue({
+        items: [],
+        page: 1,
+        perPage: 10000,
+        total: 0,
+      });
+
+      await service.exportTranscript('session-1', 'json');
+
+      expect(mastraMemory.getMessages).toHaveBeenCalledWith('thread-1', {
+        page: 1,
+        perPage: 10000,
+      });
+    });
+
+    it('returns all messages in the transcript (regression: page: 0 with new adapter would forward -1 to Mastra)', async () => {
+      sessionRepo.findById.mockResolvedValue(SESSION_RECORD);
+      const msgs = Array.from({ length: 30 }, (_, i) => ({
+        id: `msg-${i}`,
+        role: 'user' as const,
+        content: `message ${i}`,
+        createdAt: new Date(Date.UTC(2026, 0, 1, 0, i, 0)),
+      }));
+      mastraMemory.getMessages.mockResolvedValue({
+        items: msgs,
+        page: 1,
+        perPage: 10000,
+        total: 30,
+      });
+
+      const transcript = await service.exportTranscript('session-1', 'json');
+
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const parsed = JSON.parse(transcript.content) as unknown[];
+      expect(parsed).toHaveLength(30);
+      // Transcript.messages field on the returned value is still named messages
+      // (Transcript interface is unchanged in this phase — see session.model.ts:104)
+      expect(transcript.messages).toHaveLength(30);
+      expect(transcript.messages[0]?.id).toBe('msg-0');
+    });
+
+    it('formats text transcript with role prefix for each message', async () => {
+      sessionRepo.findById.mockResolvedValue(SESSION_RECORD);
+      mastraMemory.getMessages.mockResolvedValue({
+        items: [
+          { id: 'm1', role: 'user', content: 'Hello', createdAt: new Date() },
+          { id: 'm2', role: 'assistant', content: 'Hi there', createdAt: new Date() },
+        ],
+        page: 1,
+        perPage: 10000,
+        total: 2,
+      });
+
+      const transcript = await service.exportTranscript('session-1', 'text');
+
+      expect(transcript.content).toContain('[user] Hello');
+      expect(transcript.content).toContain('[assistant] Hi there');
     });
   });
 

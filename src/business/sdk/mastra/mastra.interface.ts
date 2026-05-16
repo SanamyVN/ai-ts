@@ -71,11 +71,18 @@ export interface Pagination {
   readonly perPage: number;
 }
 
-/** Paginated list of messages returned from memory. */
+/**
+ * Paginated list of messages returned from memory.
+ *
+ * `total` is a pass-through from Mastra `recall()`; it counts the literal
+ * stored transcript for the thread — see §2 of the paginated-total-counts
+ * design doc for semantics and the distinction from `SessionSummary.messageCount`.
+ */
 export interface MessageList {
-  readonly messages: Message[];
+  readonly items: Message[];
   readonly page: number;
   readonly perPage: number;
+  readonly total: number;
 }
 
 /** Filter criteria for listing threads. */

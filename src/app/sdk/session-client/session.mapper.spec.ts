@@ -164,7 +164,7 @@ describe('toSessionSummaryClientFromBusiness', () => {
 describe('toMessageListClient', () => {
   it('converts a MessageList to MessageListClient', () => {
     const messageList: MessageList = {
-      messages: [
+      items: [
         {
           id: 'msg-1',
           role: 'user',
@@ -180,18 +180,19 @@ describe('toMessageListClient', () => {
       ],
       page: 1,
       perPage: 20,
+      total: 2,
     };
 
     const result = toMessageListClient(messageList);
 
-    expect(result.messages).toHaveLength(2);
-    expect(result.messages[0]).toEqual({
+    expect(result.items).toHaveLength(2);
+    expect(result.items[0]).toEqual({
       id: 'msg-1',
       role: 'user',
       content: 'Hello',
       createdAt: new Date('2026-01-01T10:00:00Z'),
     });
-    expect(result.messages[1]).toEqual({
+    expect(result.items[1]).toEqual({
       id: 'msg-2',
       role: 'assistant',
       content: 'Hi there',
@@ -199,19 +200,22 @@ describe('toMessageListClient', () => {
     });
     expect(result.page).toBe(1);
     expect(result.perPage).toBe(20);
+    expect(result.total).toBe(2);
   });
 
-  it('returns empty messages array when input has no messages', () => {
+  it('returns empty items array when input has no messages', () => {
     const messageList: MessageList = {
-      messages: [],
+      items: [],
       page: 1,
       perPage: 10,
+      total: 0,
     };
 
     const result = toMessageListClient(messageList);
 
-    expect(result.messages).toEqual([]);
+    expect(result.items).toEqual([]);
     expect(result.page).toBe(1);
     expect(result.perPage).toBe(10);
+    expect(result.total).toBe(0);
   });
 });

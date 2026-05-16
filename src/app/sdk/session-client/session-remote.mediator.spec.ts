@@ -31,7 +31,7 @@ describe('SessionRemoteMediator', () => {
         ok: true,
         body: {
           data: {
-            messages: [
+            items: [
               {
                 id: 'msg-1',
                 role: 'user',
@@ -47,6 +47,7 @@ describe('SessionRemoteMediator', () => {
             ],
             page: 1,
             perPage: 20,
+            total: 2,
           },
         },
       });
@@ -57,8 +58,8 @@ describe('SessionRemoteMediator', () => {
       expect(http.get).toHaveBeenCalledWith(
         'https://ai.example.com/ai/sessions/session-1/messages?page=1&perPage=20',
       );
-      expect(result.messages).toHaveLength(2);
-      expect(result.messages[0]).toEqual({
+      expect(result.items).toHaveLength(2);
+      expect(result.items[0]).toEqual({
         id: 'msg-1',
         role: 'user',
         content: 'Hello',
@@ -66,6 +67,7 @@ describe('SessionRemoteMediator', () => {
       });
       expect(result.page).toBe(1);
       expect(result.perPage).toBe(20);
+      expect(result.total).toBe(2);
     });
 
     it('throws SessionNotFoundClientError on 404', async () => {

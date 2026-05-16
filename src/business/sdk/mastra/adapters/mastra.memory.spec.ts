@@ -167,4 +167,167 @@ describe('MastraMemoryAdapter', () => {
       );
     });
   });
+
+  describe('getMessages', () => {
+    it('maps Mastra result.messages to items and passes result.total through', async () => {
+      const createdAt = new Date('2026-01-01T10:00:00.000Z');
+      mockMemory.recall.mockResolvedValue({
+        messages: [{ id: 'msg-1', role: 'user', content: 'hello', createdAt }],
+        total: 7,
+        page: 0,
+        perPage: 10,
+        hasMore: false,
+      });
+
+      const result = await adapter.getMessages('thread-abc', { page: 1, perPage: 10 });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]?.id).toBe('msg-1');
+      expect(result.total).toBe(7);
+      // messages key must not exist on the result
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      expect((result as unknown as Record<string, unknown>)['messages']).toBeUndefined();
+    });
+
+    it('returns items: [] and total: 0 for an empty thread', async () => {
+      mockMemory.recall.mockResolvedValue({
+        messages: [],
+        total: 0,
+        page: 0,
+        perPage: 10,
+        hasMore: false,
+      });
+
+      const result = await adapter.getMessages('thread-empty', { page: 1, perPage: 10 });
+
+      expect(result.items).toHaveLength(0);
+      expect(result.total).toBe(0);
+    });
+
+    it('subtracts 1 from public page before forwarding to recall (page: 1 → recall page: 0)', async () => {
+      mockMemory.recall.mockResolvedValue({
+        messages: [],
+        total: 0,
+        page: 0,
+        perPage: 20,
+        hasMore: false,
+      });
+
+      await adapter.getMessages('thread-1', { page: 1, perPage: 20 });
+
+      expect(mockMemory.recall).toHaveBeenCalledWith(expect.objectContaining({ page: 0 }));
+    });
+
+    it('subtracts 1 from public page before forwarding to recall (page: 3 → recall page: 2)', async () => {
+      mockMemory.recall.mockResolvedValue({
+        messages: [],
+        total: 0,
+        page: 2,
+        perPage: 20,
+        hasMore: false,
+      });
+
+      await adapter.getMessages('thread-1', { page: 3, perPage: 20 });
+
+      expect(mockMemory.recall).toHaveBeenCalledWith(expect.objectContaining({ page: 2 }));
+    });
+
+    it('returns items in the order Mastra provides them (createdAt ASC)', async () => {
+      const earlierDate = new Date('2026-01-01T09:00:00.000Z');
+      const laterDate = new Date('2026-01-01T10:00:00.000Z');
+      mockMemory.recall.mockResolvedValue({
+        messages: [
+          { id: 'msg-early', role: 'user', content: 'first', createdAt: earlierDate },
+          { id: 'msg-late', role: 'user', content: 'second', createdAt: laterDate },
+        ],
+        total: 2,
+        page: 0,
+        perPage: 10,
+        hasMore: false,
+      });
+
+      const result = await adapter.getMessages('thread-ordered', { page: 1, perPage: 10 });
+
+      expect(result.items[0]?.id).toBe('msg-early');
+      expect(result.items[1]?.id).toBe('msg-late');
+    });
+
+    it('page-walk behavioral: page: 1 returns the earliest message in a 25-message thread', async () => {
+      // Seed 25 messages in createdAt ASC order. The mock returns whatever we
+      // configure — this test asserts that the adapter passes page: 0 to recall()
+      // when the caller requests page: 1, so the first item is msg-0 (earliest),
+      // not msg-10 (what a buggy adapter forwarding page: 1 → recall(1) would return).
+      //
+      // Design §6.2: "Page-walk reaches the first message: seed a thread with
+      // 25 messages; call getMessages(threadId, { page: 1, perPage: 10 }); assert
+      // the first item's id is the earliest message in the thread."
+      //
+      // The spy assertions above verify the off-by-one at the call level; this test
+      // independently catches the defect at the result level — if the spy assertions
+      // were removed, this test would still fail whenever the adapter regresses to
+      // forwarding pagination.page directly to recall().
+      const page1Messages = Array.from({ length: 10 }, (_, i) => ({
+        id: `msg-${i}`,
+        role: 'user' as const,
+        content: `message ${i}`,
+        createdAt: new Date(Date.UTC(2026, 0, 1, 0, i, 0)),
+      }));
+      const page2Messages = Array.from({ length: 10 }, (_, i) => ({
+        id: `msg-${10 + i}`,
+        role: 'user' as const,
+        content: `message ${10 + i}`,
+        createdAt: new Date(Date.UTC(2026, 0, 1, 0, 10 + i, 0)),
+      }));
+
+      // Mock returns the correct first-page slice when recall(page: 0) is called.
+      // A buggy adapter that calls recall(page: 1) would need a different mock
+      // return — but we control the mock, so we configure what page 0 should return.
+      mockMemory.recall.mockImplementation(
+        (args: { page: number; perPage: number; threadId: string; orderBy: unknown }) => {
+          if (args.page === 0) {
+            return Promise.resolve({
+              messages: page1Messages,
+              total: 25,
+              page: 0,
+              perPage: 10,
+              hasMore: true,
+            });
+          }
+          if (args.page === 1) {
+            return Promise.resolve({
+              messages: page2Messages,
+              total: 25,
+              page: 1,
+              perPage: 10,
+              hasMore: true,
+            });
+          }
+          return Promise.resolve({
+            messages: [],
+            total: 25,
+            page: args.page,
+            perPage: 10,
+            hasMore: false,
+          });
+        },
+      );
+
+      const result = await adapter.getMessages('thread-25', { page: 1, perPage: 10 });
+
+      // The first item must be msg-0 (earliest in the thread).
+      // If the adapter forwarded page: 1 to recall(), recall(1) returns page2Messages
+      // starting with msg-10 — this assertion would catch that regression.
+      expect(result.items[0]?.id).toBe('msg-0');
+      expect(result.items).toHaveLength(10);
+      expect(result.total).toBe(25);
+    });
+
+    it('wraps recall errors as MastraAdapterError', async () => {
+      mockMemory.recall.mockRejectedValueOnce(new Error('storage unavailable'));
+
+      await expect(adapter.getMessages('thread-err', { page: 1, perPage: 10 })).rejects.toThrow(
+        'Mastra operation failed: getMessages',
+      );
+    });
+  });
 });

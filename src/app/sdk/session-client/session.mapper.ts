@@ -52,7 +52,7 @@ export function toSessionSummaryClientFromBusiness(summary: SessionSummary): Ses
  */
 export function toMessageListClient(messageList: MessageList): MessageListClient {
   return {
-    messages: messageList.messages.map((msg) => ({
+    items: messageList.items.map((msg) => ({
       id: msg.id,
       role: msg.role,
       content: msg.content,
@@ -60,5 +60,6 @@ export function toMessageListClient(messageList: MessageList): MessageListClient
     })),
     page: messageList.page,
     perPage: messageList.perPage,
+    total: messageList.total,
   };
 }

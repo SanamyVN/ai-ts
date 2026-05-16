@@ -83,12 +83,14 @@ export class MastraMemoryAdapter implements IMastraMemory {
     try {
       const result = await this.memory.recall({
         threadId,
-        page: pagination.page,
+        // Public IMastraMemory boundary is 1-based; Mastra recall() is 0-indexed.
+        // See §2 of the paginated-total-counts design doc.
+        page: pagination.page - 1,
         perPage: pagination.perPage,
         orderBy: { field: 'createdAt', direction: 'ASC' },
       });
       return {
-        messages: result.messages.map((m) => ({
+        items: result.messages.map((m) => ({
           id: m.id,
           role: toMessageRole(m.role),
           content: extractTextContent(m.content),
@@ -96,6 +98,7 @@ export class MastraMemoryAdapter implements IMastraMemory {
         })),
         page: pagination.page,
         perPage: pagination.perPage,
+        total: result.total,
       };
     } catch (error) {
       throw new MastraAdapterError('getMessages', error);

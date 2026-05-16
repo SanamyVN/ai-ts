@@ -137,17 +137,23 @@ export class SessionService implements ISessionService {
 
   async exportTranscript(sessionId: string, format: 'json' | 'text'): Promise<Transcript> {
     const session = await this.getSessionOrThrow(sessionId);
-    const { messages } = await this.mastraMemory.getMessages(session.mastraThreadId, {
-      page: 0,
+    // page: 1 — the adapter is uniformly 1-based at the IMastraMemory boundary.
+    // Using page: 0 here would forward recall(page: -1) after the v1.28.0
+    // adapter subtracts 1. perPage: 10000 exceeds the public mediator cap but
+    // is intentional — exportTranscript bypasses the mediator. (§2 design doc)
+    const { items } = await this.mastraMemory.getMessages(session.mastraThreadId, {
+      page: 1,
       perPage: 10000,
     });
 
     const content =
       format === 'json'
-        ? JSON.stringify(messages, null, 2)
-        : messages.map((m) => `[${m.role}] ${m.content}`).join('\n');
+        ? JSON.stringify(items, null, 2)
+        : items.map((m) => `[${m.role}] ${m.content}`).join('\n');
 
-    return { sessionId, format, content, messages };
+    // Transcript.messages field is intentionally kept as `messages` — that field
+    // on the Transcript interface is not renamed in this phase. (session.model.ts:104)
+    return { sessionId, format, content, messages: items };
   }
 
   /**
