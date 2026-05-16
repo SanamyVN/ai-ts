@@ -4,7 +4,6 @@ export const createConversationDto = z.object({
   promptSlug: z.string().min(1),
   promptParams: z.record(z.string(), z.unknown()),
   userId: z.string().min(1),
-  tenantId: z.string().optional(),
   purpose: z.string().min(1),
   model: z.string().optional(),
 });

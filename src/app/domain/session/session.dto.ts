@@ -3,7 +3,6 @@ import { z } from 'zod';
 export const sessionListQueryDto = z
   .object({
     userId: z.string().optional(),
-    tenantId: z.string().optional(),
     purpose: z.string().optional(),
     purposePrefix: z.string().min(1).optional(),
     status: z.string().optional(),
@@ -47,7 +46,6 @@ export const sessionResponseDto = z.object({
   id: z.string(),
   mastraThreadId: z.string(),
   userId: z.string(),
-  tenantId: z.string().nullable(),
   promptSlug: z.string(),
   resolvedPrompt: z.string(),
   purpose: z.string(),
@@ -73,7 +71,6 @@ export type SessionSummaryResponseDto = z.infer<typeof sessionSummaryResponseDto
 
 export const countMessagesQueryDto = z
   .object({
-    tenantId: z.string(),
     purpose: z.string().optional(),
     purposePrefix: z.string().min(1).optional(),
     sentAtGte: z.iso.datetime({ offset: true }).optional(),
