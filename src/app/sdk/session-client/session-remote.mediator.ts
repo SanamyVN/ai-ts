@@ -22,7 +22,7 @@ import type {
   DeleteSessionCommand,
   GetSessionMessagesQuery,
   AppendSessionMessageEventCommand,
-  CountMessagesByTenantQuery,
+  CountMessagesQuery,
 } from '@/business/domain/session/client/queries.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import { z } from 'zod';
@@ -84,7 +84,6 @@ export class SessionRemoteMediator implements ISessionMediator {
     const params = new URLSearchParams();
     if (query.userId) params.set('userId', query.userId);
     if (query.userIds) query.userIds.forEach((id) => params.append('userIds', id));
-    if (query.tenantId) params.set('tenantId', query.tenantId);
     if (query.purpose) params.set('purpose', query.purpose);
     if (query.purposePrefix) params.set('purposePrefix', query.purposePrefix);
     if (query.status) params.set('status', query.status);
@@ -110,7 +109,6 @@ export class SessionRemoteMediator implements ISessionMediator {
   async create(command: InstanceType<typeof CreateSessionCommand>): Promise<SessionClientModel> {
     const response = await this.http.post(`${this.config.baseUrl}/ai/sessions`, {
       userId: command.userId,
-      tenantId: command.tenantId,
       promptSlug: command.promptSlug,
       purpose: command.purpose,
       metadata: command.metadata,
@@ -204,20 +202,23 @@ export class SessionRemoteMediator implements ISessionMediator {
     }
   }
 
-  async countMessagesByTenant(
-    query: InstanceType<typeof CountMessagesByTenantQuery>,
-  ): Promise<{ count: number }> {
+  /**
+   * Counts session message events matching the given filter.
+   * Tenant scoping is implicit via the active Postgres `search_path`.
+   * The URL `/ai/sessions/message-events/count` is unchanged from v1.
+   */
+  async countMessages(query: InstanceType<typeof CountMessagesQuery>): Promise<{ count: number }> {
     const params = new URLSearchParams();
-    params.set('tenantId', query.tenantId);
     if (query.purpose) params.set('purpose', query.purpose);
     if (query.purposePrefix) params.set('purposePrefix', query.purposePrefix);
     if (query.sentAtGte) params.set('sentAtGte', query.sentAtGte.toISOString());
     if (query.sentAtLt) params.set('sentAtLt', query.sentAtLt.toISOString());
+    const qs = params.size > 0 ? `?${params.toString()}` : '';
     const response = await this.http.get(
-      `${this.config.baseUrl}/ai/sessions/message-events/count?${params.toString()}`,
+      `${this.config.baseUrl}/ai/sessions/message-events/count${qs}`,
     );
     if (!response.ok) {
-      throw new Error(`Failed to count messages by tenant: ${response.status}`);
+      throw new Error(`Failed to count messages: ${response.status}`);
     }
     return z.object({ count: z.number().int().nonnegative() }).parse(response.body?.data);
   }

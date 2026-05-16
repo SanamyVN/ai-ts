@@ -3,7 +3,7 @@ import { SessionRemoteMediator, type HttpClient } from './session-remote.mediato
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import {
   AppendSessionMessageEventCommand,
-  CountMessagesByTenantQuery,
+  CountMessagesQuery,
   DeleteSessionCommand,
   GetSessionMessagesQuery,
   ListSessionsQuery,
@@ -187,19 +187,20 @@ describe('SessionRemoteMediator', () => {
     });
   });
 
-  describe('countMessagesByTenant', () => {
-    it('sends GET to /ai/sessions/message-events/count with tenantId query param', async () => {
+  describe('countMessages', () => {
+    it('sends GET to /ai/sessions/message-events/count without tenantId param', async () => {
       vi.mocked(http.get).mockResolvedValue({
         ok: true,
         body: { data: { count: 42 } },
       });
 
-      const query = new CountMessagesByTenantQuery({ tenantId: 'tenant-1' });
-      const result = await mediator.countMessagesByTenant(query);
+      const query = new CountMessagesQuery({});
+      const result = await mediator.countMessages(query);
 
-      expect(http.get).toHaveBeenCalledWith(
-        'https://ai.example.com/ai/sessions/message-events/count?tenantId=tenant-1',
-      );
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const call = vi.mocked(http.get).mock.calls[0]?.[0] as string;
+      expect(call).toBe('https://ai.example.com/ai/sessions/message-events/count');
+      expect(call).not.toContain('tenantId');
       expect(result).toEqual({ count: 42 });
     });
 
@@ -211,30 +212,41 @@ describe('SessionRemoteMediator', () => {
 
       const sentAtGte = new Date('2026-04-01T00:00:00.000Z');
       const sentAtLt = new Date('2026-05-01T00:00:00.000Z');
-      const query = new CountMessagesByTenantQuery({
-        tenantId: 'tenant-1',
+      const query = new CountMessagesQuery({
         purposePrefix: 'ta-',
         sentAtGte,
         sentAtLt,
       });
-      await mediator.countMessagesByTenant(query);
+      await mediator.countMessages(query);
 
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const call = vi.mocked(http.get).mock.calls[0]?.[0] as string;
-      expect(call).toContain('tenantId=tenant-1');
+      expect(call).not.toContain('tenantId');
       expect(call).toContain('purposePrefix=ta-');
       expect(call).toContain(`sentAtGte=${encodeURIComponent(sentAtGte.toISOString())}`);
       expect(call).toContain(`sentAtLt=${encodeURIComponent(sentAtLt.toISOString())}`);
     });
 
+    it('omits empty params — produces no query string when filter is empty', async () => {
+      vi.mocked(http.get).mockResolvedValue({
+        ok: true,
+        body: { data: { count: 0 } },
+      });
+
+      const query = new CountMessagesQuery({});
+      await mediator.countMessages(query);
+
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const call = vi.mocked(http.get).mock.calls[0]?.[0] as string;
+      expect(call).not.toContain('?');
+    });
+
     it('throws generic error on failure', async () => {
       vi.mocked(http.get).mockResolvedValue({ ok: false, status: 400 });
 
-      const query = new CountMessagesByTenantQuery({ tenantId: 'tenant-1' });
+      const query = new CountMessagesQuery({});
 
-      await expect(mediator.countMessagesByTenant(query)).rejects.toThrow(
-        'Failed to count messages by tenant: 400',
-      );
+      await expect(mediator.countMessages(query)).rejects.toThrow('Failed to count messages: 400');
     });
   });
 
@@ -264,7 +276,7 @@ describe('SessionRemoteMediator', () => {
         },
       });
 
-      const query = new ListSessionsQuery({ page: 2, perPage: 10, tenantId: 'tenant-1' });
+      const query = new ListSessionsQuery({ page: 2, perPage: 10 });
       const result = await mediator.list(query);
 
       expect(result.page).toBe(2);
@@ -276,7 +288,7 @@ describe('SessionRemoteMediator', () => {
       const call = vi.mocked(http.get).mock.calls[0]?.[0] as string;
       expect(call).toContain('page=2');
       expect(call).toContain('perPage=10');
-      expect(call).toContain('tenantId=tenant-1');
+      expect(call).not.toContain('tenantId');
     });
 
     it('serializes startedAtGte and startedAtLt as ISO 8601 in the query string', async () => {
@@ -299,6 +311,7 @@ describe('SessionRemoteMediator', () => {
       const call = vi.mocked(http.get).mock.calls[0]?.[0] as string;
       expect(call).toContain(`startedAtGte=${encodeURIComponent(startedAtGte.toISOString())}`);
       expect(call).toContain(`startedAtLt=${encodeURIComponent(startedAtLt.toISOString())}`);
+      expect(call).not.toContain('tenantId');
     });
   });
 });
