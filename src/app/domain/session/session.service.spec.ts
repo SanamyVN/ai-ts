@@ -143,6 +143,7 @@ describe('SessionAppService', () => {
     it('dispatches ListSessionsQuery with parsed ISO date strings converted to Date', async () => {
       mediator.send.mockResolvedValueOnce({
         items: [],
+        total: 0,
         page: 1,
         perPage: 20,
       });
