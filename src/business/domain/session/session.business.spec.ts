@@ -425,28 +425,31 @@ describe('SessionService', () => {
 
       expect(sessionRepo.deleteById).toHaveBeenCalledWith('session-to-delete');
 
-      sessionRepo.list.mockResolvedValue([
-        {
-          id: 'session-other',
-          mastraThreadId: 'thread-other',
-          userId: 'user-1',
-          promptSlug: 'test',
-          resolvedPrompt: 'You are a test assistant.',
-          purpose: 'test',
-          status: 'active',
-          title: null,
-          metadata: null,
-          startedAt: new Date(),
-          endedAt: null,
-          lastMessage: null,
-          lastMessageAt: null,
-        },
-      ]);
+      sessionRepo.list.mockResolvedValue({
+        rows: [
+          {
+            id: 'session-other',
+            mastraThreadId: 'thread-other',
+            userId: 'user-1',
+            promptSlug: 'test',
+            resolvedPrompt: 'You are a test assistant.',
+            purpose: 'test',
+            status: 'active',
+            title: null,
+            metadata: null,
+            startedAt: new Date(),
+            endedAt: null,
+            lastMessage: null,
+            lastMessageAt: null,
+          },
+        ],
+        total: 1,
+      });
       sessionMessageRepo.countBySession.mockResolvedValue(new Map());
 
       const results = await service.list({ userId: 'user-1' }, { page: 1, perPage: 10 });
 
-      expect(results.find((session) => session.id === 'session-to-delete')).toBeUndefined();
+      expect(results.items.find((session) => session.id === 'session-to-delete')).toBeUndefined();
     });
   });
 
@@ -573,7 +576,7 @@ describe('SessionService', () => {
 
   describe('list — pagination and messageCount projection', () => {
     it('forwards filter and pagination to sessionRepo.list', async () => {
-      sessionRepo.list.mockResolvedValue([]);
+      sessionRepo.list.mockResolvedValue({ rows: [], total: 0 });
       sessionMessageRepo.countBySession.mockResolvedValue(new Map());
 
       await service.list({ userId: 'user-1' }, { page: 2, perPage: 25 });
@@ -582,38 +585,41 @@ describe('SessionService', () => {
     });
 
     it('calls countBySession once with the page session ids', async () => {
-      sessionRepo.list.mockResolvedValue([
-        {
-          id: 'session-a',
-          mastraThreadId: 'thread-a',
-          userId: 'user-1',
-          promptSlug: 'test',
-          resolvedPrompt: 'You are a test assistant.',
-          purpose: 'test',
-          status: 'active',
-          title: null,
-          metadata: null,
-          startedAt: new Date(),
-          endedAt: null,
-          lastMessage: null,
-          lastMessageAt: null,
-        },
-        {
-          id: 'session-b',
-          mastraThreadId: 'thread-b',
-          userId: 'user-1',
-          promptSlug: 'test',
-          resolvedPrompt: 'You are a test assistant.',
-          purpose: 'test',
-          status: 'active',
-          title: null,
-          metadata: null,
-          startedAt: new Date(),
-          endedAt: null,
-          lastMessage: null,
-          lastMessageAt: null,
-        },
-      ]);
+      sessionRepo.list.mockResolvedValue({
+        rows: [
+          {
+            id: 'session-a',
+            mastraThreadId: 'thread-a',
+            userId: 'user-1',
+            promptSlug: 'test',
+            resolvedPrompt: 'You are a test assistant.',
+            purpose: 'test',
+            status: 'active',
+            title: null,
+            metadata: null,
+            startedAt: new Date(),
+            endedAt: null,
+            lastMessage: null,
+            lastMessageAt: null,
+          },
+          {
+            id: 'session-b',
+            mastraThreadId: 'thread-b',
+            userId: 'user-1',
+            promptSlug: 'test',
+            resolvedPrompt: 'You are a test assistant.',
+            purpose: 'test',
+            status: 'active',
+            title: null,
+            metadata: null,
+            startedAt: new Date(),
+            endedAt: null,
+            lastMessage: null,
+            lastMessageAt: null,
+          },
+        ],
+        total: 2,
+      });
       sessionMessageRepo.countBySession.mockResolvedValue(new Map([['session-a', 5]]));
 
       await service.list({}, { page: 1, perPage: 10 });
@@ -623,65 +629,130 @@ describe('SessionService', () => {
     });
 
     it('projects messageCount from the count map onto each summary', async () => {
-      sessionRepo.list.mockResolvedValue([
-        {
-          id: 'session-a',
-          mastraThreadId: 'thread-a',
-          userId: 'user-1',
-          promptSlug: 'test',
-          resolvedPrompt: 'You are a test assistant.',
-          purpose: 'test',
-          status: 'active',
-          title: null,
-          metadata: null,
-          startedAt: new Date(),
-          endedAt: null,
-          lastMessage: null,
-          lastMessageAt: null,
-        },
-      ]);
+      sessionRepo.list.mockResolvedValue({
+        rows: [
+          {
+            id: 'session-a',
+            mastraThreadId: 'thread-a',
+            userId: 'user-1',
+            promptSlug: 'test',
+            resolvedPrompt: 'You are a test assistant.',
+            purpose: 'test',
+            status: 'active',
+            title: null,
+            metadata: null,
+            startedAt: new Date(),
+            endedAt: null,
+            lastMessage: null,
+            lastMessageAt: null,
+          },
+        ],
+        total: 1,
+      });
       sessionMessageRepo.countBySession.mockResolvedValue(new Map([['session-a', 17]]));
 
-      const results = await service.list({}, { page: 1, perPage: 10 });
+      const result = await service.list({}, { page: 1, perPage: 10 });
 
-      expect(results).toHaveLength(1);
-      expect(results[0]?.messageCount).toBe(17);
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]?.messageCount).toBe(17);
     });
 
     it('defaults messageCount to 0 for sessions absent from the count map', async () => {
-      sessionRepo.list.mockResolvedValue([
-        {
-          id: 'session-no-events',
-          mastraThreadId: 'thread-1',
-          userId: 'user-1',
-          promptSlug: 'test',
-          resolvedPrompt: 'You are a test assistant.',
-          purpose: 'test',
-          status: 'active',
-          title: null,
-          metadata: null,
-          startedAt: new Date(),
-          endedAt: null,
-          lastMessage: null,
-          lastMessageAt: null,
-        },
-      ]);
+      sessionRepo.list.mockResolvedValue({
+        rows: [
+          {
+            id: 'session-no-events',
+            mastraThreadId: 'thread-1',
+            userId: 'user-1',
+            promptSlug: 'test',
+            resolvedPrompt: 'You are a test assistant.',
+            purpose: 'test',
+            status: 'active',
+            title: null,
+            metadata: null,
+            startedAt: new Date(),
+            endedAt: null,
+            lastMessage: null,
+            lastMessageAt: null,
+          },
+        ],
+        total: 1,
+      });
       // countBySession returns an empty map — session has no events
       sessionMessageRepo.countBySession.mockResolvedValue(new Map());
 
-      const results = await service.list({}, { page: 1, perPage: 10 });
+      const result = await service.list({}, { page: 1, perPage: 10 });
 
-      expect(results[0]?.messageCount).toBe(0);
+      expect(result.items[0]?.messageCount).toBe(0);
     });
 
     it('returns an empty array when repo returns no records', async () => {
-      sessionRepo.list.mockResolvedValue([]);
+      sessionRepo.list.mockResolvedValue({ rows: [], total: 0 });
       sessionMessageRepo.countBySession.mockResolvedValue(new Map());
 
-      const results = await service.list({}, { page: 1, perPage: 10 });
+      const result = await service.list({}, { page: 1, perPage: 10 });
 
-      expect(results).toHaveLength(0);
+      expect(result.items).toHaveLength(0);
       expect(sessionMessageRepo.countBySession).toHaveBeenCalledWith([]);
+    });
+
+    it('returns { items, total } shape — forwards total from repo', async () => {
+      sessionRepo.list.mockResolvedValue({ rows: [], total: 17 });
+      sessionMessageRepo.countBySession.mockResolvedValue(new Map());
+
+      const result = await service.list({}, { page: 1, perPage: 10 });
+
+      expect(result).toHaveProperty('items');
+      expect(result).toHaveProperty('total');
+      expect(result.total).toBe(17);
+    });
+
+    it('returns total: 17 and projects messageCount correctly when repo returns 3 rows and total: 17', async () => {
+      const makeRecord = (id: string) => ({
+        id,
+        mastraThreadId: `thread-${id}`,
+        userId: 'user-1',
+        promptSlug: 'test',
+        resolvedPrompt: 'You are a test assistant.',
+        purpose: 'test',
+        status: 'active',
+        title: null,
+        metadata: null,
+        startedAt: new Date('2026-01-01T00:00:00.000Z'),
+        endedAt: null,
+        lastMessage: null,
+        lastMessageAt: null,
+      });
+
+      sessionRepo.list.mockResolvedValue({
+        rows: [makeRecord('a'), makeRecord('b'), makeRecord('c')],
+        total: 17,
+      });
+      sessionMessageRepo.countBySession.mockResolvedValue(
+        new Map([
+          ['a', 3],
+          ['b', 7],
+          ['c', 0],
+        ]),
+      );
+
+      const result = await service.list({}, { page: 1, perPage: 10 });
+
+      expect(result.total).toBe(17);
+      expect(result.items).toHaveLength(3);
+      expect(result.items[0]?.messageCount).toBe(3);
+      expect(result.items[1]?.messageCount).toBe(7);
+      expect(result.items[2]?.messageCount).toBe(0);
+    });
+
+    it('returns total: 0 and items: [] when repo returns zero rows', async () => {
+      sessionRepo.list.mockResolvedValue({ rows: [], total: 0 });
+      sessionMessageRepo.countBySession.mockResolvedValue(new Map());
+
+      const result = await service.list({}, { page: 1, perPage: 10 });
+
+      expect(result.items).toHaveLength(0);
+      expect(result.total).toBe(0);
     });
   });
 });

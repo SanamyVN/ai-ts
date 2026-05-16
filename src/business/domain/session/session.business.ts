@@ -75,20 +75,20 @@ export class SessionService implements ISessionService {
   /**
    * Lists sessions matching the given filter, newest first. Collects the page's
    * session ids, queries the message-event ledger for per-session counts in one
-   * round-trip, then projects `messageCount` onto each summary. (§1, §5)
-   *
-   * Tenant scoping is implicit via the active `search_path` on `AI_DB`. (§6)
+   * round-trip, then projects `messageCount` onto each summary. Forwards the
+   * `total` filtered count from the repository unchanged. (§1, §5)
    */
   async list(
     filter: SessionFilter,
     pagination: { page: number; perPage: number },
-  ): Promise<SessionSummary[]> {
-    const records = await this.sessionRepo.list(filter, pagination);
-    const ids = records.map((r) => r.id);
+  ): Promise<{ items: readonly SessionSummary[]; total: number }> {
+    const { rows, total } = await this.sessionRepo.list(filter, pagination);
+    const ids = rows.map((r) => r.id);
     const countMap = await this.sessionMessageRepo.countBySession(ids);
-    return records.map((record) =>
+    const items = rows.map((record) =>
       toSessionSummaryFromRecord(record, countMap.get(record.id) ?? 0),
     );
+    return { items, total };
   }
 
   async getMessages(sessionId: string, pagination: Pagination): Promise<MessageList> {

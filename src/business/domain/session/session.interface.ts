@@ -54,19 +54,19 @@ export interface ISessionService {
   /**
    * Lists sessions matching `filter`, paginated.
    *
-   * Tenant scoping is implicit via the active `search_path` on `AI_DB`.
-   *
    * @param filter - Filter options including `purposePrefix`, `startedAtGte`,
    *   and `startedAtLt`. Filters on session start time, not message send time
-   *   — for billing aggregates, use `countMessages`. (§5)
+   *   — for billing aggregates, use `countMessages`.
    * @param pagination - 1-based `page`; `perPage` is required and capped
-   *   at 500 by the mediator. Last page detected via
-   *   `result.length < perPage`. (§5)
+   *   at 500 by the mediator. (§5)
+   * @returns Paginated session summaries and the `total` filtered count across
+   *   all pages. `total` is computed at query time from the same snapshot as
+   *   `items`; it does not include pagination limits.
    */
   list(
     filter: SessionFilter,
     pagination: { page: number; perPage: number },
-  ): Promise<readonly SessionSummary[]>;
+  ): Promise<{ items: readonly SessionSummary[]; total: number }>;
 
   /**
    * Retrieves paginated messages for a session.
