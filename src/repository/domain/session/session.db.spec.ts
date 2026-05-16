@@ -12,7 +12,6 @@ function createSessionRecord(overrides: Partial<SessionRecord> = {}): SessionRec
     id: '00000000-0000-0000-0000-000000000001',
     mastraThreadId: 'thread-1',
     userId: 'user-1',
-    tenantId: null,
     promptSlug: 'prompt-1',
     resolvedPrompt: 'resolved prompt',
     purpose: 'testing',

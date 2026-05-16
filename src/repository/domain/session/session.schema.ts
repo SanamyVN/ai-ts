@@ -4,7 +4,6 @@ export const aiSessions = pgTable('ai_sessions', {
   id: uuid('id').defaultRandom().primaryKey(),
   mastraThreadId: varchar('mastra_thread_id', { length: 255 }).notNull(),
   userId: varchar('user_id', { length: 255 }).notNull(),
-  tenantId: varchar('tenant_id', { length: 255 }),
   promptSlug: varchar('prompt_slug', { length: 255 }).notNull(),
   resolvedPrompt: text('resolved_prompt').notNull(),
   purpose: varchar('purpose', { length: 255 }).notNull(),
