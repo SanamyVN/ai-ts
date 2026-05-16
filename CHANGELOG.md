@@ -1,3 +1,38 @@
+## [1.27.0](https://github.com/SanamyVN/ai-ts/compare/v1.26.0...v1.27.0) (2026-05-16)
+
+### ⚠ BREAKING CHANGES
+
+* ai_sessions.tenant_id and ai_session_messages.tenant_id
+columns removed. tenantId removed from CreateConversationCommand,
+ListSessionsQuery, CountMessagesFilter, Session, and all related Zod
+schemas / DTOs. CountMessagesByTenantQuery renamed to CountMessagesQuery
+(dispatch type 'ai.session.countMessagesByTenant' →
+'ai.session.countMessages'). Tenant isolation is now the host app's
+responsibility via Postgres search_path. See
+docs/releases/v2.0.0-migration.md.
+
+### Features
+
+* drop tenantId column from aiSessionMessages schema and update JSDoc ([0764b26](https://github.com/SanamyVN/ai-ts/commit/0764b26fd276bc567f8b6ccc3b12d5bdb4b5c952))
+* drop tenantId column from aiSessions schema and fixture ([2f83027](https://github.com/SanamyVN/ai-ts/commit/2f83027b5c555c35cba785dcc560ee6f1350594a))
+* drop tenantId from conversation mediator create payloads ([3c0f1d3](https://github.com/SanamyVN/ai-ts/commit/3c0f1d380f020b44ff08e275e10336b981177eaf))
+* drop tenantId from ConversationAppService.create ([00ea071](https://github.com/SanamyVN/ai-ts/commit/00ea0710367dfc9192b837d6eacb1ca536efcdde))
+* drop tenantId from ConversationConfig and ConversationEngine.create ([b99babe](https://github.com/SanamyVN/ai-ts/commit/b99babe3b3ecd41fb63af7af14b5bfde2e27f869))
+* drop tenantId from CreateConversationCommand payload ([d22ad91](https://github.com/SanamyVN/ai-ts/commit/d22ad91627635a107507e501b4cb2de25b97ff77))
+* drop tenantId from session and conversation DTOs ([253a78f](https://github.com/SanamyVN/ai-ts/commit/253a78f31be1c6efb21aba6466939b67e9961808))
+* drop tenantId from session mapper output ([099cd7a](https://github.com/SanamyVN/ai-ts/commit/099cd7a8367cb029b39fdc49f54d726d224df2a2))
+* drop tenantId from Session model, sessionClientModelSchema, and mapper ([79ab396](https://github.com/SanamyVN/ai-ts/commit/79ab396e841a54155a22d9996891ef23d14734f2))
+* drop tenantId from SessionMessageRepoFilter, append input, and buildConditions ([f1802fb](https://github.com/SanamyVN/ai-ts/commit/f1802fb67416a8ffd6b176c270ac675ad41d7f32))
+* drop tenantId from SessionRepoFilter and buildListConditions ([c0dc09a](https://github.com/SanamyVN/ai-ts/commit/c0dc09aa526b203b9065d07735fcb5bf6bfbb001))
+* remove tenant concept from ai-ts surface ([22780d0](https://github.com/SanamyVN/ai-ts/commit/22780d052fb41604494af4c00f6c1d521a881598))
+* rename countMessagesByTenant → countMessages and drop tenantId from SessionService ([b0d9e8f](https://github.com/SanamyVN/ai-ts/commit/b0d9e8f000b4d12098337695aae77b3feb178b2d))
+* rename countMessagesByTenant to countMessages in session router and tokens ([dda2770](https://github.com/SanamyVN/ai-ts/commit/dda2770b5bc5757714951a6a9d3e20aadacd9da4))
+* rename CountMessagesByTenantQuery → CountMessagesQuery, dispatch type ai.session.countMessages, drop tenantId ([c80d5c2](https://github.com/SanamyVN/ai-ts/commit/c80d5c221aa5d3d6ce160dc9b9c4ca17a703979d))
+* rename SessionAppService.countMessagesByTenant to countMessages, drop tenantId ([48a5ec7](https://github.com/SanamyVN/ai-ts/commit/48a5ec7d7387128012367384e174069b2c7a8371))
+* rename SessionLocalMediator.countMessagesByTenant to countMessages, drop tenantId ([9c9a49a](https://github.com/SanamyVN/ai-ts/commit/9c9a49a8f259e443a8310db398808390318db67f))
+* rename SessionRemoteMediator.countMessagesByTenant to countMessages, drop tenantId ([f029c2c](https://github.com/SanamyVN/ai-ts/commit/f029c2c7437e169af5f507e5352aad2d8f6a6c2f))
+* update SESSION_MEDIATOR registry and ISessionMediator — countMessagesByTenant → countMessages ([5689488](https://github.com/SanamyVN/ai-ts/commit/568948807306311ea2096b63e6c5259f21f21cd2))
+
 ## [1.26.0](https://github.com/SanamyVN/ai-ts/compare/v1.25.3...v1.26.0) (2026-05-07)
 
 ### Features
