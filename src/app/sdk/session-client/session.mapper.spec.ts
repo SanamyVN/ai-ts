@@ -218,4 +218,19 @@ describe('toMessageListClient', () => {
     expect(result.perPage).toBe(10);
     expect(result.total).toBe(0);
   });
+
+  it('does not expose a messages field on the result', () => {
+    const messageList: MessageList = {
+      items: [],
+      page: 1,
+      perPage: 10,
+      total: 0,
+    };
+
+    const result = toMessageListClient(messageList);
+    const keys = Object.keys(result);
+
+    expect(keys).not.toContain('messages');
+    expect(keys).toContain('items');
+  });
 });

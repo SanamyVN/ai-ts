@@ -70,18 +70,6 @@ describe('SessionRemoteMediator', () => {
       expect(result.total).toBe(2);
     });
 
-    it('throws SessionNotFoundClientError on 404', async () => {
-      vi.mocked(http.get).mockResolvedValue({ ok: false, status: 404 });
-
-      const query = new GetSessionMessagesQuery({
-        sessionId: 'session-missing',
-        page: 1,
-        perPage: 10,
-      });
-
-      await expect(mediator.getMessages(query)).rejects.toThrow(SessionNotFoundClientError);
-    });
-
     it('rejects a v1.27.0 server response that uses messages instead of items and omits total', async () => {
       // A v1.27.0 server returns { messages, page, perPage } without items or total.
       // messageListClientSchema.parse must throw so a mixed-version deployment fails

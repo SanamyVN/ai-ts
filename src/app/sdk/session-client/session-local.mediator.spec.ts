@@ -82,6 +82,22 @@ describe('SessionLocalMediator', () => {
 
       await expect(mediator.getMessages(query)).rejects.toThrow('database connection failed');
     });
+
+    it('does not expose a messages field on the returned object', async () => {
+      sessionService.getMessages.mockResolvedValue({
+        items: [],
+        page: 1,
+        perPage: 10,
+        total: 0,
+      });
+
+      const query = new GetSessionMessagesQuery({ sessionId: 'session-1', page: 1, perPage: 10 });
+      const result = await mediator.getMessages(query);
+      const keys = Object.keys(result);
+
+      expect(keys).not.toContain('messages');
+      expect(keys).toContain('items');
+    });
   });
 
   describe('updateTitle', () => {
