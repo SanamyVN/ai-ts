@@ -115,7 +115,10 @@ describe('search_path isolation — SessionDrizzleRepository', () => {
       await tx.execute(sql`SET LOCAL search_path = ${sql.identifier(SCHEMA_A)}, public`);
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- test shim
       const repo = new SessionDrizzleRepository({ db: tx } as never);
-      const rows = await repo.list({ purpose: 'testing:search_path' }, { page: 1, perPage: 100 });
+      const { rows } = await repo.list(
+        { purpose: 'testing:search_path' },
+        { page: 1, perPage: 100 },
+      );
       return rows.map((r) => r.mastraThreadId);
     });
 
