@@ -11,7 +11,7 @@ import {
   DeleteSessionCommand,
   GetSessionMessagesQuery,
   AppendSessionMessageEventCommand,
-  CountMessagesByTenantQuery,
+  CountMessagesQuery,
 } from './queries.js';
 
 export interface ISessionMediator {
@@ -29,9 +29,7 @@ export interface ISessionMediator {
   delete(command: InstanceType<typeof DeleteSessionCommand>): Promise<void>;
   getMessages(query: InstanceType<typeof GetSessionMessagesQuery>): Promise<MessageListClient>;
   appendMessageEvent(command: InstanceType<typeof AppendSessionMessageEventCommand>): Promise<void>;
-  countMessagesByTenant(
-    query: InstanceType<typeof CountMessagesByTenantQuery>,
-  ): Promise<{ count: number }>;
+  countMessages(query: InstanceType<typeof CountMessagesQuery>): Promise<{ count: number }>;
 }
 
 export const SESSION_MEDIATOR = createMediatorToken<ISessionMediator>('SESSION_MEDIATOR', {
@@ -45,5 +43,5 @@ export const SESSION_MEDIATOR = createMediatorToken<ISessionMediator>('SESSION_M
   delete: DeleteSessionCommand,
   getMessages: GetSessionMessagesQuery,
   appendMessageEvent: AppendSessionMessageEventCommand,
-  countMessagesByTenant: CountMessagesByTenantQuery,
+  countMessages: CountMessagesQuery,
 });
