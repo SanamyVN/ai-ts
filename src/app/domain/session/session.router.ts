@@ -43,7 +43,6 @@ export class SessionRouter implements IRouter {
       .handle(async ({ query }) =>
         this.service.list({
           ...(query.userId !== undefined ? { userId: query.userId } : {}),
-          ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
           ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
           ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
           ...(query.status !== undefined ? { status: query.status } : {}),
@@ -61,11 +60,10 @@ export class SessionRouter implements IRouter {
     // prevent the router from treating 'message-events' as the :id param.
     app
       .get('/message-events/count')
-      .middleware(...(this.middlewareConfig.countMessagesByTenant ?? []))
+      .middleware(...(this.middlewareConfig.countMessages ?? []))
       .schema({ query: countMessagesQueryDto, response: countMessagesResponseDto })
       .handle(async ({ query }) =>
-        this.service.countMessagesByTenant({
-          tenantId: query.tenantId,
+        this.service.countMessages({
           ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
           ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
           ...(query.sentAtGte !== undefined ? { sentAtGte: new Date(query.sentAtGte) } : {}),

@@ -21,7 +21,7 @@ function createMockSessionAppService() {
     updateTitle: vi.fn(),
     delete: vi.fn(),
     appendMessageEvent: vi.fn(),
-    countMessagesByTenant: vi.fn(),
+    countMessages: vi.fn(),
   };
 }
 
@@ -168,7 +168,6 @@ describe('SessionRouter', () => {
     });
 
     it('returns 422 when sentAt is a raw ISO date without time (no offset)', async () => {
-      // z.iso.datetime({ offset: true }) requires a time component with offset
       const res = await app.post('/ai/sessions/session-1/message-events', {
         eventId: 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
         sentAt: '2026-04-01',
@@ -184,25 +183,22 @@ describe('SessionRouter', () => {
   // -------------------------------------------------------------------------
 
   describe('GET /ai/sessions/message-events/count', () => {
-    it('returns 200 with { count } and calls countMessagesByTenant with tenantId', async () => {
-      service.countMessagesByTenant.mockResolvedValue({ count: 42 });
+    it('returns 200 with { count } without tenantId', async () => {
+      service.countMessages.mockResolvedValue({ count: 42 });
 
-      const res = await app.get('/ai/sessions/message-events/count?tenantId=tenant-1');
+      const res = await app.get('/ai/sessions/message-events/count');
 
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body).toEqual({ count: 42 });
-      expect(service.countMessagesByTenant).toHaveBeenCalledOnce();
-      expect(service.countMessagesByTenant).toHaveBeenCalledWith({
-        tenantId: 'tenant-1',
-      });
+      expect(service.countMessages).toHaveBeenCalledOnce();
+      expect(service.countMessages).toHaveBeenCalledWith({});
     });
 
     it('returns 200 with all optional filters parsed correctly', async () => {
-      service.countMessagesByTenant.mockResolvedValue({ count: 7 });
+      service.countMessages.mockResolvedValue({ count: 7 });
 
       const params = new URLSearchParams({
-        tenantId: 'tenant-1',
         purposePrefix: 'ta-',
         sentAtGte: '2026-04-01T00:00:00.000Z',
         sentAtLt: '2026-05-01T00:00:00.000Z',
@@ -212,63 +208,65 @@ describe('SessionRouter', () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body).toEqual({ count: 7 });
-      expect(service.countMessagesByTenant).toHaveBeenCalledWith({
-        tenantId: 'tenant-1',
+      expect(service.countMessages).toHaveBeenCalledWith({
         purposePrefix: 'ta-',
         sentAtGte: new Date('2026-04-01T00:00:00.000Z'),
         sentAtLt: new Date('2026-05-01T00:00:00.000Z'),
       });
     });
 
-    it('returns 422 when tenantId is missing', async () => {
-      const res = await app.get('/ai/sessions/message-events/count');
+    it('silently strips a tenantId sent by a legacy caller', async () => {
+      service.countMessages.mockResolvedValue({ count: 0 });
 
-      expect(res.status).toBe(422);
-      expect(service.countMessagesByTenant).not.toHaveBeenCalled();
+      const res = await app.get('/ai/sessions/message-events/count?tenantId=legacy-tenant');
+
+      // Zod non-strict strips unknown fields — 200, not 422
+      expect(res.status).toBe(200);
+      // tenantId must not reach the service
+      expect(service.countMessages).toHaveBeenCalledWith(
+        expect.not.objectContaining({ tenantId: expect.anything() }),
+      );
     });
 
     it('returns 422 when both purpose and purposePrefix are set', async () => {
       const params = new URLSearchParams({
-        tenantId: 'tenant-1',
         purpose: 'support',
         purposePrefix: 'sup-',
       });
       const res = await app.get(`/ai/sessions/message-events/count?${params.toString()}`);
 
       expect(res.status).toBe(422);
-      expect(service.countMessagesByTenant).not.toHaveBeenCalled();
+      expect(service.countMessages).not.toHaveBeenCalled();
     });
 
     it('returns 422 when sentAtLt is not strictly greater than sentAtGte', async () => {
       const params = new URLSearchParams({
-        tenantId: 'tenant-1',
         sentAtGte: '2026-05-01T00:00:00.000Z',
         sentAtLt: '2026-04-01T00:00:00.000Z',
       });
       const res = await app.get(`/ai/sessions/message-events/count?${params.toString()}`);
 
       expect(res.status).toBe(422);
-      expect(service.countMessagesByTenant).not.toHaveBeenCalled();
+      expect(service.countMessages).not.toHaveBeenCalled();
     });
 
     it('returns 422 when sentAtLt equals sentAtGte', async () => {
       const params = new URLSearchParams({
-        tenantId: 'tenant-1',
         sentAtGte: '2026-05-01T00:00:00.000Z',
         sentAtLt: '2026-05-01T00:00:00.000Z',
       });
       const res = await app.get(`/ai/sessions/message-events/count?${params.toString()}`);
 
       expect(res.status).toBe(422);
-      expect(service.countMessagesByTenant).not.toHaveBeenCalled();
+      expect(service.countMessages).not.toHaveBeenCalled();
     });
 
-    it('is NOT swallowed by GET /:id — countMessagesByTenant is called, not get', async () => {
-      service.countMessagesByTenant.mockResolvedValue({ count: 0 });
+    it('is NOT swallowed by GET /:id — countMessages is called, not get', async () => {
+      service.countMessages.mockResolvedValue({ count: 0 });
 
-      await app.get('/ai/sessions/message-events/count?tenantId=tenant-1');
+      await app.get('/ai/sessions/message-events/count');
 
-      expect(service.countMessagesByTenant).toHaveBeenCalled();
+      expect(service.countMessages).toHaveBeenCalled();
       expect(service.get).not.toHaveBeenCalled();
     });
   });
@@ -305,6 +303,17 @@ describe('SessionRouter', () => {
         perPage: 20,
       });
       expect(body).toHaveProperty(['items', 0, 'messageCount'], 3);
+    });
+
+    it('silently strips tenantId sent by legacy callers', async () => {
+      service.list.mockResolvedValue({ items: [], page: 1, perPage: 20 });
+
+      const res = await app.get('/ai/sessions?page=1&perPage=20&tenantId=tenant-old');
+
+      expect(res.status).toBe(200);
+      expect(service.list).toHaveBeenCalledWith(
+        expect.not.objectContaining({ tenantId: expect.anything() }),
+      );
     });
 
     it('returns 422 when page is missing', async () => {

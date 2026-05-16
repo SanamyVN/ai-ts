@@ -10,7 +10,7 @@ export interface SessionMiddlewareConfig {
   readonly updateTitle?: MiddlewareInput[];
   readonly delete?: MiddlewareInput[];
   readonly appendMessageEvent?: MiddlewareInput[];
-  readonly countMessagesByTenant?: MiddlewareInput[];
+  readonly countMessages?: MiddlewareInput[];
 }
 
 export const SESSION_MIDDLEWARE_CONFIG = createToken<SessionMiddlewareConfig>(

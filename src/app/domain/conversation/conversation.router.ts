@@ -37,7 +37,6 @@ export class ConversationRouter implements IRouter {
           promptParams: body.promptParams,
           userId: body.userId,
           purpose: body.purpose,
-          ...(body.tenantId !== undefined ? { tenantId: body.tenantId } : {}),
           ...(body.model !== undefined ? { model: body.model } : {}),
         }),
       );
