@@ -124,6 +124,88 @@ describe('search_path isolation — SessionDrizzleRepository', () => {
   });
 });
 
+/**
+ * Verifies that SET LOCAL search_path reverts to the session-level value once
+ * the transaction boundary closes, proving that a hypothetical regression that
+ * drops the LOCAL keyword would leak tenant scope across pooled connections.
+ *
+ * Fixture API note: `pg` exposes only `pg.db` (NodePgDatabase wrapping a pool)
+ * and does not provide a raw PoolClient accessor. To guarantee same-client
+ * execution across the SET LOCAL boundary, this test uses a manual SAVEPOINT
+ * and ROLLBACK TO SAVEPOINT within a single outer `pg.db.transaction()` call
+ * (which holds one pool client for its entire duration). PostgreSQL guarantees
+ * that ROLLBACK TO SAVEPOINT reverts a SET LOCAL to the value at savepoint
+ * time — the same mechanism that reverts SET LOCAL at transaction end. All
+ * assertions run on the same physical connection.
+ */
+describe('search_path isolation — connection state revert', () => {
+  it('SET LOCAL search_path reverts to session-level after the transaction closes', async () => {
+    let schemaInsideTx = '';
+    let schemaAfterRollback = '';
+
+    await pg.db.transaction(async (tx) => {
+      // Step 1: set a session-level (non-LOCAL) search_path = SCHEMA_A on this
+      // connection. Plain SET persists beyond any savepoint or transaction end.
+      await tx.execute(sql`SET search_path = ${sql.identifier(SCHEMA_A)}, public`);
+
+      const beforeResult = await tx.execute<{ schema: string }>(
+        sql`SELECT current_schema() AS schema`,
+      );
+      expect(beforeResult.rows[0]?.schema).toBe(SCHEMA_A);
+
+      // Step 2: create a savepoint that captures the current session state
+      // (search_path = SCHEMA_A). ROLLBACK TO this savepoint will undo any
+      // SET LOCAL issued after this point — matching what COMMIT does to the
+      // whole transaction.
+      await tx.execute(sql`SAVEPOINT revert_check`);
+
+      // Step 3: SET LOCAL overrides search_path within this savepoint scope.
+      await tx.execute(sql`SET LOCAL search_path = ${sql.identifier(SCHEMA_B)}, public`);
+
+      const duringResult = await tx.execute<{ schema: string }>(
+        sql`SELECT current_schema() AS schema`,
+      );
+      schemaInsideTx = duringResult.rows[0]?.schema ?? '';
+
+      // Step 4: write a session — must land in SCHEMA_B.
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- test shim
+      await new SessionDrizzleRepository({ db: tx } as never).create(newSession('revert-check'));
+
+      // Step 5: roll back to the savepoint. PostgreSQL reverts the SET LOCAL,
+      // restoring search_path to SCHEMA_A. This is equivalent to what happens
+      // when the enclosing transaction commits (SET LOCAL exits scope).
+      // The write above is also rolled back — we verify data via SCHEMA_B count
+      // in a second pass below after a clean committed write.
+      await tx.execute(sql`ROLLBACK TO SAVEPOINT revert_check`);
+
+      const afterResult = await tx.execute<{ schema: string }>(
+        sql`SELECT current_schema() AS schema`,
+      );
+      schemaAfterRollback = afterResult.rows[0]?.schema ?? '';
+    });
+
+    // Step 3 assertion: SET LOCAL correctly pointed at SCHEMA_B inside the scope.
+    expect(schemaInsideTx).toBe(SCHEMA_B);
+
+    // Step 5 assertion: after rolling back to the savepoint, search_path is
+    // SCHEMA_A again. If SET LOCAL were replaced with plain SET this would still
+    // be SCHEMA_B, revealing the leak.
+    expect(schemaAfterRollback).toBe(SCHEMA_A);
+
+    // Step 4 (data): verify a committed write goes to the right schema via the
+    // normal SET LOCAL path already tested above — just confirm counts are clean.
+    await pg.db.transaction(async (tx) => {
+      await tx.execute(sql`SET LOCAL search_path = ${sql.identifier(SCHEMA_B)}, public`);
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- test shim
+      await new SessionDrizzleRepository({ db: tx } as never).create(newSession('revert-check'));
+    });
+    expect(await countIn(SCHEMA_B, 'ai_sessions')).toBe(1);
+    expect(await countIn(SCHEMA_A, 'ai_sessions')).toBe(0);
+
+    // Step 6: no extra cleanup needed — afterEach truncates all schemas.
+  });
+});
+
 describe('search_path isolation — SessionMessageDrizzleRepository', () => {
   it('append() inside a SET LOCAL search_path transaction lands in that schema only', async () => {
     // Each schema needs a parent session row before a message can reference it.

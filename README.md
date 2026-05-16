@@ -22,6 +22,28 @@ See the [full documentation](docs/README.md) for guides, API reference, and exam
 | **Conversation** | [Setup](docs/conversation/setup.md), [Usage](docs/conversation/usage.md), [Endpoints](docs/conversation/endpoints.md) |
 | **Reference**    | [Configuration](docs/configuration.md), [Customization](docs/customization.md), [Testing](docs/testing.md)            |
 
+## Multi-tenancy
+
+`@sanamyvn/ai-ts` is tenant-agnostic. It operates on whatever data is in
+the active Postgres `search_path` at query time. To use ai-ts in a
+multi-tenant deployment:
+
+1. Bind `AI_DB` to a request-scoped Drizzle client that participates in
+   the caller's transaction. (Host apps typically alias `AI_DB` to their
+   foundation request-scoped DB token.)
+2. Before invoking any `IConversationEngine` / `ISessionBusiness` method,
+   issue `SET LOCAL search_path = <tenant_schema>, public` inside the
+   active transaction. The standard pattern is a per-request middleware
+   that opens a tx, sets `search_path`, and runs the handler.
+3. Provision `ai_sessions` and `ai_session_messages` in each tenant's
+   Postgres schema. ai-ts ships the Drizzle `pgTable` declarations; the
+   host app's migration runner picks them up.
+
+If the host app does not set `search_path` before calling ai-ts, queries
+resolve to the connection's default schema (typically `public`). Tenants
+are not isolated. This is a deployment-time contract; ai-ts neither
+detects nor enforces it.
+
 ## Install
 
 ```bash

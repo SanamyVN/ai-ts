@@ -140,16 +140,17 @@ export const AppendSessionMessageEventCommand = createCommand({
 /**
  * Billing aggregate over the `ai_session_messages` ledger.
  *
- * Counts every message whose `sent_at` falls in the half-open interval
- * `[sentAtGte, sentAtLt)`, regardless of session status. Tenant scoping is
- * implicit via the active Postgres `search_path` on the injected `AI_DB`
- * connection — set `SET LOCAL search_path = <tenant_schema>, public` before
- * invoking. (§4, §6)
+ * Scoping is implicit: the active Postgres `search_path` on the `AI_DB`
+ * connection determines which tenant schema is queried. The host app must
+ * set `SET LOCAL search_path = <tenant_schema>, public` before invoking
+ * this query. See the README Multi-tenancy section.
  *
+ * - Counts every message whose `sent_at` falls in the half-open interval
+ *   `[sentAtGte, sentAtLt)`, regardless of session status.
  * - `purpose` and `purposePrefix` are mutually exclusive; `purposePrefix`
  *   is case-sensitive and cannot be empty.
  * - Response is `{ count }` so future breakdown fields can be added
- *   additively.
+ *   additively. (§4)
  */
 export const CountMessagesQuery = createQuery({
   type: 'ai.session.countMessages',
