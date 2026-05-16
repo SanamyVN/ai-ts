@@ -20,7 +20,7 @@ import type {
   DeleteSessionCommand,
   GetSessionMessagesQuery,
   AppendSessionMessageEventCommand,
-  CountMessagesByTenantQuery,
+  CountMessagesQuery,
 } from '@/business/domain/session/client/queries.js';
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import { isSessionNotFoundError } from '@/business/domain/session/session.error.js';
@@ -58,7 +58,6 @@ export class SessionLocalMediator implements ISessionMediator {
       {
         ...(query.userId !== undefined ? { userId: query.userId } : {}),
         ...(query.userIds !== undefined ? { userIds: query.userIds } : {}),
-        ...(query.tenantId !== undefined ? { tenantId: query.tenantId } : {}),
         ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
         ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
         ...(query.status !== undefined ? { status: query.status } : {}),
@@ -78,7 +77,6 @@ export class SessionLocalMediator implements ISessionMediator {
   async create(command: InstanceType<typeof CreateSessionCommand>): Promise<SessionClientModel> {
     const session = await this.sessionService.start({
       userId: command.userId,
-      ...(command.tenantId !== undefined ? { tenantId: command.tenantId } : {}),
       promptSlug: command.promptSlug,
       resolvedPrompt: command.resolvedPrompt,
       purpose: command.purpose,
@@ -164,11 +162,12 @@ export class SessionLocalMediator implements ISessionMediator {
     }
   }
 
-  async countMessagesByTenant(
-    query: InstanceType<typeof CountMessagesByTenantQuery>,
-  ): Promise<{ count: number }> {
-    const count = await this.sessionService.countMessagesByTenant({
-      tenantId: query.tenantId,
+  /**
+   * Counts session message events matching the given filter.
+   * Tenant scoping is implicit via the active Postgres `search_path`.
+   */
+  async countMessages(query: InstanceType<typeof CountMessagesQuery>): Promise<{ count: number }> {
+    const count = await this.sessionService.countMessages({
       ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
       ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
       ...(query.sentAtGte !== undefined ? { sentAtGte: query.sentAtGte } : {}),

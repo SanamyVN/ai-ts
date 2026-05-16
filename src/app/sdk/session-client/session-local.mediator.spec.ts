@@ -5,7 +5,7 @@ import { SessionNotFoundError } from '@/business/domain/session/session.error.js
 import { SessionNotFoundClientError } from '@/business/domain/session/client/errors.js';
 import {
   AppendSessionMessageEventCommand,
-  CountMessagesByTenantQuery,
+  CountMessagesQuery,
   DeleteSessionCommand,
   GetSessionMessagesQuery,
   ListSessionsQuery,
@@ -188,46 +188,53 @@ describe('SessionLocalMediator', () => {
     });
   });
 
-  describe('countMessagesByTenant', () => {
+  describe('countMessages', () => {
     it('wraps the bare number from service as { count }', async () => {
-      sessionService.countMessagesByTenant.mockResolvedValue(7);
+      sessionService.countMessages.mockResolvedValue(7);
 
-      const query = new CountMessagesByTenantQuery({ tenantId: 'tenant-1' });
-      const result = await mediator.countMessagesByTenant(query);
+      const query = new CountMessagesQuery({});
+      const result = await mediator.countMessages(query);
 
       expect(result).toEqual({ count: 7 });
-      expect(sessionService.countMessagesByTenant).toHaveBeenCalledWith({
-        tenantId: 'tenant-1',
-      });
+      expect(sessionService.countMessages).toHaveBeenCalledWith({});
     });
 
     it('forwards all filter fields to the service', async () => {
-      sessionService.countMessagesByTenant.mockResolvedValue(3);
+      sessionService.countMessages.mockResolvedValue(3);
 
       const sentAtGte = new Date('2026-04-01T00:00:00Z');
       const sentAtLt = new Date('2026-05-01T00:00:00Z');
-      const query = new CountMessagesByTenantQuery({
-        tenantId: 'tenant-1',
+      const query = new CountMessagesQuery({
         purposePrefix: 'ta-',
         sentAtGte,
         sentAtLt,
       });
-      const result = await mediator.countMessagesByTenant(query);
+      const result = await mediator.countMessages(query);
 
       expect(result).toEqual({ count: 3 });
-      expect(sessionService.countMessagesByTenant).toHaveBeenCalledWith({
-        tenantId: 'tenant-1',
+      expect(sessionService.countMessages).toHaveBeenCalledWith({
         purposePrefix: 'ta-',
         sentAtGte,
         sentAtLt,
       });
     });
 
-    it('wraps count of 0', async () => {
-      sessionService.countMessagesByTenant.mockResolvedValue(0);
+    it('does not pass tenantId to the service', async () => {
+      sessionService.countMessages.mockResolvedValue(0);
 
-      const query = new CountMessagesByTenantQuery({ tenantId: 'tenant-1' });
-      const result = await mediator.countMessagesByTenant(query);
+      const query = new CountMessagesQuery({});
+      await mediator.countMessages(query);
+
+      expect(sessionService.countMessages).toHaveBeenCalledWith(
+        expect.not.objectContaining({ tenantId: expect.anything() }),
+      );
+    });
+
+    it('wraps count of 0', async () => {
+      sessionService.countMessages.mockResolvedValue(0);
+
+      const query = new CountMessagesQuery({});
+      const result = await mediator.countMessages(query);
 
       expect(result).toEqual({ count: 0 });
     });
@@ -249,7 +256,7 @@ describe('SessionLocalMediator', () => {
       };
       sessionService.list.mockResolvedValue([summary]);
 
-      const query = new ListSessionsQuery({ page: 2, perPage: 10, tenantId: 'tenant-1' });
+      const query = new ListSessionsQuery({ page: 2, perPage: 10 });
       const result = await mediator.list(query);
 
       expect(result.page).toBe(2);
@@ -257,7 +264,7 @@ describe('SessionLocalMediator', () => {
       expect(result.items).toHaveLength(1);
       expect(result.items[0]?.messageCount).toBe(5);
       expect(sessionService.list).toHaveBeenCalledWith(
-        expect.objectContaining({ tenantId: 'tenant-1' }),
+        expect.not.objectContaining({ tenantId: expect.anything() }),
         { page: 2, perPage: 10 },
       );
     });
