@@ -18,7 +18,6 @@ export const ListSessionsQuery = createQuery({
     .object({
       userId: z.string().optional(),
       userIds: z.array(z.string()).optional(),
-      tenantId: z.string().optional(),
       purpose: z.string().optional(),
       /**
        * Case-sensitive prefix match against the session purpose.
@@ -30,7 +29,7 @@ export const ListSessionsQuery = createQuery({
       /**
        * Half-open lower bound for session start time `[startedAtGte, startedAtLt)`.
        * Filters on session start time — not message send time. For billing, use
-       * `CountMessagesByTenantQuery` which scopes on `sentAt`. (§2)
+       * `CountMessagesQuery` which scopes on `sentAt`. (§2)
        */
       startedAtGte: z.date().optional(),
       /** Half-open upper bound for session start time. Must be strictly greater than `startedAtGte`. (§2) */
@@ -57,7 +56,6 @@ export const CreateSessionCommand = createCommand({
   type: 'ai.session.create',
   payload: z.object({
     userId: z.string(),
-    tenantId: z.string().optional(),
     promptSlug: z.string(),
     resolvedPrompt: z.string(),
     purpose: z.string(),
@@ -134,7 +132,7 @@ export const AppendSessionMessageEventCommand = createCommand({
     /** Stable UUID v4 generated at the call site before the HTTP hop. Used for idempotency. */
     eventId: z.uuid(),
     sessionId: z.string(),
-    sentAt: z.date(), // captured at hook entry in conversation.business — see §1 "When sent_at is captured"
+    sentAt: z.date(),
   }),
   response: z.void(),
 });
@@ -142,20 +140,21 @@ export const AppendSessionMessageEventCommand = createCommand({
 /**
  * Billing aggregate over the `ai_session_messages` ledger.
  *
- * - `tenantId` is required (prevents cross-tenant aggregation).
- * - Counts every message whose `sent_at` falls in the half-open interval
- *   `[sentAtGte, sentAtLt)`, regardless of session status.
+ * Counts every message whose `sent_at` falls in the half-open interval
+ * `[sentAtGte, sentAtLt)`, regardless of session status. Tenant scoping is
+ * implicit via the active Postgres `search_path` on the injected `AI_DB`
+ * connection — set `SET LOCAL search_path = <tenant_schema>, public` before
+ * invoking. (§4, §6)
+ *
  * - `purpose` and `purposePrefix` are mutually exclusive; `purposePrefix`
  *   is case-sensitive and cannot be empty.
  * - Response is `{ count }` so future breakdown fields can be added
- *   additively. (§4, §6.7)
+ *   additively.
  */
-export const CountMessagesByTenantQuery = createQuery({
-  type: 'ai.session.countMessagesByTenant',
+export const CountMessagesQuery = createQuery({
+  type: 'ai.session.countMessages',
   payload: z
     .object({
-      /** Required. Without it, the call would aggregate the entire system. (§4) */
-      tenantId: z.string(),
       purpose: z.string().optional(),
       /**
        * Case-sensitive prefix match on purpose. Cannot be empty string.

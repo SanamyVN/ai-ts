@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   AppendSessionMessageEventCommand,
-  CountMessagesByTenantQuery,
+  CountMessagesQuery,
   ListSessionsQuery,
   GetSessionMessagesQuery,
 } from './queries.js';
@@ -22,7 +22,6 @@ function expectRefineMessage(fn: () => unknown, refinementMessage: string): void
     caughtError = e;
   }
   expect(caughtError).toBeDefined();
-  // SchemaValidationError wraps ZodError as cause; refinement messages are in cause.issues.
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const err = caughtError as { cause?: { issues?: { message: string }[] } };
   const messages = err.cause?.issues?.map((i) => i.message) ?? [];
@@ -68,52 +67,41 @@ describe('AppendSessionMessageEventCommand', () => {
   });
 });
 
-// ─── CountMessagesByTenantQuery ───────────────────────────────────────────────
+// ─── CountMessagesQuery ───────────────────────────────────────────────────────
 
-describe('CountMessagesByTenantQuery', () => {
-  it('constructs with tenantId only', () => {
-    expect(() => new CountMessagesByTenantQuery({ tenantId: 'tenant-1' })).not.toThrow();
+describe('CountMessagesQuery', () => {
+  it('dispatch type is ai.session.countMessages', () => {
+    const q = new CountMessagesQuery({});
+    expect(q.type).toBe('ai.session.countMessages');
   });
 
-  it('rejects missing tenantId', () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    expect(() => new CountMessagesByTenantQuery({} as never)).toThrow();
+  it('constructs with an empty payload', () => {
+    expect(() => new CountMessagesQuery({})).not.toThrow();
   });
 
   it('rejects empty-string purposePrefix', () => {
-    expect(
-      () => new CountMessagesByTenantQuery({ tenantId: 'tenant-1', purposePrefix: '' }),
-    ).toThrow();
+    expect(() => new CountMessagesQuery({ purposePrefix: '' })).toThrow();
   });
 
   it('rejects purpose and purposePrefix together', () => {
     expectRefineMessage(
-      () =>
-        new CountMessagesByTenantQuery({
-          tenantId: 'tenant-1',
-          purpose: 'ta-chat',
-          purposePrefix: 'ta-',
-        }),
+      () => new CountMessagesQuery({ purpose: 'ta-chat', purposePrefix: 'ta-' }),
       'purpose and purposePrefix are mutually exclusive',
     );
   });
 
   it('accepts purpose without purposePrefix', () => {
-    expect(
-      () => new CountMessagesByTenantQuery({ tenantId: 'tenant-1', purpose: 'ta-chat' }),
-    ).not.toThrow();
+    expect(() => new CountMessagesQuery({ purpose: 'ta-chat' })).not.toThrow();
   });
 
   it('accepts purposePrefix without purpose', () => {
-    expect(
-      () => new CountMessagesByTenantQuery({ tenantId: 'tenant-1', purposePrefix: 'ta-' }),
-    ).not.toThrow();
+    expect(() => new CountMessagesQuery({ purposePrefix: 'ta-' })).not.toThrow();
   });
 
   it('rejects sentAtLt equal to sentAtGte', () => {
     const d = new Date('2026-04-01T00:00:00Z');
     expectRefineMessage(
-      () => new CountMessagesByTenantQuery({ tenantId: 'tenant-1', sentAtGte: d, sentAtLt: d }),
+      () => new CountMessagesQuery({ sentAtGte: d, sentAtLt: d }),
       'sentAtLt must be strictly greater than sentAtGte',
     );
   });
@@ -121,8 +109,7 @@ describe('CountMessagesByTenantQuery', () => {
   it('rejects sentAtLt less than sentAtGte', () => {
     expectRefineMessage(
       () =>
-        new CountMessagesByTenantQuery({
-          tenantId: 'tenant-1',
+        new CountMessagesQuery({
           sentAtGte: new Date('2026-04-02T00:00:00Z'),
           sentAtLt: new Date('2026-04-01T00:00:00Z'),
         }),
@@ -133,8 +120,7 @@ describe('CountMessagesByTenantQuery', () => {
   it('accepts sentAtLt strictly greater than sentAtGte', () => {
     expect(
       () =>
-        new CountMessagesByTenantQuery({
-          tenantId: 'tenant-1',
+        new CountMessagesQuery({
           sentAtGte: new Date('2026-04-01T00:00:00Z'),
           sentAtLt: new Date('2026-05-01T00:00:00Z'),
         }),
@@ -143,11 +129,7 @@ describe('CountMessagesByTenantQuery', () => {
 
   it('accepts sentAtGte only (no sentAtLt)', () => {
     expect(
-      () =>
-        new CountMessagesByTenantQuery({
-          tenantId: 'tenant-1',
-          sentAtGte: new Date('2026-04-01T00:00:00Z'),
-        }),
+      () => new CountMessagesQuery({ sentAtGte: new Date('2026-04-01T00:00:00Z') }),
     ).not.toThrow();
   });
 });
@@ -232,7 +214,6 @@ describe('ListSessionsQuery', () => {
         new ListSessionsQuery({
           page: 1,
           perPage: 50,
-          tenantId: 'tenant-1',
           purposePrefix: 'ta-',
           startedAtGte: new Date('2026-04-01T00:00:00Z'),
           startedAtLt: new Date('2026-05-01T00:00:00Z'),
