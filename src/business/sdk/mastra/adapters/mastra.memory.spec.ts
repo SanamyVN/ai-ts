@@ -330,4 +330,217 @@ describe('MastraMemoryAdapter', () => {
       );
     });
   });
+
+  /**
+   * §3 pagination invariants for MastraMemoryAdapter.getMessages.
+   *
+   * Design §3 enumerates five invariants that must hold for any paginated response
+   * { items, page, perPage, total }. These tests assert the adapter correctly
+   * propagates what Mastra's recall() returns — if the adapter breaks any
+   * invariant by dropping total, truncating items, or mis-translating page numbers,
+   * at least one test here will catch it.
+   *
+   * Filter-parity (invariant 3) translates for messages as: calling getMessages
+   * twice with the same threadId (same scope) and different pagination returns
+   * the same total both times. There is no caller-supplied filter on the messages
+   * path — scope is fixed to a single thread by design.
+   */
+  describe('getMessages — §3 pagination invariants', () => {
+    // ── Invariant 1: Non-negative count ───────────────────────────────────────
+    // total >= 0 always. For an empty thread Mastra returns total: 0; the adapter
+    // must not transform this into a negative number.
+    describe('Invariant 1 — non-negative count', () => {
+      it('returns total: 0 for an empty thread (total is never negative)', async () => {
+        mockMemory.recall.mockResolvedValue({
+          messages: [],
+          total: 0,
+          page: 0,
+          perPage: 10,
+          hasMore: false,
+        });
+
+        const result = await adapter.getMessages('thread-empty', { page: 1, perPage: 10 });
+
+        expect(result.total).toBe(0);
+        expect(result.total).toBeGreaterThanOrEqual(0);
+        expect(result.items).toHaveLength(0);
+      });
+    });
+
+    // ── Invariant 2: Page bound ────────────────────────────────────────────────
+    // total >= items.length for any single page. When 5 messages exist and perPage
+    // is 10, items.length is 5 and total is 5 — they are equal (the bound holds).
+    describe('Invariant 2 — page bound (total >= items.length)', () => {
+      it('total equals items.length when the full result fits in one page', async () => {
+        const messages = Array.from({ length: 5 }, (_, i) => ({
+          id: `msg-${i}`,
+          role: 'user' as const,
+          content: `message ${i}`,
+          createdAt: new Date(Date.UTC(2026, 0, 1, 0, i, 0)),
+        }));
+        mockMemory.recall.mockResolvedValue({
+          messages,
+          total: 5,
+          page: 0,
+          perPage: 10,
+          hasMore: false,
+        });
+
+        const result = await adapter.getMessages('thread-5', { page: 1, perPage: 10 });
+
+        expect(result.total).toBeGreaterThanOrEqual(result.items.length);
+        expect(result.items).toHaveLength(5);
+        expect(result.total).toBe(5);
+      });
+
+      it('total is greater than items.length when multiple pages exist', async () => {
+        const page1Messages = Array.from({ length: 10 }, (_, i) => ({
+          id: `msg-${i}`,
+          role: 'user' as const,
+          content: `message ${i}`,
+          createdAt: new Date(Date.UTC(2026, 0, 1, 0, i, 0)),
+        }));
+        mockMemory.recall.mockResolvedValue({
+          messages: page1Messages,
+          total: 25,
+          page: 0,
+          perPage: 10,
+          hasMore: true,
+        });
+
+        const result = await adapter.getMessages('thread-25', { page: 1, perPage: 10 });
+
+        expect(result.total).toBeGreaterThanOrEqual(result.items.length);
+        expect(result.items).toHaveLength(10);
+        expect(result.total).toBe(25);
+      });
+    });
+
+    // ── Invariant 3: Filter parity ─────────────────────────────────────────────
+    // For messages, there is no caller-supplied filter — scope is fixed to a single
+    // threadId. Two calls with the same threadId and different pagination must return
+    // the same total. This invariant asserts the adapter does not compute a per-page
+    // total or mutate total based on items.length.
+    describe('Invariant 3 — filter parity (same threadId, different pagination → same total)', () => {
+      it('returns the same total for the same threadId regardless of page or perPage', async () => {
+        // First call: page 1, perPage 10 — Mastra returns total: 25
+        mockMemory.recall.mockResolvedValueOnce({
+          messages: Array.from({ length: 10 }, (_, i) => ({
+            id: `msg-${i}`,
+            role: 'user' as const,
+            content: `message ${i}`,
+            createdAt: new Date(Date.UTC(2026, 0, 1, 0, i, 0)),
+          })),
+          total: 25,
+          page: 0,
+          perPage: 10,
+          hasMore: true,
+        });
+        // Second call: page 2, perPage 5 — Mastra still reports total: 25
+        mockMemory.recall.mockResolvedValueOnce({
+          messages: Array.from({ length: 5 }, (_, i) => ({
+            id: `msg-${10 + i}`,
+            role: 'user' as const,
+            content: `message ${10 + i}`,
+            createdAt: new Date(Date.UTC(2026, 0, 1, 0, 10 + i, 0)),
+          })),
+          total: 25,
+          page: 1,
+          perPage: 5,
+          hasMore: true,
+        });
+
+        const result1 = await adapter.getMessages('thread-parity', { page: 1, perPage: 10 });
+        const result2 = await adapter.getMessages('thread-parity', { page: 2, perPage: 5 });
+
+        expect(result1.total).toBe(result2.total);
+        expect(result1.total).toBe(25);
+      });
+    });
+
+    // ── Invariant 4: Page-walk completeness ───────────────────────────────────
+    // Walking pages 1..ceil(total/perPage) yields exactly total rows in createdAt
+    // ASC order, with no duplicates and no omissions. This test walks a 25-message
+    // thread in pages of 10: pages 1, 2, 3 — last page has 5 messages.
+    describe('Invariant 4 — page-walk completeness', () => {
+      it('walking all pages of a 25-message thread yields exactly 25 unique ids in createdAt ASC order', async () => {
+        const allMessages = Array.from({ length: 25 }, (_, i) => ({
+          id: `msg-${i}`,
+          role: 'user' as const,
+          content: `message ${i}`,
+          createdAt: new Date(Date.UTC(2026, 0, 1, 0, i, 0)),
+        }));
+
+        // recall(page: 0) → messages 0–9
+        mockMemory.recall.mockResolvedValueOnce({
+          messages: allMessages.slice(0, 10),
+          total: 25,
+          page: 0,
+          perPage: 10,
+          hasMore: true,
+        });
+        // recall(page: 1) → messages 10–19
+        mockMemory.recall.mockResolvedValueOnce({
+          messages: allMessages.slice(10, 20),
+          total: 25,
+          page: 1,
+          perPage: 10,
+          hasMore: true,
+        });
+        // recall(page: 2) → messages 20–24
+        mockMemory.recall.mockResolvedValueOnce({
+          messages: allMessages.slice(20, 25),
+          total: 25,
+          page: 2,
+          perPage: 10,
+          hasMore: false,
+        });
+
+        const page1 = await adapter.getMessages('thread-walk', { page: 1, perPage: 10 });
+        const page2 = await adapter.getMessages('thread-walk', { page: 2, perPage: 10 });
+        const page3 = await adapter.getMessages('thread-walk', { page: 3, perPage: 10 });
+
+        const allIds = [
+          ...page1.items.map((m) => m.id),
+          ...page2.items.map((m) => m.id),
+          ...page3.items.map((m) => m.id),
+        ];
+
+        // Exactly total rows
+        expect(allIds).toHaveLength(25);
+        // No duplicates
+        expect(new Set(allIds).size).toBe(25);
+        // Correct order: msg-0 first, msg-24 last
+        expect(allIds[0]).toBe('msg-0');
+        expect(allIds[24]).toBe('msg-24');
+        // total consistent across all pages
+        expect(page1.total).toBe(25);
+        expect(page2.total).toBe(25);
+        expect(page3.total).toBe(25);
+      });
+    });
+
+    // ── Invariant 5: Empty-page total ──────────────────────────────────────────
+    // Requesting a page past the last data page returns items: [] with total still
+    // equal to the matching-set size. Mastra's recall() always returns total even
+    // when the page has no messages; the adapter must pass it through unchanged.
+    describe('Invariant 5 — empty-page total', () => {
+      it('returns items: [] with total: 3 when requesting page 2 of a 3-message thread with perPage 10', async () => {
+        // Mastra returns total: 3 even though this page has no messages
+        mockMemory.recall.mockResolvedValue({
+          messages: [],
+          total: 3,
+          page: 1,
+          perPage: 10,
+          hasMore: false,
+        });
+
+        const result = await adapter.getMessages('thread-3', { page: 2, perPage: 10 });
+
+        expect(result.items).toHaveLength(0);
+        expect(result.total).toBe(3);
+        expect(result.total).toBeGreaterThan(0);
+      });
+    });
+  });
 });
