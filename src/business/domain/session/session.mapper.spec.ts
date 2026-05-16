@@ -9,7 +9,6 @@ describe('toSessionFromRecord', () => {
       id: 'session-1',
       mastraThreadId: 'thread-1',
       userId: 'user-1',
-      tenantId: null,
       promptSlug: 'test-prompt',
       resolvedPrompt: 'You are a test assistant.',
       purpose: 'test',
@@ -32,7 +31,6 @@ describe('toSessionFromRecord', () => {
       id: 'session-1',
       mastraThreadId: 'thread-1',
       userId: 'user-1',
-      tenantId: null,
       promptSlug: 'test-prompt',
       resolvedPrompt: 'You are a test assistant.',
       purpose: 'test',
@@ -48,6 +46,26 @@ describe('toSessionFromRecord', () => {
     expect(session.lastMessage).toBeNull();
     expect(session.lastMessageAt).toBeNull();
   });
+
+  it('does not include tenantId in the mapped Session', () => {
+    const record: SessionRecord = {
+      id: 'session-1',
+      mastraThreadId: 'thread-1',
+      userId: 'user-1',
+      promptSlug: 'test-prompt',
+      resolvedPrompt: 'You are a test assistant.',
+      purpose: 'test',
+      status: 'active',
+      title: null,
+      metadata: null,
+      startedAt: new Date('2026-01-01T00:00:00Z'),
+      endedAt: null,
+      lastMessage: null,
+      lastMessageAt: null,
+    };
+    const session = toSessionFromRecord(record);
+    expect(Object.prototype.hasOwnProperty.call(session, 'tenantId')).toBe(false);
+  });
 });
 
 describe('toSessionSummaryFromRecord', () => {
@@ -56,7 +74,6 @@ describe('toSessionSummaryFromRecord', () => {
       id: 'session-1',
       mastraThreadId: 'thread-1',
       userId: 'user-1',
-      tenantId: null,
       promptSlug: 'test-prompt',
       resolvedPrompt: 'You are a test assistant.',
       purpose: 'test',
@@ -79,7 +96,6 @@ describe('toSessionSummaryFromRecord', () => {
       id: 'session-1',
       mastraThreadId: 'thread-1',
       userId: 'user-1',
-      tenantId: null,
       promptSlug: 'test-prompt',
       resolvedPrompt: 'You are a test assistant.',
       purpose: 'test',
@@ -100,7 +116,6 @@ describe('toSessionSummaryFromRecord', () => {
       id: 'session-2',
       mastraThreadId: 'thread-2',
       userId: 'user-1',
-      tenantId: null,
       promptSlug: 'test-prompt',
       resolvedPrompt: 'You are a test assistant.',
       purpose: 'test',

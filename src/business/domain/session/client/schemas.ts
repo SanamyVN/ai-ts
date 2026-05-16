@@ -4,7 +4,6 @@ export const sessionClientModelSchema = z.object({
   id: z.string(),
   mastraThreadId: z.string(),
   userId: z.string(),
-  tenantId: z.string().nullable(),
   promptSlug: z.string(),
   resolvedPrompt: z.string(),
   purpose: z.string(),

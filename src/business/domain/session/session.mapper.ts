@@ -6,7 +6,6 @@ export function toSessionFromRecord(record: SessionRecord): Session {
     id: record.id,
     mastraThreadId: record.mastraThreadId,
     userId: record.userId,
-    tenantId: record.tenantId,
     promptSlug: record.promptSlug,
     resolvedPrompt: record.resolvedPrompt,
     purpose: record.purpose,

@@ -6,7 +6,6 @@ export interface Session {
   /** Mastra thread ID backing this session's message history. */
   readonly mastraThreadId: string;
   readonly userId: string;
-  readonly tenantId: string | null;
   readonly promptSlug: string;
   /** Fully rendered system prompt text used for this session. */
   readonly resolvedPrompt: string;
@@ -42,7 +41,6 @@ export interface SessionSummary {
 /** Input for starting a new session. The `resolvedPrompt` field is required. */
 export interface StartSessionInput {
   readonly userId: string;
-  readonly tenantId?: string;
   readonly promptSlug: string;
   /** Pre-rendered system prompt text; must be resolved before session creation. */
   readonly resolvedPrompt: string;
@@ -50,11 +48,17 @@ export interface StartSessionInput {
   readonly metadata?: Record<string, unknown>;
 }
 
-/** Criteria for filtering sessions in list queries. */
+/**
+ * Criteria for filtering sessions in list queries.
+ *
+ * Tenant scoping is implicit: the active Postgres `search_path` on the
+ * injected `AI_DB` connection determines which schema's `ai_sessions` table
+ * is queried. Set `SET LOCAL search_path = <tenant_schema>, public` inside
+ * the caller's transaction before invoking. (§6)
+ */
 export interface SessionFilter {
   readonly userId?: string;
   readonly userIds?: string[];
-  readonly tenantId?: string;
   readonly purpose?: string;
   /**
    * Match sessions whose `purpose` starts with this string. Case-sensitive.
@@ -67,8 +71,8 @@ export interface SessionFilter {
   /**
    * Lower bound (inclusive) on session `started_at`. Together with
    * `startedAtLt` forms the half-open interval `[Gte, Lt)` over session
-   * start time. Use `CountMessagesByTenantQuery` for billing — it scopes
-   * on message **send** time, not session start time. (§2)
+   * start time. Use `CountMessagesQuery` for billing — it scopes on message
+   * **send** time, not session start time. (§2)
    */
   readonly startedAtGte?: Date;
   /**
@@ -78,14 +82,16 @@ export interface SessionFilter {
 }
 
 /**
- * Filter for `CountMessagesByTenantQuery` — counts messages in the
+ * Filter for `CountMessagesQuery` — counts messages in the
  * `ai_session_messages` ledger whose `sent_at` falls in the half-open
  * interval `[sentAtGte, sentAtLt)`, regardless of session status.
- * `tenantId` is required to prevent cross-tenant aggregation. (§4)
+ *
+ * Tenant scoping is implicit: the active Postgres `search_path` on the
+ * injected `AI_DB` connection determines which schema's table is queried.
+ * Set `SET LOCAL search_path = <tenant_schema>, public` inside the caller's
+ * transaction before invoking. (§4, §6)
  */
 export interface CountMessagesFilter {
-  /** Tenant scope — required. */
-  readonly tenantId: string;
   /** Exact-match `purpose`. Mutually exclusive with `purposePrefix`. */
   readonly purpose?: string;
   /** Prefix-match `purpose` (case-sensitive). Cannot be empty. (§3) */
