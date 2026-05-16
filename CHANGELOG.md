@@ -1,3 +1,15 @@
+## [1.28.0](https://github.com/SanamyVN/ai-ts/compare/v1.27.0...v1.28.0) (2026-05-16)
+
+### Breaking Changes
+
+* **GetSessionMessagesQuery**: response field `messages` renamed to `items`. Callers that destructure `.messages` must update to `.items`. ([release notes](docs/releases/v1.28.0.md#2-acknowledged-break--rename-messages--items))
+* **GetSessionMessagesQuery**: `page: 1` now returns the first slice of the thread. Previously a 1-based-public / 0-based-Mastra indexing mismatch caused page 1 to silently skip the first messages. Behavior change is in the bug-fix direction. ([release notes](docs/releases/v1.28.0.md#3-acknowledged-break--page-indexing-fix))
+
+### Features
+
+* **ListSessionsQuery**: response gains `total: number` — filtered session count across all pages. Existing `{ items, page, perPage }` destructurings are unaffected. ([release notes](docs/releases/v1.28.0.md#4-additive-change--total-on-listsessionsquery))
+* **GetSessionMessagesQuery**: response gains `total: number` — stored transcript message count from Mastra, distinct from `SessionSummary.messageCount`. ([release notes](docs/releases/v1.28.0.md#5-additive-change--total-on-getsessionmessagesquery))
+
 ## [1.27.0](https://github.com/SanamyVN/ai-ts/compare/v1.26.0...v1.27.0) (2026-05-16)
 
 ### ⚠ BREAKING CHANGES
