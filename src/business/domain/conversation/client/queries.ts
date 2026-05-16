@@ -8,7 +8,6 @@ export const CreateConversationCommand = createCommand({
     promptSlug: z.string(),
     promptParams: z.record(z.string(), z.unknown()),
     userId: z.string(),
-    tenantId: z.string().optional(),
     purpose: z.string(),
     model: z.string().optional(),
   }),
