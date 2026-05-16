@@ -5,7 +5,7 @@ import { createToken } from '@sanamyvn/foundation/di/core/tokens';
  * domain `CountMessagesFilter` into the repo type. (§1, §4)
  *
  * Tenant isolation is handled by the active Postgres `search_path` on the
- * injected `AI_DB` connection. No tenant field is needed here. (v2.0)
+ * injected `AI_DB` connection. No tenant field is needed here. (v1.27)
  */
 export interface SessionMessageRepoFilter {
   /** Exact-match `purpose`. */
@@ -31,12 +31,7 @@ export interface ISessionMessageRepository {
    * @param input - Event data. `id` must be a unique ULID/UUID supplied by the caller.
    *   `sentAt` must be captured at hook entry, not at insert time.
    */
-  append(input: {
-    id: string;
-    sessionId: string;
-    purpose: string;
-    sentAt: Date;
-  }): Promise<void>;
+  append(input: { id: string; sessionId: string; purpose: string; sentAt: Date }): Promise<void>;
 
   /**
    * `COUNT(*)` over the ledger filtered by `filter`. Returns 0 on empty match.

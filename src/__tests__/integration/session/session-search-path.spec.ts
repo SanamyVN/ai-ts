@@ -1,5 +1,5 @@
 /**
- * Integration tests: search_path isolation contract (Business Rule 7, v2.0).
+ * Integration tests: search_path isolation contract (Business Rule 7, v1.27).
  *
  * Proves that ai-ts repositories inherit the active `SET LOCAL search_path`
  * from the caller's transaction. Two schemas are provisioned (cloned from the
