@@ -80,7 +80,7 @@ export class SessionRemoteMediator implements ISessionMediator {
 
   async list(
     query: InstanceType<typeof ListSessionsQuery>,
-  ): Promise<{ items: SessionSummaryClient[]; page: number; perPage: number }> {
+  ): Promise<{ items: SessionSummaryClient[]; page: number; perPage: number; total: number }> {
     const params = new URLSearchParams();
     if (query.userId) params.set('userId', query.userId);
     if (query.userIds) query.userIds.forEach((id) => params.append('userIds', id));
@@ -102,6 +102,7 @@ export class SessionRemoteMediator implements ISessionMediator {
         items: z.array(sessionSummaryClientSchema),
         page: z.number(),
         perPage: z.number(),
+        total: z.number().int().nonnegative(),
       })
       .parse(response.body?.data);
   }

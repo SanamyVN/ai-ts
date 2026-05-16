@@ -274,6 +274,7 @@ describe('SessionRemoteMediator', () => {
             ],
             page: 2,
             perPage: 10,
+            total: 1,
           },
         },
       });
@@ -283,6 +284,7 @@ describe('SessionRemoteMediator', () => {
 
       expect(result.page).toBe(2);
       expect(result.perPage).toBe(10);
+      expect(result.total).toBe(1);
       expect(result.items).toHaveLength(1);
       expect(result.items[0]?.messageCount).toBe(5);
 
@@ -296,7 +298,7 @@ describe('SessionRemoteMediator', () => {
     it('serializes startedAtGte and startedAtLt as ISO 8601 in the query string', async () => {
       vi.mocked(http.get).mockResolvedValue({
         ok: true,
-        body: { data: { items: [], page: 1, perPage: 20 } },
+        body: { data: { items: [], page: 1, perPage: 20, total: 0 } },
       });
 
       const startedAtGte = new Date('2026-04-01T00:00:00.000Z');

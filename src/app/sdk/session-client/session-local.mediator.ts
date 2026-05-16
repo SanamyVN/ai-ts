@@ -53,8 +53,8 @@ export class SessionLocalMediator implements ISessionMediator {
 
   async list(
     query: InstanceType<typeof ListSessionsQuery>,
-  ): Promise<{ items: SessionSummaryClient[]; page: number; perPage: number }> {
-    const results = await this.sessionService.list(
+  ): Promise<{ items: SessionSummaryClient[]; page: number; perPage: number; total: number }> {
+    const { items, total } = await this.sessionService.list(
       {
         ...(query.userId !== undefined ? { userId: query.userId } : {}),
         ...(query.userIds !== undefined ? { userIds: query.userIds } : {}),
@@ -68,9 +68,10 @@ export class SessionLocalMediator implements ISessionMediator {
       { page: query.page, perPage: query.perPage },
     );
     return {
-      items: results.map(toSessionSummaryClientFromBusiness),
+      items: items.map(toSessionSummaryClientFromBusiness),
       page: query.page,
       perPage: query.perPage,
+      total,
     };
   }
 

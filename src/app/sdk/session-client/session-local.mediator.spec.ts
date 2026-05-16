@@ -243,7 +243,7 @@ describe('SessionLocalMediator', () => {
   });
 
   describe('list (paginated)', () => {
-    it('returns { items, page, perPage } from the service', async () => {
+    it('returns { items, page, perPage, total } including total from the service', async () => {
       const summary = {
         id: 'session-1',
         userId: 'user-1',
@@ -256,23 +256,34 @@ describe('SessionLocalMediator', () => {
         lastMessageAt: null,
         messageCount: 5,
       };
-      sessionService.list.mockResolvedValue([summary]);
+      sessionService.list.mockResolvedValue({ items: [summary], total: 42 });
 
-      const query = new ListSessionsQuery({ page: 2, perPage: 10 });
+      const query = new ListSessionsQuery({ page: 2, perPage: 10, userId: 'user-1' });
       const result = await mediator.list(query);
 
       expect(result.page).toBe(2);
       expect(result.perPage).toBe(10);
+      expect(result.total).toBe(42);
       expect(result.items).toHaveLength(1);
       expect(result.items[0]?.messageCount).toBe(5);
       expect(sessionService.list).toHaveBeenCalledWith(
-        expect.not.objectContaining({ tenantId: expect.anything() }),
+        expect.objectContaining({ userId: 'user-1' }),
         { page: 2, perPage: 10 },
       );
     });
 
+    it('returns total: 0 when service returns total: 0 and items: []', async () => {
+      sessionService.list.mockResolvedValue({ items: [], total: 0 });
+
+      const query = new ListSessionsQuery({ page: 1, perPage: 10, userId: 'user-empty' });
+      const result = await mediator.list(query);
+
+      expect(result.total).toBe(0);
+      expect(result.items).toHaveLength(0);
+    });
+
     it('forwards purposePrefix, startedAtGte, startedAtLt to the service', async () => {
-      sessionService.list.mockResolvedValue([]);
+      sessionService.list.mockResolvedValue({ items: [], total: 0 });
 
       const startedAtGte = new Date('2026-04-01T00:00:00Z');
       const startedAtLt = new Date('2026-05-01T00:00:00Z');
@@ -289,6 +300,29 @@ describe('SessionLocalMediator', () => {
         { purposePrefix: 'ta-', startedAtGte, startedAtLt },
         { page: 1, perPage: 20 },
       );
+    });
+
+    it('maps items through toSessionSummaryClientFromBusiness — client shape excludes internal fields', async () => {
+      const summary = {
+        id: 'session-2',
+        userId: 'user-2',
+        promptSlug: 'prompt',
+        purpose: 'ta-chat',
+        status: 'active',
+        title: 'My session',
+        startedAt: new Date('2026-03-01T00:00:00Z'),
+        lastMessage: 'Hello',
+        lastMessageAt: new Date('2026-03-01T01:00:00Z'),
+        messageCount: 3,
+      };
+      sessionService.list.mockResolvedValue({ items: [summary], total: 1 });
+
+      const query = new ListSessionsQuery({ page: 1, perPage: 10 });
+      const result = await mediator.list(query);
+
+      expect(result.total).toBe(1);
+      expect(result.items[0]?.id).toBe('session-2');
+      expect(result.items[0]?.messageCount).toBe(3);
     });
   });
 });
