@@ -147,10 +147,9 @@ describe('SessionDrizzleRepository', () => {
   });
 });
 
-describe('SessionRepoFilter new fields — compile-time shape check', () => {
+describe('SessionRepoFilter shape — compile-time check', () => {
   it('accepts purposePrefix, startedAtGte, and startedAtLt without type error', () => {
     const filter: SessionRepoFilter = {
-      tenantId: 'tenant-1',
       purposePrefix: 'ta-chat:',
       startedAtGte: new Date('2026-01-01T00:00:00.000Z'),
       startedAtLt: new Date('2026-02-01T00:00:00.000Z'),
@@ -248,14 +247,13 @@ describe('SessionDrizzleRepository.list — new filters and pagination', () => {
     expect(mock.whereFn).toHaveBeenCalledWith(expect.anything());
   });
 
-  it('composes tenantId + purposePrefix + startedAtGte + startedAtLt into one WHERE', async () => {
+  it('composes purposePrefix + startedAtGte + startedAtLt into one WHERE', async () => {
     const mock = createListMockClient({ rows: [baseRecord] });
     // @ts-expect-error test-only client stub
     const repo = new SessionDrizzleRepository(mock.client);
 
     await repo.list(
       {
-        tenantId: 'tenant-1',
         purposePrefix: 'ta-chat:',
         startedAtGte: new Date('2026-01-01T00:00:00.000Z'),
         startedAtLt: new Date('2026-02-01T00:00:00.000Z'),

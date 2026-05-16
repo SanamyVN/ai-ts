@@ -33,7 +33,6 @@ export class SessionDrizzleRepository implements ISessionRepository {
     const conditions = [];
     if (filter.userId) conditions.push(eq(aiSessions.userId, filter.userId));
     if (filter.userIds?.length) conditions.push(inArray(aiSessions.userId, filter.userIds));
-    if (filter.tenantId) conditions.push(eq(aiSessions.tenantId, filter.tenantId));
     if (filter.purpose) conditions.push(eq(aiSessions.purpose, filter.purpose));
     if (filter.purposePrefix) conditions.push(like(aiSessions.purpose, `${filter.purposePrefix}%`));
     if (filter.status) conditions.push(eq(aiSessions.status, filter.status));

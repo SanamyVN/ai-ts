@@ -5,7 +5,6 @@ import type { SessionRecord, NewSessionRecord } from './session.model.js';
 export interface SessionRepoFilter {
   userId?: string;
   userIds?: string[];
-  tenantId?: string;
   purpose?: string;
   /** Prefix-match `purpose`. Case-sensitive. Mutually exclusive with `purpose`. (§3) */
   purposePrefix?: string;
