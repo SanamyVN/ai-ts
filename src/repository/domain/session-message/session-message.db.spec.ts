@@ -25,7 +25,6 @@ describe('createMockSessionMessageRepository', () => {
 describe('SessionMessageRepoFilter shape', () => {
   it('accepts all optional filter fields without type error', () => {
     const filter: SessionMessageRepoFilter = {
-      tenantId: 'tenant-1',
       purpose: 'ta-chat:abc',
       purposePrefix: 'ta-chat:',
       sentAtGte: new Date('2026-01-01T00:00:00.000Z'),
@@ -133,7 +132,6 @@ describe('SessionMessageDrizzleRepository.append', () => {
       repo.append({
         id: 'msg-001',
         sessionId: 'sess-1',
-        tenantId: 'tenant-1',
         purpose: 'ta-chat:abc',
         sentAt: explicitSentAt,
       }),
@@ -163,7 +161,6 @@ describe('SessionMessageDrizzleRepository.append', () => {
       repo.append({
         id: 'msg-001',
         sessionId: 'sess-1',
-        tenantId: 'tenant-1',
         purpose: 'ta-chat:abc',
         sentAt,
       }),
@@ -173,7 +170,6 @@ describe('SessionMessageDrizzleRepository.append', () => {
       repo.append({
         id: 'msg-001',
         sessionId: 'sess-1',
-        tenantId: 'tenant-1',
         purpose: 'ta-chat:abc',
         sentAt,
       }),
@@ -191,7 +187,7 @@ describe('SessionMessageDrizzleRepository.count', () => {
     // @ts-expect-error test-only client stub
     const repo = new SessionMessageDrizzleRepository(mock.client);
 
-    const result = await repo.count({ tenantId: 'tenant-x' });
+    const result = await repo.count({});
 
     expect(result).toBe(0);
   });
@@ -201,21 +197,9 @@ describe('SessionMessageDrizzleRepository.count', () => {
     // @ts-expect-error test-only client stub
     const repo = new SessionMessageDrizzleRepository(mock.client);
 
-    const result = await repo.count({ tenantId: 'tenant-y' });
+    const result = await repo.count({ purposePrefix: 'ta-chat:' });
 
     expect(result).toBe(17);
-  });
-
-  it('builds a WHERE clause when tenantId filter is provided', async () => {
-    const mock = createMockSessionMessageClient({ countRow: { total: 5 } });
-    // @ts-expect-error test-only client stub
-    const repo = new SessionMessageDrizzleRepository(mock.client);
-
-    await repo.count({ tenantId: 'tenant-z' });
-
-    // A truthy drizzle SQL node was passed — not undefined.
-    expect(mock.countWhereFn).toHaveBeenCalledTimes(1);
-    expect(mock.countWhereFn).toHaveBeenCalledWith(expect.anything());
   });
 
   it('passes undefined to WHERE when filter is empty (no conditions)', async () => {
@@ -228,13 +212,12 @@ describe('SessionMessageDrizzleRepository.count', () => {
     expect(mock.countWhereFn).toHaveBeenCalledWith(undefined);
   });
 
-  it('composes tenantId + purposePrefix + sentAtGte + sentAtLt into one WHERE', async () => {
+  it('composes purposePrefix + sentAtGte + sentAtLt into one WHERE', async () => {
     const mock = createMockSessionMessageClient({ countRow: { total: 3 } });
     // @ts-expect-error test-only client stub
     const repo = new SessionMessageDrizzleRepository(mock.client);
 
     await repo.count({
-      tenantId: 'tenant-1',
       purposePrefix: 'ta-chat:',
       sentAtGte: new Date('2026-04-01T00:00:00.000Z'),
       sentAtLt: new Date('2026-05-01T00:00:00.000Z'),
@@ -249,7 +232,7 @@ describe('SessionMessageDrizzleRepository.count', () => {
     // @ts-expect-error test-only client stub
     const repo = new SessionMessageDrizzleRepository(mock.client);
 
-    await repo.count({ tenantId: 'tenant-1', purpose: 'ta-chat:exact-id' });
+    await repo.count({ purpose: 'ta-chat:exact-id' });
 
     expect(mock.countWhereFn).toHaveBeenCalledWith(expect.anything());
   });

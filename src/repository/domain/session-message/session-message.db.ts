@@ -26,7 +26,6 @@ export class SessionMessageDrizzleRepository implements ISessionMessageRepositor
   async append(input: {
     id: string; // caller-supplied (Node built-in `crypto.randomUUID()`)
     sessionId: string;
-    tenantId: string;
     purpose: string;
     sentAt: Date; // caller-supplied — captured at hook entry, not at insert time
   }): Promise<void> {
@@ -35,7 +34,6 @@ export class SessionMessageDrizzleRepository implements ISessionMessageRepositor
       .values({
         id: input.id,
         sessionId: input.sessionId,
-        tenantId: input.tenantId,
         purpose: input.purpose,
         sentAt: input.sentAt,
       })
@@ -93,7 +91,6 @@ export class SessionMessageDrizzleRepository implements ISessionMessageRepositor
    */
   private buildConditions(filter: SessionMessageRepoFilter) {
     const conditions = [];
-    if (filter.tenantId) conditions.push(eq(aiSessionMessages.tenantId, filter.tenantId));
     if (filter.purpose) conditions.push(eq(aiSessionMessages.purpose, filter.purpose));
     if (filter.purposePrefix)
       conditions.push(like(aiSessionMessages.purpose, `${filter.purposePrefix}%`));

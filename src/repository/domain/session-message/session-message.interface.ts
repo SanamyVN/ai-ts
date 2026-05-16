@@ -3,10 +3,11 @@ import { createToken } from '@sanamyvn/foundation/di/core/tokens';
 /**
  * Filter shape shared by `count` and the internal use sites that translate
  * domain `CountMessagesFilter` into the repo type. (§1, §4)
+ *
+ * Tenant isolation is handled by the active Postgres `search_path` on the
+ * injected `AI_DB` connection. No tenant field is needed here. (v2.0)
  */
 export interface SessionMessageRepoFilter {
-  /** Tenant scope (required by the domain layer; optional here for reuse). */
-  tenantId?: string;
   /** Exact-match `purpose`. */
   purpose?: string;
   /** Prefix-match `purpose` (case-sensitive). */
@@ -20,12 +21,12 @@ export interface SessionMessageRepoFilter {
 /**
  * Append-only ledger of successful user-submitted messages, used to source
  * `SessionSummary.messageCount` (per page via `countBySession`) and the
- * `CountMessagesByTenantQuery` aggregate (via `count`). (§1, §4)
+ * `CountMessagesQuery` aggregate (via `count`). (§1, §4)
  */
 export interface ISessionMessageRepository {
   /**
    * Inserts one ledger row. Idempotent on `id` (ON CONFLICT DO NOTHING).
-   * `tenantId` and `purpose` are denormalized at insert time. (§1)
+   * `purpose` is denormalized at insert time. (§1)
    *
    * @param input - Event data. `id` must be a unique ULID/UUID supplied by the caller.
    *   `sentAt` must be captured at hook entry, not at insert time.
@@ -33,14 +34,13 @@ export interface ISessionMessageRepository {
   append(input: {
     id: string;
     sessionId: string;
-    tenantId: string;
     purpose: string;
     sentAt: Date;
   }): Promise<void>;
 
   /**
    * `COUNT(*)` over the ledger filtered by `filter`. Returns 0 on empty match.
-   * Used as the billing aggregate for `CountMessagesByTenantQuery`. (§1, §4)
+   * Used as the billing aggregate for `CountMessagesQuery`. (§1, §4)
    */
   count(filter: SessionMessageRepoFilter): Promise<number>;
 
