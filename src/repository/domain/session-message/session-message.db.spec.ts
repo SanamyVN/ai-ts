@@ -5,10 +5,9 @@ import { createMockSessionMessageRepository } from './session-message.testing.js
 import { SessionMessageDrizzleRepository } from './session-message.db.js';
 
 describe('aiSessionMessages schema', () => {
-  it('table definition exposes all five columns', () => {
+  it('table definition exposes id, sessionId, purpose, and sentAt columns', () => {
     expect(aiSessionMessages.id).toBeDefined();
     expect(aiSessionMessages.sessionId).toBeDefined();
-    expect(aiSessionMessages.tenantId).toBeDefined();
     expect(aiSessionMessages.purpose).toBeDefined();
     expect(aiSessionMessages.sentAt).toBeDefined();
   });
