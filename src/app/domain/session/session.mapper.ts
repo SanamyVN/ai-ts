@@ -17,6 +17,8 @@ export function toSessionResponseDtoFromClient(model: SessionClientModel): Sessi
     metadata: model.metadata,
     startedAt: model.startedAt.toISOString(),
     endedAt: model.endedAt !== null ? model.endedAt.toISOString() : null,
+    lastMessage: model.lastMessage,
+    lastMessageAt: model.lastMessageAt !== null ? model.lastMessageAt.toISOString() : null,
   };
 }
 
