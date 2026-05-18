@@ -1,3 +1,28 @@
+## [1.28.0](https://github.com/SanamyVN/ai-ts/compare/v1.27.0...v1.28.0) (2026-05-18)
+
+### Features
+
+* **messages:** rename MessageList.messages → items, add total, fix page translation ([6879cd4](https://github.com/SanamyVN/ai-ts/commit/6879cd4c8862d0242b7123951e1af9812a11277d))
+* **messages:** rename messages → items and add total to messageListClientSchema ([87cbda1](https://github.com/SanamyVN/ai-ts/commit/87cbda1b6661f0c6e6acc1d64aa03018e4cb3fea))
+* **session:** add total to ListSessionsQuery.response schema and ISessionMediator.list ([2c8bbfd](https://github.com/SanamyVN/ai-ts/commit/2c8bbfda2ec203d4a395baa72af81a2ab78304d6))
+* **session:** change ISessionRepository.list return type to { rows, total } ([d52d663](https://github.com/SanamyVN/ai-ts/commit/d52d6638aad902b5e03a7799b42dcac80607409b))
+* **session:** implement COUNT(*) OVER () in SessionDrizzleRepository.list ([e598a5f](https://github.com/SanamyVN/ai-ts/commit/e598a5f22aee8d5b010c276b3d0401ce6c3dc6cd))
+* **session:** ISessionService.list returns { items, total } ([c32a474](https://github.com/SanamyVN/ai-ts/commit/c32a474ad079dcf354418d51678e703270512235))
+* **session:** SessionAppService.list forwards total from mediator ([7224fa1](https://github.com/SanamyVN/ai-ts/commit/7224fa1af655ee17db8d2e4d6137c3728cd6d62f))
+* **session:** SessionLocalMediator.list returns total in round-trip handler ([54e162f](https://github.com/SanamyVN/ai-ts/commit/54e162f94118a9cfb15ceb07fb279ed23655728f))
+
+### Bug Fixes
+
+* **sdk:** use z.coerce.date() in client schemas to accept wire ISO strings ([fe9be09](https://github.com/SanamyVN/ai-ts/commit/fe9be094c637f6ba17fc15358f1cbab9b2016626))
+* **session:** add lastMessage/lastMessageAt to sessionResponseDto and tighten date types ([961972c](https://github.com/SanamyVN/ai-ts/commit/961972c529b631dc66bc645449fab843a3136b44))
+* **session:** add userIds filter to list query DTO and router handler ([b25e56d](https://github.com/SanamyVN/ai-ts/commit/b25e56dfe62505d8ff946a6edc706b5c7c741f94))
+* **session:** align getMessages route response schema with SDK contract ([5a29bf9](https://github.com/SanamyVN/ai-ts/commit/5a29bf951a18792548723b92394d871bca7c0194))
+* **session:** align sessionSummaryResponseDto with SDK contract ([67101a3](https://github.com/SanamyVN/ai-ts/commit/67101a382d655cbbbf418dbccd6040955930ab2f))
+* **session:** implement GET /:id/messages handler — replace stub with real getMessages call ([c3f3584](https://github.com/SanamyVN/ai-ts/commit/c3f3584b3bb7c57c35be0e0bc2b5bf29575dcc26))
+* **session:** include total in list route response schema and spec ([788e437](https://github.com/SanamyVN/ai-ts/commit/788e437f435bce430c2eb2ba2c98eb70a0ef9411))
+* **session:** tighten messageResponseDto to match SDK messageClientSchema ([884ec6f](https://github.com/SanamyVN/ai-ts/commit/884ec6f7e6e988f0bcae92d438f714dba23347a1))
+* **session:** use z.iso.datetime in sessionSummaryResponseDto ([84c5973](https://github.com/SanamyVN/ai-ts/commit/84c5973648cd2054d3a9e512abd42066f281bb4d))
+
 ## [1.28.0](https://github.com/SanamyVN/ai-ts/compare/v1.27.0...v1.28.0) (2026-05-16)
 
 ### Breaking Changes
