@@ -369,4 +369,54 @@ describe('SessionRouter', () => {
       expect(service.list).not.toHaveBeenCalled();
     });
   });
+
+  // -------------------------------------------------------------------------
+  // GET /ai/sessions/:id/messages
+  // -------------------------------------------------------------------------
+
+  describe('GET /ai/sessions/:id/messages', () => {
+    it('returns 200 with { items, page, perPage, total } shape', async () => {
+      service.get.mockResolvedValue({
+        id: 'session-1',
+        mastraThreadId: 'thread-1',
+        userId: 'user-1',
+        promptSlug: 'prompt',
+        resolvedPrompt: 'resolved',
+        purpose: 'support',
+        status: 'active',
+        title: null,
+        metadata: null,
+        startedAt: '2026-01-01T00:00:00.000Z',
+        endedAt: null,
+      });
+
+      const res = await app.get('/ai/sessions/session-1/messages?page=2&perPage=10');
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body).toEqual({ items: [], page: 2, perPage: 10, total: 0 });
+    });
+
+    it('returns default page and perPage when query params are omitted', async () => {
+      service.get.mockResolvedValue({
+        id: 'session-1',
+        mastraThreadId: 'thread-1',
+        userId: 'user-1',
+        promptSlug: 'prompt',
+        resolvedPrompt: 'resolved',
+        purpose: 'support',
+        status: 'active',
+        title: null,
+        metadata: null,
+        startedAt: '2026-01-01T00:00:00.000Z',
+        endedAt: null,
+      });
+
+      const res = await app.get('/ai/sessions/session-1/messages');
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body).toEqual({ items: [], page: 1, perPage: 20, total: 0 });
+    });
+  });
 });
