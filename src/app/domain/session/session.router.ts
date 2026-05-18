@@ -38,6 +38,7 @@ export class SessionRouter implements IRouter {
           items: z.array(sessionSummaryResponseDto),
           page: z.number(),
           perPage: z.number(),
+          total: z.number().int().nonnegative(),
         }),
       })
       .handle(async ({ query }) =>

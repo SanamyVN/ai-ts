@@ -276,7 +276,7 @@ describe('SessionRouter', () => {
   // -------------------------------------------------------------------------
 
   describe('GET /ai/sessions', () => {
-    it('returns 200 with paginated { items, page, perPage } shape', async () => {
+    it('returns 200 with paginated { items, page, perPage, total } shape', async () => {
       const mockItem = {
         id: 'session-1',
         userId: 'user-1',
@@ -291,6 +291,7 @@ describe('SessionRouter', () => {
         items: [mockItem],
         page: 1,
         perPage: 20,
+        total: 1,
       });
 
       const res = await app.get('/ai/sessions?page=1&perPage=20');
@@ -301,12 +302,13 @@ describe('SessionRouter', () => {
         items: [mockItem],
         page: 1,
         perPage: 20,
+        total: 1,
       });
       expect(body).toHaveProperty(['items', 0, 'messageCount'], 3);
     });
 
     it('silently strips tenantId sent by legacy callers', async () => {
-      service.list.mockResolvedValue({ items: [], page: 1, perPage: 20 });
+      service.list.mockResolvedValue({ items: [], page: 1, perPage: 20, total: 0 });
 
       const res = await app.get('/ai/sessions?page=1&perPage=20&tenantId=tenant-old');
 
