@@ -10,10 +10,10 @@ export const sessionClientModelSchema = z.object({
   status: z.string(),
   title: z.string().nullable(),
   metadata: z.record(z.string(), z.unknown()).nullable(),
-  startedAt: z.date(),
-  endedAt: z.date().nullable(),
+  startedAt: z.coerce.date(),
+  endedAt: z.coerce.date().nullable(),
   lastMessage: z.string().nullable(),
-  lastMessageAt: z.date().nullable(),
+  lastMessageAt: z.coerce.date().nullable(),
 });
 
 export type SessionClientModel = z.infer<typeof sessionClientModelSchema>;
@@ -25,9 +25,9 @@ export const sessionSummaryClientSchema = z.object({
   purpose: z.string(),
   status: z.string(),
   title: z.string().nullable(),
-  startedAt: z.date(),
+  startedAt: z.coerce.date(),
   lastMessage: z.string().nullable(),
-  lastMessageAt: z.date().nullable(),
+  lastMessageAt: z.coerce.date().nullable(),
   /** User-submitted messages only — excludes seed messages, system prompts, and assistant replies. */
   messageCount: z.number().int().nonnegative(),
 });
@@ -38,7 +38,7 @@ export const messageClientSchema = z.object({
   id: z.string(),
   role: z.enum(['user', 'assistant', 'system']),
   content: z.string(),
-  createdAt: z.date(),
+  createdAt: z.coerce.date(),
 });
 export type MessageClient = z.infer<typeof messageClientSchema>;
 
