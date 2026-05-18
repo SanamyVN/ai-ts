@@ -93,12 +93,9 @@ export class SessionRouter implements IRouter {
         }),
       })
       .handle(async ({ params, query }) => {
-        // Ensure the session exists — throws 404 if not found.
-        await this.service.get(params.id);
         const page = query?.page ?? 1;
         const perPage = query?.perPage ?? 20;
-        // TODO: Fetch messages from Mastra thread once mediator contracts cover it.
-        return { items: [], page, perPage, total: 0 };
+        return this.service.getMessages(params.id, { page, perPage });
       });
 
     app

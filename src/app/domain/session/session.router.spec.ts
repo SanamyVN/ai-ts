@@ -17,6 +17,7 @@ function createMockSessionAppService() {
   return {
     list: vi.fn(),
     get: vi.fn(),
+    getMessages: vi.fn(),
     end: vi.fn(),
     updateTitle: vi.fn(),
     delete: vi.fn(),
@@ -397,48 +398,55 @@ describe('SessionRouter', () => {
   // -------------------------------------------------------------------------
 
   describe('GET /ai/sessions/:id/messages', () => {
-    it('returns 200 with { items, page, perPage, total } shape', async () => {
-      service.get.mockResolvedValue({
-        id: 'session-1',
-        mastraThreadId: 'thread-1',
-        userId: 'user-1',
-        promptSlug: 'prompt',
-        resolvedPrompt: 'resolved',
-        purpose: 'support',
-        status: 'active',
-        title: null,
-        metadata: null,
-        startedAt: '2026-01-01T00:00:00.000Z',
-        endedAt: null,
+    it('returns 200 with populated items from getMessages', async () => {
+      const mockMessages = [
+        {
+          id: 'msg-1',
+          role: 'user',
+          content: 'Hello',
+          createdAt: '2026-01-01T00:00:00.000Z',
+        },
+        {
+          id: 'msg-2',
+          role: 'assistant',
+          content: 'Hi there!',
+          createdAt: '2026-01-01T00:00:01.000Z',
+        },
+      ];
+      service.getMessages.mockResolvedValue({
+        items: mockMessages,
+        page: 2,
+        perPage: 10,
+        total: 42,
       });
 
       const res = await app.get('/ai/sessions/session-1/messages?page=2&perPage=10');
 
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body).toEqual({ items: [], page: 2, perPage: 10, total: 0 });
+      expect(body).toEqual({ items: mockMessages, page: 2, perPage: 10, total: 42 });
+      expect(service.getMessages).toHaveBeenCalledOnce();
+      expect(service.getMessages).toHaveBeenCalledWith('session-1', { page: 2, perPage: 10 });
     });
 
-    it('returns default page and perPage when query params are omitted', async () => {
-      service.get.mockResolvedValue({
-        id: 'session-1',
-        mastraThreadId: 'thread-1',
-        userId: 'user-1',
-        promptSlug: 'prompt',
-        resolvedPrompt: 'resolved',
-        purpose: 'support',
-        status: 'active',
-        title: null,
-        metadata: null,
-        startedAt: '2026-01-01T00:00:00.000Z',
-        endedAt: null,
-      });
+    it('uses default page=1 and perPage=20 when query params are omitted', async () => {
+      service.getMessages.mockResolvedValue({ items: [], page: 1, perPage: 20, total: 0 });
 
       const res = await app.get('/ai/sessions/session-1/messages');
 
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body).toEqual({ items: [], page: 1, perPage: 20, total: 0 });
+      expect(service.getMessages).toHaveBeenCalledWith('session-1', { page: 1, perPage: 20 });
+    });
+
+    it('does not call service.get — session-existence check is delegated to getMessages', async () => {
+      service.getMessages.mockResolvedValue({ items: [], page: 1, perPage: 20, total: 0 });
+
+      await app.get('/ai/sessions/session-1/messages');
+
+      expect(service.getMessages).toHaveBeenCalled();
+      expect(service.get).not.toHaveBeenCalled();
     });
   });
 });

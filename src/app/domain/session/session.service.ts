@@ -10,13 +10,18 @@ import {
   UpdateSessionTitleCommand,
   AppendSessionMessageEventCommand,
   CountMessagesQuery,
+  GetSessionMessagesQuery,
 } from '@/business/domain/session/client/queries.js';
 import { mapSessionError } from './session.error.js';
 import {
   toSessionResponseDtoFromClient,
   toSessionSummaryResponseDtoFromClient,
 } from './session.mapper.js';
-import type { SessionResponseDto, SessionSummaryResponseDto } from './session.dto.js';
+import type {
+  SessionResponseDto,
+  SessionSummaryResponseDto,
+  MessageResponseDto,
+} from './session.dto.js';
 
 @Injectable()
 export class SessionAppService {
@@ -99,6 +104,45 @@ export class SessionAppService {
       await this.mediator.send(
         new AppendSessionMessageEventCommand({ eventId, sessionId, sentAt }),
       );
+    } catch (error) {
+      mapSessionError(error);
+    }
+  }
+
+  /**
+   * Retrieves a paginated page of messages for a session.
+   *
+   * Maps `MessageClient` (createdAt: Date) to `MessageResponseDto`
+   * (createdAt: ISO string) so the wire format matches the SDK client schema.
+   *
+   * @param sessionId - The session to fetch messages for.
+   * @param pagination - 1-based page number and page size (1–500).
+   * @throws {SessionNotFoundError} If the session does not exist.
+   */
+  async getMessages(
+    sessionId: string,
+    pagination: { page: number; perPage: number },
+  ): Promise<{
+    items: MessageResponseDto[];
+    page: number;
+    perPage: number;
+    total: number;
+  }> {
+    try {
+      const result = await this.mediator.send(
+        new GetSessionMessagesQuery({ sessionId, ...pagination }),
+      );
+      return {
+        items: result.items.map((msg) => ({
+          id: msg.id,
+          role: msg.role,
+          content: msg.content,
+          createdAt: msg.createdAt.toISOString(),
+        })),
+        page: result.page,
+        perPage: result.perPage,
+        total: result.total,
+      };
     } catch (error) {
       mapSessionError(error);
     }
