@@ -3,6 +3,10 @@ import { z } from 'zod';
 export const sessionListQueryDto = z
   .object({
     userId: z.string().optional(),
+    userIds: z
+      .union([z.string(), z.array(z.string())])
+      .transform((v) => (Array.isArray(v) ? v : [v]))
+      .optional(),
     purpose: z.string().optional(),
     purposePrefix: z.string().min(1).optional(),
     status: z.string().optional(),

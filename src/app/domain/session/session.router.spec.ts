@@ -318,6 +318,26 @@ describe('SessionRouter', () => {
       );
     });
 
+    it('parses repeated userIds query params into an array and forwards them', async () => {
+      service.list.mockResolvedValue({ items: [], page: 1, perPage: 20, total: 0 });
+
+      const res = await app.get('/ai/sessions?page=1&perPage=20&userIds=user-a&userIds=user-b');
+
+      expect(res.status).toBe(200);
+      expect(service.list).toHaveBeenCalledWith(
+        expect.objectContaining({ userIds: ['user-a', 'user-b'] }),
+      );
+    });
+
+    it('normalizes a single userIds param into a one-element array', async () => {
+      service.list.mockResolvedValue({ items: [], page: 1, perPage: 20, total: 0 });
+
+      const res = await app.get('/ai/sessions?page=1&perPage=20&userIds=user-a');
+
+      expect(res.status).toBe(200);
+      expect(service.list).toHaveBeenCalledWith(expect.objectContaining({ userIds: ['user-a'] }));
+    });
+
     it('returns 422 when page is missing', async () => {
       const res = await app.get('/ai/sessions?perPage=20');
 

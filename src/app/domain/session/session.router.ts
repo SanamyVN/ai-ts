@@ -44,6 +44,7 @@ export class SessionRouter implements IRouter {
       .handle(async ({ query }) =>
         this.service.list({
           ...(query.userId !== undefined ? { userId: query.userId } : {}),
+          ...(query.userIds !== undefined ? { userIds: query.userIds } : {}),
           ...(query.purpose !== undefined ? { purpose: query.purpose } : {}),
           ...(query.purposePrefix !== undefined ? { purposePrefix: query.purposePrefix } : {}),
           ...(query.status !== undefined ? { status: query.status } : {}),
