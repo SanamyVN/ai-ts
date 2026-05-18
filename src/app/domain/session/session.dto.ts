@@ -56,8 +56,10 @@ export const sessionResponseDto = z.object({
   status: z.string(),
   title: z.string().nullable(),
   metadata: z.record(z.string(), z.unknown()).nullable(),
-  startedAt: z.string(),
-  endedAt: z.string().nullable(),
+  startedAt: z.iso.datetime({ offset: true }),
+  endedAt: z.iso.datetime({ offset: true }).nullable(),
+  lastMessage: z.string().nullable(),
+  lastMessageAt: z.iso.datetime({ offset: true }).nullable(),
 });
 export type SessionResponseDto = z.infer<typeof sessionResponseDto>;
 
@@ -102,10 +104,10 @@ export const countMessagesResponseDto = z.object({
 export type CountMessagesResponseDto = z.infer<typeof countMessagesResponseDto>;
 
 export const messageResponseDto = z.object({
-  id: z.string().optional(),
-  role: z.string(),
+  id: z.string(),
+  role: z.enum(['user', 'assistant', 'system']),
   content: z.string(),
-  createdAt: z.string().optional(),
+  createdAt: z.iso.datetime({ offset: true }),
 });
 export type MessageResponseDto = z.infer<typeof messageResponseDto>;
 
