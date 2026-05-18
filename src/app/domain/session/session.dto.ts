@@ -68,9 +68,9 @@ export const sessionSummaryResponseDto = z.object({
   purpose: z.string(),
   status: z.string(),
   title: z.string().nullable(),
-  startedAt: z.string().datetime(),
+  startedAt: z.iso.datetime({ offset: true }),
   lastMessage: z.string().nullable(),
-  lastMessageAt: z.string().datetime().nullable(),
+  lastMessageAt: z.iso.datetime({ offset: true }).nullable(),
   messageCount: z.number().int().nonnegative(),
 });
 export type SessionSummaryResponseDto = z.infer<typeof sessionSummaryResponseDto>;
