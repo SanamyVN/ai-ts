@@ -285,6 +285,8 @@ describe('SessionRouter', () => {
         status: 'active',
         title: null,
         startedAt: '2026-01-01T00:00:00.000Z',
+        lastMessage: null,
+        lastMessageAt: null,
         messageCount: 3,
       };
       service.list.mockResolvedValue({

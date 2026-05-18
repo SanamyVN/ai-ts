@@ -31,6 +31,8 @@ export function toSessionSummaryResponseDtoFromClient(
     status: model.status,
     title: model.title,
     startedAt: model.startedAt.toISOString(),
+    lastMessage: model.lastMessage,
+    lastMessageAt: model.lastMessageAt !== null ? model.lastMessageAt.toISOString() : null,
     messageCount: model.messageCount,
   };
 }
