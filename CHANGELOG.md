@@ -1,3 +1,9 @@
+## [1.29.0](https://github.com/SanamyVN/ai-ts/compare/v1.28.0...v1.29.0) (2026-05-19)
+
+### Features
+
+* **pkg:** expose repository/session-message subpaths in exports map ([fc849ee](https://github.com/SanamyVN/ai-ts/commit/fc849eedb8ed899e542f53534bf64421da8e7a5d))
+
 ## [1.28.0](https://github.com/SanamyVN/ai-ts/compare/v1.27.0...v1.28.0) (2026-05-18)
 
 ### Features
