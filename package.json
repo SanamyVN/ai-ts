@@ -134,6 +134,22 @@
       "types": "./dist/repository/domain/session/session.testing.d.ts",
       "default": "./dist/repository/domain/session/session.testing.js"
     },
+    "./repository/session-message/schema": {
+      "types": "./dist/repository/domain/session-message/session-message.schema.d.ts",
+      "default": "./dist/repository/domain/session-message/session-message.schema.js"
+    },
+    "./repository/session-message": {
+      "types": "./dist/repository/domain/session-message/session-message.interface.d.ts",
+      "default": "./dist/repository/domain/session-message/session-message.interface.js"
+    },
+    "./repository/session-message/providers": {
+      "types": "./dist/repository/domain/session-message/session-message.providers.d.ts",
+      "default": "./dist/repository/domain/session-message/session-message.providers.js"
+    },
+    "./repository/session-message/testing": {
+      "types": "./dist/repository/domain/session-message/session-message.testing.d.ts",
+      "default": "./dist/repository/domain/session-message/session-message.testing.js"
+    },
     "./business/providers": {
       "types": "./dist/business/providers.d.ts",
       "default": "./dist/business/providers.js"
