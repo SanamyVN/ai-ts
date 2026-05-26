@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
 import { AI_MEDIATOR } from '@/shared/tokens.js';
@@ -42,6 +42,6 @@ export class ConversationAppService {
   }
 }
 
-export const CONVERSATION_APP_SERVICE = createToken<ConversationAppService>(
+export const CONVERSATION_APP_SERVICE: IToken<ConversationAppService> = createToken<ConversationAppService>(
   'CONVERSATION_APP_SERVICE',
 );

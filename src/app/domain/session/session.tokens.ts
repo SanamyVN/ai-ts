@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { MiddlewareInput } from '@sanamyvn/foundation/http/types';
 
 export interface SessionMiddlewareConfig {
@@ -13,6 +13,6 @@ export interface SessionMiddlewareConfig {
   readonly countMessages?: MiddlewareInput[];
 }
 
-export const SESSION_MIDDLEWARE_CONFIG = createToken<SessionMiddlewareConfig>(
+export const SESSION_MIDDLEWARE_CONFIG: IToken<SessionMiddlewareConfig> = createToken<SessionMiddlewareConfig>(
   'SESSION_MIDDLEWARE_CONFIG',
 );

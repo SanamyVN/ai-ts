@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type {
   IngestInput,
   IngestResult,
@@ -49,4 +49,4 @@ export interface IRagBusiness {
 }
 
 /** Dependency-injection token for {@link IRagBusiness}. */
-export const RAG_BUSINESS = createToken<IRagBusiness>('RAG_BUSINESS');
+export const RAG_BUSINESS: IToken<IRagBusiness> = createToken<IRagBusiness>('RAG_BUSINESS');

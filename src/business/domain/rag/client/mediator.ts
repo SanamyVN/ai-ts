@@ -1,3 +1,4 @@
+import type { IToken } from '@sanamyvn/foundation/di/core/tokens';
 import { createMediatorToken } from '@sanamyvn/foundation/mediator/mediator-token';
 import type { IngestClientResult, DeleteClientResult, ReplaceClientResult, SearchClientResult } from './schemas.js';
 import { RagIngestCommand, RagDeleteCommand, RagReplaceCommand, RagSearchQuery } from './queries.js';
@@ -9,7 +10,7 @@ export interface IRagMediator {
   search(query: InstanceType<typeof RagSearchQuery>): Promise<SearchClientResult>;
 }
 
-export const RAG_MEDIATOR = createMediatorToken<IRagMediator>('RAG_MEDIATOR', {
+export const RAG_MEDIATOR: IToken<IRagMediator> = createMediatorToken<IRagMediator>('RAG_MEDIATOR', {
   ingest: RagIngestCommand,
   delete: RagDeleteCommand,
   replace: RagReplaceCommand,

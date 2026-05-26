@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { IVadMediator } from '@/business/domain/vad/client/mediator.js';
 import type { DetectSpeechClientResult } from '@/business/domain/vad/client/schemas.js';
 import { detectSpeechResultSchema } from '@/business/domain/vad/client/schemas.js';
@@ -14,8 +14,8 @@ export interface HttpClient {
   ): Promise<{ ok: boolean; status?: number; body?: { data?: unknown } }>;
 }
 
-export const AI_VAD_HTTP_CLIENT = createToken<HttpClient>('AI_VAD_HTTP_CLIENT');
-export const AI_VAD_REMOTE_CONFIG = createToken<{ baseUrl: string }>('AI_VAD_REMOTE_CONFIG');
+export const AI_VAD_HTTP_CLIENT: IToken<HttpClient> = createToken<HttpClient>('AI_VAD_HTTP_CLIENT');
+export const AI_VAD_REMOTE_CONFIG: IToken<{ baseUrl: string }> = createToken<{ baseUrl: string }>('AI_VAD_REMOTE_CONFIG');
 
 @Injectable()
 export class VadRemoteMediator implements IVadMediator {

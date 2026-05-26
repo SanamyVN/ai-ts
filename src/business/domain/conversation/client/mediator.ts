@@ -1,3 +1,4 @@
+import type { IToken } from '@sanamyvn/foundation/di/core/tokens';
 import { createMediatorToken } from '@sanamyvn/foundation/mediator/mediator-token';
 import type { ConversationClient, ConversationResponseClient } from './schemas.js';
 import { CreateConversationCommand, SendMessageCommand } from './queries.js';
@@ -9,7 +10,7 @@ export interface IConversationMediator {
   ): Promise<ConversationResponseClient>;
 }
 
-export const CONVERSATION_MEDIATOR = createMediatorToken<IConversationMediator>(
+export const CONVERSATION_MEDIATOR: IToken<IConversationMediator> = createMediatorToken<IConversationMediator>(
   'CONVERSATION_MEDIATOR',
   {
     create: CreateConversationCommand,

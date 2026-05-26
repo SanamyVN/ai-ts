@@ -1,5 +1,5 @@
 // src/foundation/ai-metrics/ai-metrics.interface.ts
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type {
   LlmUsageInput,
   SttUsageInput,
@@ -27,4 +27,4 @@ export interface IAiMetrics {
 }
 
 /** Dependency-injection token for {@link IAiMetrics}. */
-export const AI_METRICS = createToken<IAiMetrics>('AI_METRICS');
+export const AI_METRICS: IToken<IAiMetrics> = createToken<IAiMetrics>('AI_METRICS');

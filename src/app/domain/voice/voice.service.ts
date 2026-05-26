@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
 import { AI_MEDIATOR } from '@/shared/tokens.js';
@@ -48,4 +48,4 @@ export class VoiceAppService {
   }
 }
 
-export const VOICE_APP_SERVICE = createToken<VoiceAppService>('VOICE_APP_SERVICE');
+export const VOICE_APP_SERVICE: IToken<VoiceAppService> = createToken<VoiceAppService>('VOICE_APP_SERVICE');

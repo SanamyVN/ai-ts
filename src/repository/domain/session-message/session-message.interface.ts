@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 
 /**
  * Filter shape shared by `count` and the internal use sites that translate
@@ -48,6 +48,6 @@ export interface ISessionMessageRepository {
 }
 
 /** Dependency-injection token for {@link ISessionMessageRepository}. */
-export const SESSION_MESSAGE_REPOSITORY = createToken<ISessionMessageRepository>(
+export const SESSION_MESSAGE_REPOSITORY: IToken<ISessionMessageRepository> = createToken<ISessionMessageRepository>(
   'SESSION_MESSAGE_REPOSITORY',
 );

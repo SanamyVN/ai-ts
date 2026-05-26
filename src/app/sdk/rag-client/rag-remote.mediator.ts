@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { IRagMediator } from '@/business/domain/rag/client/mediator.js';
 import type {
   IngestClientResult,
@@ -44,8 +44,8 @@ export interface HttpClient {
   ): Promise<{ ok: boolean; status?: number; body?: { data?: unknown } }>;
 }
 
-export const AI_RAG_HTTP_CLIENT = createToken<HttpClient>('AI_RAG_HTTP_CLIENT');
-export const AI_RAG_REMOTE_CONFIG = createToken<{ baseUrl: string }>('AI_RAG_REMOTE_CONFIG');
+export const AI_RAG_HTTP_CLIENT: IToken<HttpClient> = createToken<HttpClient>('AI_RAG_HTTP_CLIENT');
+export const AI_RAG_REMOTE_CONFIG: IToken<{ baseUrl: string }> = createToken<{ baseUrl: string }>('AI_RAG_REMOTE_CONFIG');
 
 @Injectable()
 export class RagRemoteMediator implements IRagMediator {

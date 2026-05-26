@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { MiddlewareInput } from '@sanamyvn/foundation/http/types';
 
 export interface ConversationMiddlewareConfig {
@@ -7,6 +7,6 @@ export interface ConversationMiddlewareConfig {
   readonly streamMessage?: MiddlewareInput[];
 }
 
-export const CONVERSATION_MIDDLEWARE_CONFIG = createToken<ConversationMiddlewareConfig>(
+export const CONVERSATION_MIDDLEWARE_CONFIG: IToken<ConversationMiddlewareConfig> = createToken<ConversationMiddlewareConfig>(
   'CONVERSATION_MIDDLEWARE_CONFIG',
 );

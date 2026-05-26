@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { PromptVersionRecord, NewPromptVersionRecord } from './prompt-version.model.js';
 
 /** Stores and retrieves versioned prompt content linked to a parent prompt. */
@@ -48,6 +48,6 @@ export interface IPromptVersionRepository {
 }
 
 /** Dependency-injection token for {@link IPromptVersionRepository}. */
-export const PROMPT_VERSION_REPOSITORY = createToken<IPromptVersionRepository>(
+export const PROMPT_VERSION_REPOSITORY: IToken<IPromptVersionRepository> = createToken<IPromptVersionRepository>(
   'PROMPT_VERSION_REPOSITORY',
 );

@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
 import { AI_MEDIATOR } from '@/shared/tokens.js';
@@ -21,4 +21,4 @@ export class VadAppService {
   }
 }
 
-export const VAD_APP_SERVICE = createToken<VadAppService>('VAD_APP_SERVICE');
+export const VAD_APP_SERVICE: IToken<VadAppService> = createToken<VadAppService>('VAD_APP_SERVICE');

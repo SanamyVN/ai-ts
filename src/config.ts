@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 
 const promptConfigSchema = z.object({
   maxVersions: z.number().int().positive().default(50),
@@ -52,4 +52,4 @@ export type AiConfig = z.infer<typeof aiConfigSchema>;
 export type AiConfigInput = z.input<typeof aiConfigSchema>;
 
 /** DI token for the validated AI module configuration — bound during module setup. */
-export const AI_CONFIG = createToken<AiConfig>('AI_CONFIG');
+export const AI_CONFIG: IToken<AiConfig> = createToken<AiConfig>('AI_CONFIG');

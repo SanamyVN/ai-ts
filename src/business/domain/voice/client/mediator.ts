@@ -1,3 +1,4 @@
+import type { IToken } from '@sanamyvn/foundation/di/core/tokens';
 import { createMediatorToken } from '@sanamyvn/foundation/mediator/mediator-token';
 import type {
   TextToSpeechClientResult,
@@ -20,7 +21,7 @@ export interface IVoiceMediator {
   getSpeakers(query: InstanceType<typeof VoiceGetSpeakersQuery>): Promise<GetSpeakersClientResult>;
 }
 
-export const VOICE_MEDIATOR = createMediatorToken<IVoiceMediator>('VOICE_MEDIATOR', {
+export const VOICE_MEDIATOR: IToken<IVoiceMediator> = createMediatorToken<IVoiceMediator>('VOICE_MEDIATOR', {
   textToSpeech: VoiceTextToSpeechCommand,
   speechToText: VoiceSpeechToTextCommand,
   getSpeakers: VoiceGetSpeakersQuery,

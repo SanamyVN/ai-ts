@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type {
   Session,
   SessionSummary,
@@ -151,4 +151,4 @@ export interface ISessionService {
 }
 
 /** Dependency-injection token for {@link ISessionService}. */
-export const SESSION_SERVICE = createToken<ISessionService>('SESSION_SERVICE');
+export const SESSION_SERVICE: IToken<ISessionService> = createToken<ISessionService>('SESSION_SERVICE');

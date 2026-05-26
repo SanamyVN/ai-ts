@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { MiddlewareInput } from '@sanamyvn/foundation/http/types';
 
 export interface VoiceMiddlewareConfig {
@@ -7,5 +7,4 @@ export interface VoiceMiddlewareConfig {
   readonly getSpeakers?: MiddlewareInput[];
 }
 
-export const VOICE_MIDDLEWARE_CONFIG =
-  createToken<VoiceMiddlewareConfig>('VOICE_MIDDLEWARE_CONFIG');
+export const VOICE_MIDDLEWARE_CONFIG: IToken<VoiceMiddlewareConfig> = createToken<VoiceMiddlewareConfig>('VOICE_MIDDLEWARE_CONFIG');

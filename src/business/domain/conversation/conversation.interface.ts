@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { ZodType } from 'zod';
 import type { StreamChunk } from '@/business/sdk/mastra/mastra.interface.js';
 import type {
@@ -84,4 +84,4 @@ export interface IConversationEngine {
 }
 
 /** Dependency-injection token for {@link IConversationEngine}. */
-export const CONVERSATION_ENGINE = createToken<IConversationEngine>('CONVERSATION_ENGINE');
+export const CONVERSATION_ENGINE: IToken<IConversationEngine> = createToken<IConversationEngine>('CONVERSATION_ENGINE');

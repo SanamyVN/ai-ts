@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { DetectSpeechInput, VadResult } from './vad.model.js';
 
 export interface VadConfig {
@@ -23,6 +23,6 @@ export interface IVadBusiness {
   resetSession(): void;
 }
 
-export const VAD = createToken<IVad>('VAD');
-export const VAD_CONFIG = createToken<VadConfig>('VAD_CONFIG');
-export const VAD_BUSINESS = createToken<IVadBusiness>('VAD_BUSINESS');
+export const VAD: IToken<IVad> = createToken<IVad>('VAD');
+export const VAD_CONFIG: IToken<VadConfig> = createToken<VadConfig>('VAD_CONFIG');
+export const VAD_BUSINESS: IToken<IVadBusiness> = createToken<IVadBusiness>('VAD_BUSINESS');

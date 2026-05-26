@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { VadFrame } from '@/business/domain/vad/vad.interface.js';
 import type { SpeakerGender } from '@/business/domain/voice/voice.interface.js';
 import type { MetricsContext } from '@/foundation/ai-metrics/ai-metrics.model.js';
@@ -33,5 +33,4 @@ export interface IRealtimeVoiceBusiness {
   processAudio(input: ProcessAudioInput): Promise<ProcessAudioResult>;
 }
 
-export const REALTIME_VOICE_BUSINESS =
-  createToken<IRealtimeVoiceBusiness>('REALTIME_VOICE_BUSINESS');
+export const REALTIME_VOICE_BUSINESS: IToken<IRealtimeVoiceBusiness> = createToken<IRealtimeVoiceBusiness>('REALTIME_VOICE_BUSINESS');

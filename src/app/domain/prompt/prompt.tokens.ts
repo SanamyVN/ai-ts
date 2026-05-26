@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { MiddlewareInput } from '@sanamyvn/foundation/http/types';
 
 export interface PromptMiddlewareConfig {
@@ -11,6 +11,6 @@ export interface PromptMiddlewareConfig {
   readonly listVersions?: MiddlewareInput[];
 }
 
-export const PROMPT_MIDDLEWARE_CONFIG = createToken<PromptMiddlewareConfig>(
+export const PROMPT_MIDDLEWARE_CONFIG: IToken<PromptMiddlewareConfig> = createToken<PromptMiddlewareConfig>(
   'PROMPT_MIDDLEWARE_CONFIG',
 );

@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { SessionRecord, NewSessionRecord } from './session.model.js';
 
 /** Criteria for filtering sessions in list queries. All fields are optional. */
@@ -101,4 +101,4 @@ export interface ISessionRepository {
 }
 
 /** Dependency-injection token for {@link ISessionRepository}. */
-export const SESSION_REPOSITORY = createToken<ISessionRepository>('SESSION_REPOSITORY');
+export const SESSION_REPOSITORY: IToken<ISessionRepository> = createToken<ISessionRepository>('SESSION_REPOSITORY');

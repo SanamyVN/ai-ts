@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { PromptRecord, NewPromptRecord } from './prompt.model.js';
 
 /** Stores and retrieves prompt templates from the database. */
@@ -50,4 +50,4 @@ export interface IPromptRepository {
 }
 
 /** Dependency-injection token for {@link IPromptRepository}. */
-export const PROMPT_REPOSITORY = createToken<IPromptRepository>('PROMPT_REPOSITORY');
+export const PROMPT_REPOSITORY: IToken<IPromptRepository> = createToken<IPromptRepository>('PROMPT_REPOSITORY');

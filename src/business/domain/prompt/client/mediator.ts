@@ -1,3 +1,4 @@
+import type { IToken } from '@sanamyvn/foundation/di/core/tokens';
 import { createMediatorToken } from '@sanamyvn/foundation/mediator/mediator-token';
 import type { PromptClientModel, ResolvedPromptClient } from './schemas.js';
 import {
@@ -18,7 +19,7 @@ export interface IPromptMediator {
   setActiveVersion(command: InstanceType<typeof SetActiveVersionCommand>): Promise<void>;
 }
 
-export const PROMPT_MEDIATOR = createMediatorToken<IPromptMediator>('PROMPT_MEDIATOR', {
+export const PROMPT_MEDIATOR: IToken<IPromptMediator> = createMediatorToken<IPromptMediator>('PROMPT_MEDIATOR', {
   findBySlug: FindPromptBySlugQuery,
   list: ListPromptsQuery,
   resolve: ResolvePromptQuery,

@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type {
   PromptTemplate,
   PromptVersion,
@@ -91,4 +91,4 @@ export interface IPromptService {
 }
 
 /** Dependency-injection token for {@link IPromptService}. */
-export const PROMPT_SERVICE = createToken<IPromptService>('PROMPT_SERVICE');
+export const PROMPT_SERVICE: IToken<IPromptService> = createToken<IPromptService>('PROMPT_SERVICE');

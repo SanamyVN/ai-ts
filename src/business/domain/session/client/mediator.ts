@@ -1,3 +1,4 @@
+import type { IToken } from '@sanamyvn/foundation/di/core/tokens';
 import { createMediatorToken } from '@sanamyvn/foundation/mediator/mediator-token';
 import type { SessionClientModel, SessionSummaryClient, MessageListClient } from './schemas.js';
 import {
@@ -34,7 +35,7 @@ export interface ISessionMediator {
   countMessages(query: InstanceType<typeof CountMessagesQuery>): Promise<{ count: number }>;
 }
 
-export const SESSION_MEDIATOR = createMediatorToken<ISessionMediator>('SESSION_MEDIATOR', {
+export const SESSION_MEDIATOR: IToken<ISessionMediator> = createMediatorToken<ISessionMediator>('SESSION_MEDIATOR', {
   findById: FindSessionByIdQuery,
   list: ListSessionsQuery,
   create: CreateSessionCommand,

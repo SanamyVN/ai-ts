@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type {
   TextToSpeechInput,
   TextToSpeechResult,
@@ -14,7 +14,7 @@ export interface VoiceTtsConfig {
   readonly female?: string;
 }
 
-export const VOICE_TTS_CONFIG = createToken<VoiceTtsConfig>('VOICE_TTS_CONFIG');
+export const VOICE_TTS_CONFIG: IToken<VoiceTtsConfig> = createToken<VoiceTtsConfig>('VOICE_TTS_CONFIG');
 
 /** Abstraction over voice operations for text-to-speech and speech-to-text. */
 export interface IVoiceBusiness {
@@ -27,4 +27,4 @@ export interface IVoiceBusiness {
 }
 
 /** DI token for the Voice business service. */
-export const VOICE_BUSINESS = createToken<IVoiceBusiness>('VOICE_BUSINESS');
+export const VOICE_BUSINESS: IToken<IVoiceBusiness> = createToken<IVoiceBusiness>('VOICE_BUSINESS');

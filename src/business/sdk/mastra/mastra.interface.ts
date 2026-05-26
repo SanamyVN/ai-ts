@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { Agent } from '@mastra/core/agent';
 import type { MastraMemory } from '@mastra/core/memory';
 import type { PgVector } from '@mastra/pg';
@@ -160,16 +160,16 @@ export interface IMastraMemory {
 }
 
 /** DI token for the application-level Mastra agent adapter — bound by the Mastra SDK module. */
-export const MASTRA_AGENT = createToken<IMastraAgent>('MASTRA_AGENT');
+export const MASTRA_AGENT: IToken<IMastraAgent> = createToken<IMastraAgent>('MASTRA_AGENT');
 
 /** DI token for the application-level Mastra memory adapter — bound by the Mastra SDK module. */
-export const MASTRA_MEMORY = createToken<IMastraMemory>('MASTRA_MEMORY');
+export const MASTRA_MEMORY: IToken<IMastraMemory> = createToken<IMastraMemory>('MASTRA_MEMORY');
 
 /** DI token for the raw Mastra core Agent instance — provided by the downstream app. */
-export const MASTRA_CORE_AGENT = createToken<Agent>('MASTRA_CORE_AGENT');
+export const MASTRA_CORE_AGENT: IToken<Agent> = createToken<Agent>('MASTRA_CORE_AGENT');
 
 /** DI token for the raw Mastra core MastraMemory instance — provided by the downstream app. */
-export const MASTRA_CORE_MEMORY = createToken<MastraMemory>('MASTRA_CORE_MEMORY');
+export const MASTRA_CORE_MEMORY: IToken<MastraMemory> = createToken<MastraMemory>('MASTRA_CORE_MEMORY');
 
 /** Abstraction over a Mastra vector store for RAG write-path operations. */
 export interface IMastraRag {
@@ -216,10 +216,10 @@ export interface IMastraRag {
 }
 
 /** DI token for the application-level Mastra RAG adapter — bound by the Mastra SDK module. */
-export const MASTRA_RAG = createToken<IMastraRag>('MASTRA_RAG');
+export const MASTRA_RAG: IToken<IMastraRag> = createToken<IMastraRag>('MASTRA_RAG');
 
 /** DI token for the raw PgVector instance — provided by the downstream app. */
-export const MASTRA_CORE_RAG = createToken<PgVector>('MASTRA_CORE_RAG');
+export const MASTRA_CORE_RAG: IToken<PgVector> = createToken<PgVector>('MASTRA_CORE_RAG');
 
 // ── Voice Types ──
 
@@ -308,13 +308,13 @@ export interface IMastraVoiceRealtime {
 // ── Voice DI Tokens ──
 
 /** DI token for the application-level Mastra TTS adapter. */
-export const MASTRA_VOICE_TTS = createToken<IMastraVoiceTts>('MASTRA_VOICE_TTS');
+export const MASTRA_VOICE_TTS: IToken<IMastraVoiceTts> = createToken<IMastraVoiceTts>('MASTRA_VOICE_TTS');
 
 /** DI token for the application-level Mastra STT adapter. */
-export const MASTRA_VOICE_STT = createToken<IMastraVoiceStt>('MASTRA_VOICE_STT');
+export const MASTRA_VOICE_STT: IToken<IMastraVoiceStt> = createToken<IMastraVoiceStt>('MASTRA_VOICE_STT');
 
 /** DI token for the application-level Mastra Realtime adapter. */
-export const MASTRA_VOICE_REALTIME = createToken<IMastraVoiceRealtime>('MASTRA_VOICE_REALTIME');
+export const MASTRA_VOICE_REALTIME: IToken<IMastraVoiceRealtime> = createToken<IMastraVoiceRealtime>('MASTRA_VOICE_REALTIME');
 
 /** DI token for the raw Mastra Voice instance — provided by the downstream app. */
-export const MASTRA_CORE_VOICE = createToken<MastraVoice>('MASTRA_CORE_VOICE');
+export const MASTRA_CORE_VOICE: IToken<MastraVoice> = createToken<MastraVoice>('MASTRA_CORE_VOICE');

@@ -1,4 +1,4 @@
-import { createToken } from '@sanamyvn/foundation/di/core/tokens';
+import { createToken, type IToken } from '@sanamyvn/foundation/di/core/tokens';
 import type { MiddlewareInput } from '@sanamyvn/foundation/http/types';
 
 export interface RagMiddlewareConfig {
@@ -8,4 +8,4 @@ export interface RagMiddlewareConfig {
   readonly search?: MiddlewareInput[];
 }
 
-export const RAG_MIDDLEWARE_CONFIG = createToken<RagMiddlewareConfig>('RAG_MIDDLEWARE_CONFIG');
+export const RAG_MIDDLEWARE_CONFIG: IToken<RagMiddlewareConfig> = createToken<RagMiddlewareConfig>('RAG_MIDDLEWARE_CONFIG');
