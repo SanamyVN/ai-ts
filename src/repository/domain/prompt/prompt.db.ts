@@ -1,6 +1,6 @@
 import { eq, ilike } from 'drizzle-orm';
 import { Injectable, Inject } from '@sanamyvn/foundation/di/node/decorators';
-import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
+import type { PostgresClient } from '@sanamyvn/foundation/database/drizzle';
 import type { AiSchema } from '@/shared/schema.js';
 import { AI_DB } from '@/shared/tokens.js';
 import { aiPrompts } from './prompt.schema.js';

@@ -1,4 +1,4 @@
-import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
+import type { PostgresClient } from '@sanamyvn/foundation/database/drizzle';
 import type { ICache } from '@sanamyvn/foundation/cache';
 import type { IMediator } from '@sanamyvn/foundation/mediator';
 import { createToken } from '@sanamyvn/foundation/di/core/tokens';

@@ -1,5 +1,5 @@
 import { pg } from './fixture.js';
-import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
+import type { PostgresClient } from '@sanamyvn/foundation/database/drizzle';
 import type { AiSchema } from '@/shared/schema.js';
 import { PromptDrizzleRepository } from '@/repository/domain/prompt/prompt.db.js';
 import { PromptVersionDrizzleRepository } from '@/repository/domain/prompt-version/prompt-version.db.js';

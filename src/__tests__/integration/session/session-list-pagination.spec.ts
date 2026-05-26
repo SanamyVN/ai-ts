@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import { sql } from 'drizzle-orm';
 import { pg } from '../fixture.js';
-import type { PostgresClient } from '@sanamyvn/foundation/database/postgres';
+import type { PostgresClient } from '@sanamyvn/foundation/database/drizzle';
 import type { AiSchema } from '@/shared/schema.js';
 import { SessionDrizzleRepository } from '@/repository/domain/session/session.db.js';
 import type { NewSessionRecord } from '@/repository/domain/session/session.model.js';
