@@ -1,3 +1,9 @@
+## [1.29.1](https://github.com/SanamyVN/ai-ts/compare/v1.29.0...v1.29.1) (2026-05-26)
+
+### Bug Fixes
+
+* **types:** annotate exported tokens with IToken<T> to fix downstream TS2742 ([e2ce218](https://github.com/SanamyVN/ai-ts/commit/e2ce21821cb59fed7af0ab0d0a4c451f5f4b69be))
+
 ## [1.29.0](https://github.com/SanamyVN/ai-ts/compare/v1.28.0...v1.29.0) (2026-05-19)
 
 ### Features
